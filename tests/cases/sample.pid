@@ -1,0 +1,56 @@
+# Simple control loop example
+
+equipment P101:
+  type: pump
+  at: (10,8)
+  ports: in, out
+  label: "P-101"
+
+valve CV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: closed
+  at: (16,8)
+  ports: in, out
+  label: "CV-101"
+
+equipment E101:
+  type: heat_exchanger
+  at: (24,8)
+  ports:
+    in: west
+    out: east
+    top: north
+  label: "E-101"
+
+line L100:
+  class: process
+  from: P101.out
+  to: CV101.in
+
+line L101:
+  class: process
+  from: CV101.out
+  to: E101.in
+
+instrument TI101:
+  type: temperature_indicator
+  attach: E101.top
+  location: field
+  label: "TI-101"
+
+instrument TIC101:
+  type: temperature_controller
+  at: (24,3)
+  location: panel
+  label: "TIC-101"
+
+signal S100:
+  type: electrical
+  from: TI101
+  to: TIC101
+
+signal S101:
+  type: pneumatic
+  from: TIC101
+  to: CV101

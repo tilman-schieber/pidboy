@@ -1,0 +1,19 @@
+[package]
+name = "pidc"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "pidc"
+path = "src/main.rs"
+
+[lib]
+name = "pidc"
+path = "src/lib.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+thiserror = "1"
+indexmap = "2"
+
+[dev-dependencies]
