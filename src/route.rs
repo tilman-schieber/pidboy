@@ -92,7 +92,18 @@ fn route_connection(
     let vth = route_vth(&p1, &p2);
     let vth_hits = count_obstacle_hits(&vth, &obstacles);
 
-    let points = if vth_hits < htv_hits { vth } else { htv };
+    let raw_points = if vth_hits < htv_hits { vth } else { htv };
+
+    // Deduplicate consecutive identical points
+    let mut points: Vec<SvgPos> = Vec::with_capacity(raw_points.len());
+    for p in raw_points {
+        if let Some(last) = points.last() {
+            if (last.x - p.x).abs() < 1e-9 && (last.y - p.y).abs() < 1e-9 {
+                continue;
+            }
+        }
+        points.push(p);
+    }
 
     Some(RouteSegment {
         connection_id: id.to_string(),

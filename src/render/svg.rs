@@ -111,6 +111,46 @@ pub fn render(
             }
         }
     }
+    // Line labels: render near midpoint of each routed line
+    for seg in routes.iter() {
+        let line_label = if seg.is_signal {
+            diagram.signals.get(&seg.connection_id).and_then(|s| s.label.as_deref())
+        } else {
+            diagram.lines.get(&seg.connection_id).and_then(|l| l.label.as_deref())
+        };
+        if let Some(label) = line_label {
+            if seg.points.len() >= 2 {
+                let mid_idx = seg.points.len() / 2;
+                let p1 = &seg.points[mid_idx - 1];
+                let p2 = &seg.points[mid_idx];
+                let mx = (p1.x + p2.x) / 2.0;
+                let my = (p1.y + p2.y) / 2.0;
+                // Determine if this segment is mostly vertical
+                let dx = (p2.x - p1.x).abs();
+                let dy = (p2.y - p1.y).abs();
+                let (transform, tx, ty) = if dy > dx {
+                    // Vertical segment — rotate label
+                    (
+                        format!(" transform=\"rotate(-90,{:.1},{:.1})\"", mx, my - 8.0),
+                        mx,
+                        my - 8.0,
+                    )
+                } else {
+                    // Horizontal segment — offset 8px above
+                    (String::new(), mx, my - 8.0)
+                };
+                out.push_str(&format!(
+                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"line-label\"{}>{}{}",
+                    indent, indent,
+                    tx, ty,
+                    transform,
+                    escape_xml(label),
+                    if opts.pretty { "\n" } else { "" }
+                ));
+                out.push_str(&format!("</text>{}", nl));
+            }
+        }
+    }
     out.push_str(&format!("{}</g>{}", indent, nl));
 
     // Notes group
@@ -165,6 +205,7 @@ fn build_styles(_indent: &str, _pretty: bool) -> String {
     .instrument { fill: white; stroke: black; stroke-width: 1.5; }
     .junction { fill: black; stroke: none; }
     .label { font-family: sans-serif; font-size: 11px; text-anchor: middle; fill: #333; }
+    .line-label { font-family: sans-serif; font-size: 9px; text-anchor: middle; fill: #666; }
     .note { font-family: sans-serif; font-size: 11px; fill: #555; font-style: italic; }
     .line-process { fill: none; stroke: black; stroke-width: 2; }
     .line-utility { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 8,4; }
@@ -179,7 +220,6 @@ fn build_styles(_indent: &str, _pretty: bool) -> String {
 
 fn build_markers(_indent: &str, _pretty: bool) -> String {
     let mut s = String::new();
-    s.push_str("  <defs>\n");
     s.push_str("    <marker id=\"arrow-end\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\">\n");
     s.push_str("      <path d=\"M 0 0 L 6 3 L 0 6 Z\" fill=\"#1a1aff\"/>\n");
     s.push_str("    </marker>\n");
@@ -187,7 +227,6 @@ fn build_markers(_indent: &str, _pretty: bool) -> String {
     s.push_str("      <path d=\"M 0 0 L 4 4 L 0 8\" fill=\"none\" stroke=\"#1a1aff\" stroke-width=\"1\"/>\n");
     s.push_str("      <path d=\"M 4 0 L 8 4 L 4 8\" fill=\"none\" stroke=\"#1a1aff\" stroke-width=\"1\"/>\n");
     s.push_str("    </marker>\n");
-    s.push_str("  </defs>\n");
     s
 }
 

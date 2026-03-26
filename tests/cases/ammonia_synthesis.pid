@@ -1,0 +1,471 @@
+# Ammonia Synthesis Plant — Haber-Bosch Process
+# High-pressure synthesis loop: ~200 bar, 400–500 °C
+# H2:N2 feed ratio = 3:1
+
+# ── Equipment ─────────────────────────────────────────────────
+
+# Make-up syngas compressor
+equipment K101:
+  type: compressor
+  at: (8,10)
+  ports:
+    in: west
+    out: east
+  label: "K-101"
+
+# Syngas preheat / feed-effluent heat exchanger
+equipment E101:
+  type: heat_exchanger_shell_tube
+  at: (16,10)
+  ports:
+    in: west
+    out: east
+    top: north
+  label: "E-101"
+
+# Ammonia synthesis converter (3-bed adiabatic)
+equipment R101:
+  type: reactor_pfr
+  at: (25,10)
+  ports:
+    in: west
+    out: east
+    top: north
+    vent: south
+  label: "R-101"
+
+# Reactor effluent cooler
+equipment E102:
+  type: heat_exchanger_shell_tube
+  at: (33,10)
+  ports:
+    in: west
+    out: east
+    top: north
+  label: "E-102"
+
+# High-pressure ammonia separator
+equipment V101:
+  type: separator
+  at: (41,10)
+  ports:
+    in: west
+    gas_out: east
+    liq_out: south
+  label: "V-101"
+
+# Recycle compressor
+equipment K102:
+  type: compressor
+  at: (41,19)
+  ports:
+    in: east
+    out: west
+  label: "K-102"
+
+# Ammonia product flash drum
+equipment V102:
+  type: vessel
+  at: (49,10)
+  ports:
+    in: west
+    out: east
+    gas_out: north
+  label: "V-102"
+
+# ── Valves ────────────────────────────────────────────────────
+
+# Feed flow control
+valve FCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: closed
+  at: (3,10)
+  ports: in, out
+  label: "FCV-101"
+
+# Reactor cold-shot quench temperature control
+valve TCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: closed
+  at: (12,5)
+  ports: in, out
+  label: "TCV-101"
+
+# Synthesis loop pressure / purge control
+valve PCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: open
+  at: (47,16)
+  ports: in, out
+  label: "PCV-101"
+
+# Ammonia product level control
+valve LCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: closed
+  at: (45,10)
+  ports: in, out
+  label: "LCV-101"
+
+# Reactor high-pressure safety relief
+valve PRV101:
+  type: relief_valve
+  at: (25,15)
+  ports: in, out
+  label: "PRV-101"
+
+# ── Junctions ─────────────────────────────────────────────────
+
+# Feed + recycle mixing point
+junction J101:
+  at: (6,10)
+
+# Post-compressor quench bypass split
+junction J102:
+  at: (12,10)
+
+# Recycle / purge split
+junction J103:
+  at: (47,19)
+
+# ── Notes ─────────────────────────────────────────────────────
+
+note N101:
+  at: (1,10)
+  text: "H2/N2 make-up gas (3:1)"
+
+note N102:
+  at: (53,10)
+  text: "Liquid NH3 to product storage"
+
+note N103:
+  at: (51,16)
+  text: "Purge gas to flare header"
+
+# ── Process Lines ─────────────────────────────────────────────
+
+# Fresh syngas feed through flow control valve
+line L101:
+  class: process
+  from: FCV101.out
+  to: J101
+  label: "6in-SG-1001"
+
+# Mixed feed (fresh + recycle) to compressor suction
+line L102:
+  class: process
+  from: J101
+  to: K101.in
+  label: "6in-SG-1002"
+
+# Compressed syngas to quench split junction
+line L103:
+  class: process
+  from: K101.out
+  to: J102
+  label: "4in-SG-1003"
+
+# Main flow: compressed gas to preheat exchanger
+line L104:
+  class: process
+  from: J102
+  to: E101.in
+  label: "4in-SG-1004"
+
+# Cold-shot quench bypass to quench control valve
+line L105:
+  class: process
+  from: J102
+  to: TCV101.in
+  label: "2in-SG-1005"
+
+# Preheated syngas to reactor feed nozzle
+line L106:
+  class: process
+  from: E101.out
+  to: R101.in
+  label: "4in-SG-1006"
+
+# Cold quench to reactor mid-bed injection
+line L107:
+  class: process
+  from: TCV101.out
+  to: R101.top
+  label: "2in-SG-1007"
+
+# Reactor effluent to effluent cooler
+line L108:
+  class: process
+  from: R101.out
+  to: E102.in
+  label: "4in-SG-1008"
+
+# Cooled synthesis gas to HP separator
+line L109:
+  class: process
+  from: E102.out
+  to: V101.in
+  label: "4in-SG-1009"
+
+# Reactor vent to pressure relief valve
+line L110:
+  class: process
+  from: R101.vent
+  to: PRV101.in
+  label: "2in-SG-1010"
+
+# Crude liquid ammonia from separator to level valve
+line L111:
+  class: process
+  from: V101.liq_out
+  to: LCV101.in
+  label: "3in-NH3-1011"
+
+# Letdown liquid NH3 to flash drum
+line L112:
+  class: process
+  from: LCV101.out
+  to: V102.in
+  label: "3in-NH3-1012"
+
+# Separator gas overhead to recycle/purge split
+line L113:
+  class: process
+  from: V101.gas_out
+  to: J103
+  label: "4in-SG-1013"
+
+# Recycle gas to recycle compressor suction
+line L114:
+  class: process
+  from: J103
+  to: K102.in
+  label: "4in-SG-1014"
+
+# Recycle compressor discharge to feed mix
+line L115:
+  class: process
+  from: K102.out
+  to: J101
+  label: "4in-SG-1015"
+
+# Purge stream from recycle loop to control valve
+line L116:
+  class: process
+  from: J103
+  to: PCV101.in
+  label: "2in-SG-1016"
+
+# ── Instruments ───────────────────────────────────────────────
+
+# Make-up gas flow measurement and control
+instrument FT101:
+  type: flow_transmitter
+  attach: K101.in
+  location: field
+  label: "FT-101"
+
+instrument FIC101:
+  type: flow_controller
+  at: (3,4)
+  location: panel
+  label: "FIC-101"
+
+# Compressor discharge temperature and pressure
+instrument TI101:
+  type: temperature_indicator
+  attach: K101.out
+  location: field
+  label: "TI-101"
+
+instrument PI101:
+  type: pressure_indicator
+  attach: K101.out
+  location: field
+  label: "PI-101"
+
+# Reactor inlet temperature — controls quench valve
+instrument TT102:
+  type: temperature_transmitter
+  attach: E101.out
+  location: field
+  label: "TT-102"
+
+instrument TIC102:
+  type: temperature_controller
+  at: (16,4)
+  location: panel
+  label: "TIC-102"
+
+# Reactor mid-bed and outlet temperatures (monitoring)
+instrument TI103:
+  type: temperature_indicator
+  attach: R101.top
+  location: field
+  label: "TI-103"
+
+instrument TI104:
+  type: temperature_indicator
+  attach: R101.out
+  location: field
+  label: "TI-104"
+
+# Reactor pressure — high-pressure alarm
+instrument PT101:
+  type: pressure_transmitter
+  attach: R101.top
+  location: field
+  label: "PT-101"
+
+instrument PAH101:
+  type: alarm
+  at: (25,3)
+  location: panel
+  label: "PAH-101"
+
+# Effluent cooler outlet temperature
+instrument TI105:
+  type: temperature_indicator
+  attach: E102.out
+  location: field
+  label: "TI-105"
+
+# HP separator inlet temperature
+instrument TI106:
+  type: temperature_indicator
+  attach: V101.in
+  location: field
+  label: "TI-106"
+
+# Synthesis loop pressure control via purge valve
+instrument PT102:
+  type: pressure_transmitter
+  attach: V101.gas_out
+  location: field
+  label: "PT-102"
+
+instrument PIC101:
+  type: pressure_controller
+  at: (41,4)
+  location: panel
+  label: "PIC-101"
+
+# HP separator level control — drives LCV101
+instrument LT101:
+  type: level_transmitter
+  attach: V101.liq_out
+  location: field
+  label: "LT-101"
+
+instrument LIC101:
+  type: level_controller
+  at: (45,4)
+  location: panel
+  label: "LIC-101"
+
+# Separator liquid outlet temperature
+instrument TI107:
+  type: temperature_indicator
+  attach: V101.liq_out
+  location: field
+  label: "TI-107"
+
+# Flash drum level
+instrument LT102:
+  type: level_transmitter
+  attach: V102.in
+  location: field
+  label: "LT-102"
+
+# ── Signals (control loops) ───────────────────────────────────
+
+# Feed flow control loop: FT101 → FIC101 → FCV101
+signal S101:
+  type: electrical
+  from: FT101
+  to: FIC101
+  label: "4-20mA"
+
+signal S102:
+  type: pneumatic
+  from: FIC101
+  to: FCV101
+  label: "3-15 psi"
+
+# Reactor quench temperature loop: TT102 → TIC102 → TCV101
+signal S103:
+  type: electrical
+  from: TT102
+  to: TIC102
+  label: "4-20mA"
+
+signal S104:
+  type: pneumatic
+  from: TIC102
+  to: TCV101
+  label: "3-15 psi"
+
+# Reactor high-pressure alarm: PT101 → PAH101
+signal S105:
+  type: electrical
+  from: PT101
+  to: PAH101
+  label: "4-20mA"
+
+# Loop pressure control via purge: PT102 → PIC101 → PCV101
+signal S106:
+  type: electrical
+  from: PT102
+  to: PIC101
+  label: "4-20mA"
+
+signal S107:
+  type: pneumatic
+  from: PIC101
+  to: PCV101
+  label: "3-15 psi"
+
+# HP separator level control: LT101 → LIC101 → LCV101
+signal S108:
+  type: electrical
+  from: LT101
+  to: LIC101
+  label: "4-20mA"
+
+signal S109:
+  type: pneumatic
+  from: LIC101
+  to: LCV101
+  label: "3-15 psi"
+
+# ── Groups ────────────────────────────────────────────────────
+
+group synthesis_loop:
+  members: K101, E101, R101, E102, V101, K102
+  label: "HP Synthesis Loop"
+
+group product_section:
+  members: LCV101, V102, LT102
+  label: "Product Recovery"
+
+group control_loops:
+  members: FT101, FIC101, TT102, TIC102, PT101, PAH101, PT102, PIC101, LT101, LIC101
+  label: "Control Instrumentation"
+
+# ── Areas ─────────────────────────────────────────────────────
+
+area feed_compression:
+  label: "Feed Compression"
+  bounds: (0,0), (14,22)
+
+area synthesis_section:
+  label: "Synthesis Section"
+  bounds: (15,0), (44,22)
+
+area product_recovery:
+  label: "Product Recovery"
+  bounds: (45,0), (55,22)

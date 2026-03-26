@@ -89,30 +89,30 @@ fn pump_pd_symbol() -> SymbolDef {
 
 fn heat_exchanger_symbol() -> SymbolDef {
     SymbolDef {
-        width: 90.0,
+        width: 120.0,
         height: 60.0,
         elements: vec![
-            SymbolElement::Rect { x: -45.0, y: -25.0, w: 90.0, h: 50.0, rx: 5.0 },
+            SymbolElement::Rect { x: -60.0, y: -30.0, w: 120.0, h: 60.0, rx: 5.0 },
             // Two internal circles representing tube bundles
-            SymbolElement::Circle { cx: -18.0, cy: 0.0, r: 14.0 },
-            SymbolElement::Circle { cx: 18.0, cy: 0.0, r: 14.0 },
+            SymbolElement::Circle { cx: -24.0, cy: 0.0, r: 18.0 },
+            SymbolElement::Circle { cx: 24.0, cy: 0.0, r: 18.0 },
         ],
     }
 }
 
 fn vessel_symbol() -> SymbolDef {
     SymbolDef {
-        width: 60.0,
-        height: 60.0,
+        width: 100.0,
+        height: 50.0,
         elements: vec![
             // Rectangle body with rounded top
-            SymbolElement::Rect { x: -25.0, y: -20.0, w: 50.0, h: 40.0, rx: 0.0 },
+            SymbolElement::Rect { x: -50.0, y: -25.0, w: 100.0, h: 50.0, rx: 0.0 },
             // Elliptical top head
             SymbolElement::Path {
-                d: "M -25 -20 Q 0 -35 25 -20".to_string(),
+                d: "M -50 -25 Q 0 -43 50 -25".to_string(),
             },
             // Flat bottom
-            SymbolElement::Line { x1: -25.0, y1: 20.0, x2: 25.0, y2: 20.0 },
+            SymbolElement::Line { x1: -50.0, y1: 25.0, x2: 50.0, y2: 25.0 },
         ],
     }
 }
@@ -123,9 +123,9 @@ fn separator_symbol() -> SymbolDef {
         width: 80.0,
         height: 50.0,
         elements: vec![
-            SymbolElement::Rect { x: -35.0, y: -20.0, w: 70.0, h: 40.0, rx: 18.0 },
+            SymbolElement::Rect { x: -40.0, y: -25.0, w: 80.0, h: 50.0, rx: 23.0 },
             // Separation level line
-            SymbolElement::Line { x1: -30.0, y1: 0.0, x2: 30.0, y2: 0.0 },
+            SymbolElement::Line { x1: -35.0, y1: 0.0, x2: 35.0, y2: 0.0 },
         ],
     }
 }
@@ -165,12 +165,12 @@ fn reactor_pfr_symbol() -> SymbolDef {
 fn compressor_symbol() -> SymbolDef {
     // Triangle pointing right
     SymbolDef {
-        width: 60.0,
-        height: 60.0,
+        width: 80.0,
+        height: 80.0,
         elements: vec![
-            SymbolElement::Circle { cx: 0.0, cy: 0.0, r: 28.0 },
+            SymbolElement::Circle { cx: 0.0, cy: 0.0, r: 40.0 },
             SymbolElement::Path {
-                d: "M -20 -20 L 20 0 L -20 20 Z".to_string(),
+                d: "M -28 -28 L 28 0 L -28 28 Z".to_string(),
             },
         ],
     }
@@ -233,11 +233,11 @@ fn default_equipment_symbol() -> SymbolDef {
 fn manual_valve_symbol() -> SymbolDef {
     // Two triangles facing each other (bowtie)
     SymbolDef {
-        width: 45.0,
-        height: 45.0,
+        width: 55.0,
+        height: 55.0,
         elements: vec![
             SymbolElement::Path {
-                d: "M -20 -15 L 0 0 L -20 15 Z M 20 -15 L 0 0 L 20 15 Z".to_string(),
+                d: "M -24 -18 L 0 0 L -24 18 Z M 24 -18 L 0 0 L 24 18 Z".to_string(),
             },
         ],
     }
@@ -246,48 +246,48 @@ fn manual_valve_symbol() -> SymbolDef {
 fn control_valve_symbol() -> SymbolDef {
     // Bowtie + actuator stem + circle on top
     SymbolDef {
-        width: 45.0,
-        height: 55.0,
+        width: 55.0,
+        height: 65.0,
         elements: vec![
             // Bowtie body
             SymbolElement::Path {
-                d: "M -18 -12 L 0 0 L -18 12 Z M 18 -12 L 0 0 L 18 12 Z".to_string(),
+                d: "M -24 -18 L 0 0 L -24 18 Z M 24 -18 L 0 0 L 24 18 Z".to_string(),
             },
             // Actuator stem
-            SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -22.0 },
+            SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -28.0 },
             // Actuator circle
-            SymbolElement::Circle { cx: 0.0, cy: -27.0, r: 6.0 },
+            SymbolElement::Circle { cx: 0.0, cy: -34.0, r: 8.0 },
         ],
     }
 }
 
 fn check_valve_symbol() -> SymbolDef {
     SymbolDef {
-        width: 45.0,
-        height: 45.0,
+        width: 55.0,
+        height: 55.0,
         elements: vec![
             // Triangle pointing right + vertical bar
             SymbolElement::Path {
-                d: "M -15 -15 L 15 0 L -15 15 Z".to_string(),
+                d: "M -20 -18 L 20 0 L -20 18 Z".to_string(),
             },
-            SymbolElement::Line { x1: 15.0, y1: -15.0, x2: 15.0, y2: 15.0 },
+            SymbolElement::Line { x1: 20.0, y1: -18.0, x2: 20.0, y2: 18.0 },
         ],
     }
 }
 
 fn relief_valve_symbol() -> SymbolDef {
     SymbolDef {
-        width: 45.0,
-        height: 55.0,
+        width: 55.0,
+        height: 65.0,
         elements: vec![
             // Bowtie
             SymbolElement::Path {
-                d: "M -18 -12 L 0 0 L -18 12 Z M 18 -12 L 0 0 L 18 12 Z".to_string(),
+                d: "M -24 -18 L 0 0 L -24 18 Z M 24 -18 L 0 0 L 24 18 Z".to_string(),
             },
             // Spring symbol above
-            SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -20.0 },
+            SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -26.0 },
             SymbolElement::Path {
-                d: "M -8 -20 Q 0 -28 8 -20".to_string(),
+                d: "M -10 -26 Q 0 -36 10 -26".to_string(),
             },
         ],
     }

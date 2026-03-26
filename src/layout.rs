@@ -2,8 +2,10 @@ use std::collections::HashMap;
 use crate::model::*;
 
 pub const GRID_SCALE: f64 = 80.0;
-pub const SYMBOL_W: f64 = 60.0;
-pub const SYMBOL_H: f64 = 60.0;
+pub const SYMBOL_W: f64 = 80.0;
+pub const SYMBOL_H: f64 = 80.0;
+pub const VALVE_W: f64 = 55.0;
+pub const VALVE_H: f64 = 55.0;
 
 #[derive(Debug, Clone)]
 pub struct SvgPos {
@@ -153,6 +155,8 @@ pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
     }
 
     // Second pass: instruments with attach but no pos
+    // Track how many instruments have been placed at each (equip_id, port_name) to avoid overlap
+    let mut port_placement_count: HashMap<(String, String), usize> = HashMap::new();
     let mut attach_updates: Vec<(String, SvgPos, SvgRect)> = Vec::new();
     for instr in diagram.instruments.values() {
         if instr.pos.is_none() {
@@ -163,7 +167,7 @@ pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
                     let offset_y = attach_bounds.map(|b| b.h / 2.0 + 40.0).unwrap_or(80.0);
 
                     // For port-attached instruments, use port position if available
-                    let svg_pos = if let Some(port_name) = &attach.port {
+                    let base_pos = if let Some(port_name) = &attach.port {
                         if let Some(ports) = diagram.get_ports(&attach.id) {
                             layout.port_pos(&attach.id, port_name, ports)
                                 .map(|p| SvgPos { x: p.x, y: p.y - offset_y })
@@ -183,6 +187,46 @@ pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
                             y: attach_pos.y - offset_y,
                         }
                     };
+
+                    // Determine perpendicular offset for instruments sharing the same port
+                    let port_key = (
+                        attach.id.clone(),
+                        attach.port.clone().unwrap_or_default(),
+                    );
+                    let count = port_placement_count.entry(port_key).or_insert(0);
+                    // Determine port side to choose perpendicular direction
+                    let port_side = attach.port.as_deref().and_then(|pn| {
+                        diagram.get_ports(&attach.id).and_then(|ports| {
+                            ports.iter().find(|p| p.name == pn).and_then(|p| p.side)
+                        })
+                    }).unwrap_or_else(|| {
+                        // Infer from port name
+                        match attach.port.as_deref().unwrap_or("") {
+                            "top" | "north" | "vent" => Side::North,
+                            "bottom" | "south" | "drain" => Side::South,
+                            "in" | "inlet" | "west" => Side::West,
+                            "out" | "outlet" | "east" => Side::East,
+                            _ => Side::North,
+                        }
+                    });
+
+                    // Perpendicular offset: for north/south ports offset in x; for east/west in y
+                    let perp_offset = (*count as f64) * 40.0;
+                    let svg_pos = if *count == 0 {
+                        base_pos
+                    } else {
+                        match port_side {
+                            Side::North | Side::South => SvgPos {
+                                x: base_pos.x + perp_offset,
+                                y: base_pos.y,
+                            },
+                            Side::East | Side::West => SvgPos {
+                                x: base_pos.x,
+                                y: base_pos.y + perp_offset,
+                            },
+                        }
+                    };
+                    *count += 1;
 
                     let w = SYMBOL_W * 0.75;
                     let h = SYMBOL_H * 0.75;
@@ -224,16 +268,18 @@ fn symbol_width(diagram: &Diagram, kind: &crate::ast::DeclKind, id: &str) -> f64
         DeclKind::Equipment => {
             if let Some(e) = diagram.equipment.get(id) {
                 match e.equip_type.as_str() {
-                    "heat_exchanger" | "heat_exchanger_shell_tube" => SYMBOL_W * 1.5,
+                    "heat_exchanger" | "heat_exchanger_shell_tube" => 120.0,
                     "distillation_column" => SYMBOL_W,
-                    "tank" | "vessel" | "separator" => SYMBOL_W,
+                    "tank" | "vessel" => 100.0,
+                    "separator" => 80.0,
+                    "compressor" => 80.0,
                     _ => SYMBOL_W,
                 }
             } else {
                 SYMBOL_W
             }
         }
-        DeclKind::Valve => SYMBOL_W * 0.75,
+        DeclKind::Valve => VALVE_W,
         DeclKind::Instrument => SYMBOL_W * 0.75,
         DeclKind::Junction => 10.0,
         _ => SYMBOL_W,
@@ -247,13 +293,17 @@ fn symbol_height(diagram: &Diagram, kind: &crate::ast::DeclKind, id: &str) -> f6
             if let Some(e) = diagram.equipment.get(id) {
                 match e.equip_type.as_str() {
                     "distillation_column" => SYMBOL_H * 2.0,
+                    "heat_exchanger" | "heat_exchanger_shell_tube" => 60.0,
+                    "tank" | "vessel" => 50.0,
+                    "separator" => 50.0,
+                    "compressor" => 80.0,
                     _ => SYMBOL_H,
                 }
             } else {
                 SYMBOL_H
             }
         }
-        DeclKind::Valve => SYMBOL_H * 0.75,
+        DeclKind::Valve => VALVE_H,
         DeclKind::Instrument => SYMBOL_H * 0.75,
         DeclKind::Junction => 10.0,
         _ => SYMBOL_H,
