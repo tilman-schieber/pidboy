@@ -20,9 +20,9 @@ pub fn render(
 
     let mut out = String::new();
 
-    // SVG header
+    // SVG header — include xlink namespace for SVG 1.1 viewer compatibility
     out.push_str(&format!(
-        r#"<svg xmlns="http://www.w3.org/2000/svg" width="{}" height="{}" viewBox="0 0 {} {}">{}"#,
+        r#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{}" height="{}" viewBox="0 0 {} {}">{}"#,
         canvas_w, canvas_h, canvas_w, canvas_h, nl
     ));
 
@@ -221,22 +221,30 @@ fn emit_symbol_def(id: &str, sym: &symbols::SymbolDef, i2: &str, i3: &str, nl: &
 }
 
 /// Serialise a single `SymbolElement` to an SVG string.
+///
+/// Shapes that can be filled (rect, circle, path) get explicit `fill="inherit"`
+/// and `stroke="inherit"` presentation attributes so that CSS set on the parent
+/// `<use>` element is reliably applied even in SVG 1.1 renderers where CSS
+/// cascade through the `<use>` shadow tree is not guaranteed.
+///
+/// Lines and polylines use `fill="none"` (lines are never filled) with
+/// `stroke="inherit"` so they still pick up the stroke colour.
 fn render_element(elem: &SymbolElement, indent: &str, nl: &str) -> String {
     match elem {
         SymbolElement::Rect { x, y, w, h, rx } => format!(
-            "{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" rx=\"{:.1}\"/>{}",
+            "{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" rx=\"{:.1}\" fill=\"inherit\" stroke=\"inherit\"/>{}",
             indent, x, y, w, h, rx, nl
         ),
         SymbolElement::Circle { cx, cy, r } => format!(
-            "{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"{:.1}\"/>{}",
+            "{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"{:.1}\" fill=\"inherit\" stroke=\"inherit\"/>{}",
             indent, cx, cy, r, nl
         ),
         SymbolElement::Path { d } => format!(
-            "{}<path d=\"{}\"/>{}",
+            "{}<path d=\"{}\" fill=\"inherit\" stroke=\"inherit\"/>{}",
             indent, d, nl
         ),
         SymbolElement::Line { x1, y1, x2, y2 } => format!(
-            "{}<line x1=\"{:.1}\" y1=\"{:.1}\" x2=\"{:.1}\" y2=\"{:.1}\"/>{}",
+            "{}<line x1=\"{:.1}\" y1=\"{:.1}\" x2=\"{:.1}\" y2=\"{:.1}\" fill=\"none\" stroke=\"inherit\"/>{}",
             indent, x1, y1, x2, y2, nl
         ),
         SymbolElement::Polyline { points } => {
@@ -244,7 +252,7 @@ fn render_element(elem: &SymbolElement, indent: &str, nl: &str) -> String {
                 .map(|(x, y)| format!("{:.1},{:.1}", x, y))
                 .collect::<Vec<_>>()
                 .join(" ");
-            format!("{}<polyline points=\"{}\"/>{}", indent, pts, nl)
+            format!("{}<polyline points=\"{}\" fill=\"none\" stroke=\"inherit\"/>{}", indent, pts, nl)
         }
     }
 }
@@ -338,11 +346,13 @@ fn render_polyline(
 }
 
 /// Emit a `<use>` element that instantiates a `<symbol>` defined in `<defs>`.
+/// Both `href` (SVG 2) and `xlink:href` (SVG 1.1) are emitted for maximum
+/// viewer compatibility.
 fn render_use(id: &str, sym_id: &str, css_class: &str, pos: &SvgPos, indent: &str, pretty: bool) -> String {
     let nl = if pretty { "\n" } else { "" };
     format!(
-        "{}{}<use id=\"{}\" href=\"#{}\" class=\"{}\" transform=\"translate({:.1},{:.1})\"/>{}",
-        indent, indent, id, sym_id, css_class, pos.x, pos.y, nl
+        "{}{}<use id=\"{}\" href=\"#{}\" xlink:href=\"#{}\" class=\"{}\" transform=\"translate({:.1},{:.1})\"/>{}",
+        indent, indent, id, sym_id, sym_id, css_class, pos.x, pos.y, nl
     )
 }
 
