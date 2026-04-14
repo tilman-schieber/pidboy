@@ -209,54 +209,58 @@ fn build_symbol_defs(diagram: &Diagram, indent: &str, pretty: bool) -> String {
     out
 }
 
-/// Serialise one `SymbolDef` as a `<symbol id="…">` block.
+/// Serialise one `SymbolDef` as a `<g id="…">` block inside `<defs>`.
 ///
-/// `overflow="visible"` is required: SVG `<symbol>` defaults to `overflow="hidden"`,
-/// and without explicit width/height the clipping viewport is effectively 0×0,
-/// causing all symbol content to be invisible.
+/// We use `<g>` rather than `<symbol>` deliberately: `<symbol>` creates an SVG
+/// viewport whose default `overflow` is `hidden`, and many viewers (Illustrator,
+/// Affinity, older Inkscape) clip symbol content to a 0×0 box when no explicit
+/// `width`/`height` is set — producing the invisible/partial-arc artefacts.
+/// A `<g>` inside `<defs>` has no viewport and no clipping; `<use>` can reference
+/// it identically and the transform applies cleanly.
 fn emit_symbol_def(id: &str, sym: &symbols::SymbolDef, i2: &str, i3: &str, nl: &str) -> String {
     let mut out = String::new();
-    out.push_str(&format!("{}<symbol id=\"{}\" overflow=\"visible\">{}", i2, id, nl));
+    out.push_str(&format!("{}<g id=\"{}\">{}",  i2, id, nl));
     for elem in &sym.elements {
         out.push_str(&render_element(elem, i3, nl));
     }
-    out.push_str(&format!("{}</symbol>{}", i2, nl));
+    out.push_str(&format!("{}</g>{}", i2, nl));
     out
 }
 
-/// Serialise a single `SymbolElement` to an SVG string.
-///
-/// Shapes that can be filled (rect, circle, path) get explicit `fill="inherit"`
-/// and `stroke="inherit"` presentation attributes so that CSS set on the parent
-/// `<use>` element is reliably applied even in SVG 1.1 renderers where CSS
-/// cascade through the `<use>` shadow tree is not guaranteed.
-///
-/// Lines and polylines use `fill="none"` (lines are never filled) with
-/// `stroke="inherit"` so they still pick up the stroke colour.
+// Explicit colours used inside <symbol> elements.
+// Using presentation attributes directly (not CSS inheritance) ensures correct
+// rendering in all SVG renderers including ImageMagick, Inkscape, and SVG 1.1
+// viewers that do not propagate CSS through the <use> shadow tree.
+const SYM_FILL: &str = "white";
+const SYM_STROKE: &str = "black";
+const SYM_SW: &str = "1.5";
+
+/// Serialise a single `SymbolElement` to an SVG string with explicit
+/// fill/stroke presentation attributes.
 fn render_element(elem: &SymbolElement, indent: &str, nl: &str) -> String {
     match elem {
         SymbolElement::Rect { x, y, w, h, rx } => format!(
-            "{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" rx=\"{:.1}\" fill=\"inherit\" stroke=\"inherit\"/>{}",
-            indent, x, y, w, h, rx, nl
+            "{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" rx=\"{:.1}\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\"/>{}",
+            indent, x, y, w, h, rx, SYM_FILL, SYM_STROKE, SYM_SW, nl
         ),
         SymbolElement::Circle { cx, cy, r } => format!(
-            "{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"{:.1}\" fill=\"inherit\" stroke=\"inherit\"/>{}",
-            indent, cx, cy, r, nl
+            "{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"{:.1}\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\"/>{}",
+            indent, cx, cy, r, SYM_FILL, SYM_STROKE, SYM_SW, nl
         ),
         SymbolElement::Path { d } => format!(
-            "{}<path d=\"{}\" fill=\"inherit\" stroke=\"inherit\"/>{}",
-            indent, d, nl
+            "{}<path d=\"{}\" fill=\"{}\" stroke=\"{}\" stroke-width=\"{}\"/>{}",
+            indent, d, SYM_FILL, SYM_STROKE, SYM_SW, nl
         ),
         SymbolElement::Line { x1, y1, x2, y2 } => format!(
-            "{}<line x1=\"{:.1}\" y1=\"{:.1}\" x2=\"{:.1}\" y2=\"{:.1}\" fill=\"none\" stroke=\"inherit\"/>{}",
-            indent, x1, y1, x2, y2, nl
+            "{}<line x1=\"{:.1}\" y1=\"{:.1}\" x2=\"{:.1}\" y2=\"{:.1}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\"/>{}",
+            indent, x1, y1, x2, y2, SYM_STROKE, SYM_SW, nl
         ),
         SymbolElement::Polyline { points } => {
             let pts: String = points.iter()
                 .map(|(x, y)| format!("{:.1},{:.1}", x, y))
                 .collect::<Vec<_>>()
                 .join(" ");
-            format!("{}<polyline points=\"{}\" fill=\"none\" stroke=\"inherit\"/>{}", indent, pts, nl)
+            format!("{}<polyline points=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\"/>{}", indent, pts, SYM_STROKE, SYM_SW, nl)
         }
     }
 }
@@ -343,10 +347,31 @@ fn render_polyline(
         .map(|m| format!(" marker-end=\"url(#{})\"", m))
         .unwrap_or_default();
 
+    // Explicit presentation attributes alongside the CSS class so that the
+    // polyline renders correctly in viewers that do not apply internal CSS
+    // stylesheets (Illustrator, Affinity, many SVG 1.1 renderers).
+    let attrs = line_presentation_attrs(css_class);
+
     format!(
-        "{}{}<polyline points=\"{}\" class=\"{}\"{}/>{}",
-        indent, indent, pts_str, css_class, marker_attr, nl
+        "{}{}<polyline points=\"{}\" class=\"{}\"{}{}/>{}",
+        indent, indent, pts_str, css_class, attrs, marker_attr, nl
     )
+}
+
+/// Return explicit SVG presentation attributes matching the CSS rule for a
+/// given line/signal class. These act as a fallback for viewers without CSS.
+fn line_presentation_attrs(css_class: &str) -> &'static str {
+    match css_class {
+        "line-process"       => r#" fill="none" stroke="black" stroke-width="2""#,
+        "line-utility"       => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4""#,
+        "line-drain"         => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2""#,
+        "line-vent"          => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3""#,
+        "signal-electrical"  => r#" fill="none" stroke="black" stroke-width="1""#,
+        "signal-pneumatic"   => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4""#,
+        "signal-hydraulic"   => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="10,2,1,2""#,
+        "signal-digital"     => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="6,2,1,2""#,
+        _                    => r#" fill="none" stroke="black" stroke-width="1""#,
+    }
 }
 
 /// Emit a `<use>` element that instantiates a `<symbol>` defined in `<defs>`.
