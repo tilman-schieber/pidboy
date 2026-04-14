@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::layout::{LayoutInfo, SvgPos};
 use crate::model::*;
 use crate::render::SvgOptions;
@@ -24,15 +26,13 @@ pub fn render(
         canvas_w, canvas_h, canvas_w, canvas_h, nl
     ));
 
-    // Defs / styles
+    // <defs>: styles + signal markers + symbol definitions
     out.push_str(&format!("{}<defs>{}", indent, nl));
     out.push_str(&format!("{}{}<style>{}", indent, indent, nl));
     out.push_str(&build_styles(indent, opts.pretty));
     out.push_str(&format!("{}{}</style>{}", indent, indent, nl));
-
-    // Arrow markers for signals
     out.push_str(&build_markers(indent, opts.pretty));
-
+    out.push_str(&build_symbol_defs(diagram, indent, opts.pretty));
     out.push_str(&format!("{}</defs>{}", indent, nl));
 
     // Lines group
@@ -51,7 +51,7 @@ pub fn render(
     }
     out.push_str(&format!("{}</g>{}", indent, nl));
 
-    // Symbols group
+    // Symbols group — each object is a <use> referencing a <symbol> in <defs>
     out.push_str(&format!("{}<g id=\"symbols\">{}", indent, nl));
     for (kind, id) in &diagram.order {
         use crate::ast::DeclKind;
@@ -125,27 +125,20 @@ pub fn render(
                 let p2 = &seg.points[mid_idx];
                 let mx = (p1.x + p2.x) / 2.0;
                 let my = (p1.y + p2.y) / 2.0;
-                // Determine if this segment is mostly vertical
                 let dx = (p2.x - p1.x).abs();
                 let dy = (p2.y - p1.y).abs();
                 let (transform, tx, ty) = if dy > dx {
-                    // Vertical segment — rotate label
                     (
                         format!(" transform=\"rotate(-90,{:.1},{:.1})\"", mx, my - 8.0),
                         mx,
                         my - 8.0,
                     )
                 } else {
-                    // Horizontal segment — offset 8px above
                     (String::new(), mx, my - 8.0)
                 };
                 out.push_str(&format!(
-                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"line-label\"{}>{}{}",
-                    indent, indent,
-                    tx, ty,
-                    transform,
-                    escape_xml(label),
-                    if opts.pretty { "\n" } else { "" }
+                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"line-label\"{}>{}",
+                    indent, indent, tx, ty, transform, escape_xml(label)
                 ));
                 out.push_str(&format!("</text>{}", nl));
             }
@@ -174,23 +167,103 @@ pub fn render(
     out
 }
 
-fn compute_canvas(diagram: &Diagram, layout: &LayoutInfo, opts: &SvgOptions) -> (u32, u32) {
-    if opts.width.is_some() || opts.height.is_some() {
-        return (
-            opts.width.unwrap_or(800),
-            opts.height.unwrap_or(600),
-        );
+// ---- <defs> / symbol building ----
+
+/// Collect all unique symbol types used in `diagram` and emit them as
+/// `<symbol id="sym-{key}">…</symbol>` entries within `<defs>`.
+///
+/// This is purely a renderer-level optimisation (deduplication via SVG `<defs>`).
+/// Symbol geometry lives in `src/symbols/mod.rs` and is backend-agnostic.
+fn build_symbol_defs(diagram: &Diagram, indent: &str, pretty: bool) -> String {
+    let nl = if pretty { "\n" } else { "" };
+    let i2 = if pretty { format!("{}{}", indent, indent) } else { String::new() };
+    let i3 = if pretty { format!("{}{}{}", indent, indent, indent) } else { String::new() };
+
+    let mut seen: HashSet<String> = HashSet::new();
+    let mut out = String::new();
+
+    for eq in diagram.equipment.values() {
+        let key = symbols::equipment_symbol_key(&eq.equip_type);
+        if seen.insert(key.to_string()) {
+            let sym = symbols::equipment_symbol(&eq.equip_type);
+            out.push_str(&emit_symbol_def(&format!("sym-{}", key), &sym, &i2, &i3, nl));
+        }
     }
 
-    // Compute from bounds
+    for v in diagram.valves.values() {
+        let key = symbols::valve_symbol_key(&v.valve_type);
+        if seen.insert(key.to_string()) {
+            let sym = symbols::valve_symbol(&v.valve_type);
+            out.push_str(&emit_symbol_def(&format!("sym-{}", key), &sym, &i2, &i3, nl));
+        }
+    }
+
+    for instr in diagram.instruments.values() {
+        let key = symbols::instrument_symbol_key(instr.location.as_deref());
+        if seen.insert(key.to_string()) {
+            let sym = symbols::instrument_symbol(&instr.instr_type, instr.location.as_deref());
+            out.push_str(&emit_symbol_def(&format!("sym-{}", key), &sym, &i2, &i3, nl));
+        }
+    }
+
+    out
+}
+
+/// Serialise one `SymbolDef` as a `<symbol id="…">` block.
+fn emit_symbol_def(id: &str, sym: &symbols::SymbolDef, i2: &str, i3: &str, nl: &str) -> String {
+    let mut out = String::new();
+    out.push_str(&format!("{}<symbol id=\"{}\">{}",  i2, id, nl));
+    for elem in &sym.elements {
+        out.push_str(&render_element(elem, i3, nl));
+    }
+    out.push_str(&format!("{}</symbol>{}", i2, nl));
+    out
+}
+
+/// Serialise a single `SymbolElement` to an SVG string.
+fn render_element(elem: &SymbolElement, indent: &str, nl: &str) -> String {
+    match elem {
+        SymbolElement::Rect { x, y, w, h, rx } => format!(
+            "{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" rx=\"{:.1}\"/>{}",
+            indent, x, y, w, h, rx, nl
+        ),
+        SymbolElement::Circle { cx, cy, r } => format!(
+            "{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"{:.1}\"/>{}",
+            indent, cx, cy, r, nl
+        ),
+        SymbolElement::Path { d } => format!(
+            "{}<path d=\"{}\"/>{}",
+            indent, d, nl
+        ),
+        SymbolElement::Line { x1, y1, x2, y2 } => format!(
+            "{}<line x1=\"{:.1}\" y1=\"{:.1}\" x2=\"{:.1}\" y2=\"{:.1}\"/>{}",
+            indent, x1, y1, x2, y2, nl
+        ),
+        SymbolElement::Polyline { points } => {
+            let pts: String = points.iter()
+                .map(|(x, y)| format!("{:.1},{:.1}", x, y))
+                .collect::<Vec<_>>()
+                .join(" ");
+            format!("{}<polyline points=\"{}\"/>{}", indent, pts, nl)
+        }
+    }
+}
+
+// ---- Canvas / styles / markers ----
+
+fn compute_canvas(diagram: &Diagram, layout: &LayoutInfo, opts: &SvgOptions) -> (u32, u32) {
+    if opts.width.is_some() || opts.height.is_some() {
+        return (opts.width.unwrap_or(800), opts.height.unwrap_or(600));
+    }
+
     let mut max_x = 400.0f64;
     let mut max_y = 300.0f64;
 
     for (_, id) in &diagram.order {
         if let Some(bounds) = layout.get_bounds(id) {
-            let right = bounds.x + bounds.w + 60.0;
+            let right  = bounds.x + bounds.w + 60.0;
             let bottom = bounds.y + bounds.h + 60.0;
-            if right > max_x { max_x = right; }
+            if right  > max_x { max_x = right;  }
             if bottom > max_y { max_y = bottom; }
         }
     }
@@ -199,6 +272,8 @@ fn compute_canvas(diagram: &Diagram, layout: &LayoutInfo, opts: &SvgOptions) -> 
 }
 
 fn build_styles(_indent: &str, _pretty: bool) -> String {
+    // Line weights and dash patterns follow ISO 10628-2 / ISA-5.1.
+    // All signal lines use black with type-specific dash patterns (ISA-5.1 Table 1).
     r#"
     .equipment { fill: white; stroke: black; stroke-width: 1.5; }
     .valve { fill: white; stroke: black; stroke-width: 1.5; }
@@ -208,27 +283,31 @@ fn build_styles(_indent: &str, _pretty: bool) -> String {
     .line-label { font-family: sans-serif; font-size: 9px; text-anchor: middle; fill: #666; }
     .note { font-family: sans-serif; font-size: 11px; fill: #555; font-style: italic; }
     .line-process { fill: none; stroke: black; stroke-width: 2; }
-    .line-utility { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 8,4; }
-    .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 2,3; }
+    .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
+    .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 4,2; }
     .line-vent { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 2,3; }
-    .signal-electrical { fill: none; stroke: #1a1aff; stroke-width: 1.5; }
-    .signal-pneumatic { fill: none; stroke: #1a1aff; stroke-width: 1.5; stroke-dasharray: 8,4; }
-    .signal-hydraulic { fill: none; stroke: #007700; stroke-width: 1.5; stroke-dasharray: 4,4; }
-    .signal-digital { fill: none; stroke: #770077; stroke-width: 1.5; stroke-dasharray: 1,3; }
+    .signal-electrical { fill: none; stroke: black; stroke-width: 1; }
+    .signal-pneumatic { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
+    .signal-hydraulic { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 10,2,1,2; }
+    .signal-digital { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 6,2,1,2; }
 "#.to_string()
 }
 
 fn build_markers(_indent: &str, _pretty: bool) -> String {
     let mut s = String::new();
+    // Filled arrowhead for electrical signals
     s.push_str("    <marker id=\"arrow-end\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\">\n");
-    s.push_str("      <path d=\"M 0 0 L 6 3 L 0 6 Z\" fill=\"#1a1aff\"/>\n");
+    s.push_str("      <path d=\"M 0 0 L 6 3 L 0 6 Z\" fill=\"black\"/>\n");
     s.push_str("    </marker>\n");
+    // Open (double-chevron) arrowhead for pneumatic signals
     s.push_str("    <marker id=\"arrow-end-pneumatic\" markerWidth=\"10\" markerHeight=\"8\" refX=\"8\" refY=\"4\" orient=\"auto\">\n");
-    s.push_str("      <path d=\"M 0 0 L 4 4 L 0 8\" fill=\"none\" stroke=\"#1a1aff\" stroke-width=\"1\"/>\n");
-    s.push_str("      <path d=\"M 4 0 L 8 4 L 4 8\" fill=\"none\" stroke=\"#1a1aff\" stroke-width=\"1\"/>\n");
+    s.push_str("      <path d=\"M 0 0 L 4 4 L 0 8\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n");
+    s.push_str("      <path d=\"M 4 0 L 8 4 L 4 8\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n");
     s.push_str("    </marker>\n");
     s
 }
+
+// ---- Polyline / use rendering ----
 
 fn render_polyline(
     points: &[SvgPos],
@@ -258,19 +337,28 @@ fn render_polyline(
     )
 }
 
+/// Emit a `<use>` element that instantiates a `<symbol>` defined in `<defs>`.
+fn render_use(id: &str, sym_id: &str, css_class: &str, pos: &SvgPos, indent: &str, pretty: bool) -> String {
+    let nl = if pretty { "\n" } else { "" };
+    format!(
+        "{}{}<use id=\"{}\" href=\"#{}\" class=\"{}\" transform=\"translate({:.1},{:.1})\"/>{}",
+        indent, indent, id, sym_id, css_class, pos.x, pos.y, nl
+    )
+}
+
 fn render_equipment(eq: &Equipment, pos: &SvgPos, indent: &str, pretty: bool) -> String {
-    let sym = symbols::equipment_symbol(&eq.equip_type);
-    render_symbol_elements(&sym.elements, pos, "equipment", &eq.id, indent, pretty)
+    let key = symbols::equipment_symbol_key(&eq.equip_type);
+    render_use(&eq.id, &format!("sym-{}", key), "equipment", pos, indent, pretty)
 }
 
 fn render_valve(v: &Valve, pos: &SvgPos, indent: &str, pretty: bool) -> String {
-    let sym = symbols::valve_symbol(&v.valve_type);
-    render_symbol_elements(&sym.elements, pos, "valve", &v.id, indent, pretty)
+    let key = symbols::valve_symbol_key(&v.valve_type);
+    render_use(&v.id, &format!("sym-{}", key), "valve", pos, indent, pretty)
 }
 
 fn render_instrument(instr: &Instrument, pos: &SvgPos, indent: &str, pretty: bool) -> String {
-    let sym = symbols::instrument_symbol(&instr.instr_type);
-    render_symbol_elements(&sym.elements, pos, "instrument", &instr.id, indent, pretty)
+    let key = symbols::instrument_symbol_key(instr.location.as_deref());
+    render_use(&instr.id, &format!("sym-{}", key), "instrument", pos, indent, pretty)
 }
 
 fn render_junction(id: &str, pos: &SvgPos, indent: &str, pretty: bool) -> String {
@@ -281,65 +369,7 @@ fn render_junction(id: &str, pos: &SvgPos, indent: &str, pretty: bool) -> String
     )
 }
 
-fn render_symbol_elements(
-    elements: &[SymbolElement],
-    pos: &SvgPos,
-    css_class: &str,
-    id: &str,
-    indent: &str,
-    pretty: bool,
-) -> String {
-    let nl = if pretty { "\n" } else { "" };
-    let mut out = String::new();
-
-    out.push_str(&format!(
-        "{}{}<g id=\"{}\" class=\"{}\" transform=\"translate({:.1},{:.1})\">{}",
-        indent, indent, id, css_class, pos.x, pos.y, nl
-    ));
-
-    for elem in elements {
-        let elem_str = match elem {
-            SymbolElement::Rect { x, y, w, h, rx } => {
-                format!(
-                    "{}{}{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" rx=\"{:.1}\"/>{}",
-                    indent, indent, indent, x, y, w, h, rx, nl
-                )
-            }
-            SymbolElement::Circle { cx, cy, r } => {
-                format!(
-                    "{}{}{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"{:.1}\"/>{}",
-                    indent, indent, indent, cx, cy, r, nl
-                )
-            }
-            SymbolElement::Path { d } => {
-                format!(
-                    "{}{}{}<path d=\"{}\"/>{}",
-                    indent, indent, indent, d, nl
-                )
-            }
-            SymbolElement::Line { x1, y1, x2, y2 } => {
-                format!(
-                    "{}{}{}<line x1=\"{:.1}\" y1=\"{:.1}\" x2=\"{:.1}\" y2=\"{:.1}\"/>{}",
-                    indent, indent, indent, x1, y1, x2, y2, nl
-                )
-            }
-            SymbolElement::Polyline { points } => {
-                let pts: String = points.iter()
-                    .map(|(x, y)| format!("{:.1},{:.1}", x, y))
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                format!(
-                    "{}{}{}<polyline points=\"{}\"/>{}",
-                    indent, indent, indent, pts, nl
-                )
-            }
-        };
-        out.push_str(&elem_str);
-    }
-
-    out.push_str(&format!("{}{}</g>{}", indent, indent, nl));
-    out
-}
+// ---- Helpers ----
 
 fn line_class_for_id(id: &str, diagram: &Diagram) -> String {
     if let Some(line) = diagram.lines.get(id) {
@@ -354,7 +384,7 @@ fn signal_style_for_id(id: &str, diagram: &Diagram) -> (String, Option<String>) 
         let class = format!("signal-{}", sig.sig_type);
         let marker = match sig.sig_type.as_str() {
             "electrical" => Some("arrow-end".to_string()),
-            "pneumatic" => Some("arrow-end-pneumatic".to_string()),
+            "pneumatic"  => Some("arrow-end-pneumatic".to_string()),
             _ => None,
         };
         (class, marker)
@@ -401,5 +431,8 @@ mod tests {
         assert!(svg.ends_with("</svg>"), "SVG should end with </svg>");
         assert!(svg.contains("P101"), "SVG should contain P101 element");
         assert!(svg.contains("CV101"), "SVG should contain CV101 element");
+        assert!(svg.contains("<defs>"), "SVG should contain <defs>");
+        assert!(svg.contains("sym-pump"), "SVG should contain pump symbol def");
+        assert!(svg.contains("href=\"#sym-"), "SVG should use <use> references");
     }
 }

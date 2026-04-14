@@ -294,12 +294,18 @@ source text
   -> validate      (src/validate.rs)
   -> layout        (src/layout.rs)
   -> route         (src/route.rs)
-  -> SVG renderer  (src/render/svg.rs)
+  -> renderer      (src/render/svg.rs, src/render/tikz.rs, …)
 ```
 
 The parser does not know about SVG. The renderer does not know about source syntax. The router consumes typed semantic objects.
 
 Additional output backends (TikZ, etc.) can be added under `src/render/` without touching the pipeline above the renderer.
+
+### Symbol geometry layer
+
+`src/symbols/mod.rs` defines backend-agnostic symbol geometry as `SymbolDef` / `SymbolElement` structs. Each renderer consumes these and translates them into its own output format (SVG primitives, TikZ `\draw` commands, etc.).
+
+**Known coupling:** `SymbolElement::Path` stores curves as SVG path strings (`d` attribute syntax). A non-SVG renderer must parse or wrap these strings. Do not add SVG-structural constructs (raw markup, `<use>` references, etc.) to `src/symbols/` — those belong in the renderer.
 
 ---
 
