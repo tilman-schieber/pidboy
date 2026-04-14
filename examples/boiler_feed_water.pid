@@ -1,0 +1,134 @@
+# Boiler feed water system
+# Makeup water → Deaerator → BFW Pump → Check Valve → Flow Control Valve → Steam Drum
+# Flow control loop:  FT101 → FIC101 (panel) → FCV101 (pneumatic)
+# Level control loop: LT101 → LIC101 (control room) → MCV101 (pneumatic)
+
+equipment D101:
+  type: vessel
+  at: (6,8)
+  ports:
+    in: west
+    out: east
+  label: "D-101"
+
+equipment P101:
+  type: pump_centrifugal
+  at: (12,8)
+  ports:
+    in: west
+    out: east
+  label: "P-101"
+
+valve NRV101:
+  type: check_valve
+  at: (16,8)
+  ports: in, out
+  label: "NRV-101"
+
+valve FCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: closed
+  at: (20,8)
+  ports: in, out
+  label: "FCV-101"
+
+equipment SD101:
+  type: vessel
+  at: (26,8)
+  ports:
+    in: west
+    top: north
+  label: "SD-101"
+
+valve MCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: closed
+  at: (2,8)
+  ports: in, out
+  label: "MCV-101"
+
+line L101:
+  class: utility
+  from: MCV101.out
+  to: D101.in
+  label: "4in-BFW-0101"
+
+line L102:
+  class: process
+  from: D101.out
+  to: P101.in
+
+line L103:
+  class: process
+  from: P101.out
+  to: NRV101.in
+
+line L104:
+  class: process
+  from: NRV101.out
+  to: FCV101.in
+  label: "4in-BFW-0104"
+
+line L105:
+  class: process
+  from: FCV101.out
+  to: SD101.in
+  label: "4in-BFW-0105"
+
+instrument FT101:
+  type: flow_transmitter
+  at: (16,3)
+  location: field
+  label: "FT-101"
+
+instrument FIC101:
+  type: flow_controller
+  at: (20,3)
+  location: panel
+  label: "FIC-101"
+
+instrument LT101:
+  type: level_transmitter
+  attach: SD101.top
+  location: field
+  label: "LT-101"
+
+instrument LIC101:
+  type: level_controller
+  at: (26,2)
+  location: control_room
+  label: "LIC-101"
+
+signal S101:
+  type: electrical
+  from: FT101
+  to: FIC101
+  label: "4-20mA"
+
+signal S102:
+  type: pneumatic
+  from: FIC101
+  to: FCV101
+  label: "3-15psi"
+
+signal S103:
+  type: electrical
+  from: LT101
+  to: LIC101
+  label: "4-20mA"
+
+signal S104:
+  type: pneumatic
+  from: LIC101
+  to: MCV101
+  label: "3-15psi"
+
+group bfw_flow_loop:
+  members: FT101, FIC101, FCV101
+  label: "BFW flow control loop"
+
+group bfw_level_loop:
+  members: LT101, LIC101, MCV101
+  label: "Steam drum level control loop"
