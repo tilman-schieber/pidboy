@@ -210,9 +210,13 @@ fn build_symbol_defs(diagram: &Diagram, indent: &str, pretty: bool) -> String {
 }
 
 /// Serialise one `SymbolDef` as a `<symbol id="…">` block.
+///
+/// `overflow="visible"` is required: SVG `<symbol>` defaults to `overflow="hidden"`,
+/// and without explicit width/height the clipping viewport is effectively 0×0,
+/// causing all symbol content to be invisible.
 fn emit_symbol_def(id: &str, sym: &symbols::SymbolDef, i2: &str, i3: &str, nl: &str) -> String {
     let mut out = String::new();
-    out.push_str(&format!("{}<symbol id=\"{}\">{}",  i2, id, nl));
+    out.push_str(&format!("{}<symbol id=\"{}\" overflow=\"visible\">{}", i2, id, nl));
     for elem in &sym.elements {
         out.push_str(&render_element(elem, i3, nl));
     }

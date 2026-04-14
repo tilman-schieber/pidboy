@@ -25,30 +25,30 @@
       <path d="M 0 0 L 4 4 L 0 8" fill="none" stroke="black" stroke-width="1"/>
       <path d="M 4 0 L 8 4 L 4 8" fill="none" stroke="black" stroke-width="1"/>
     </marker>
-    <symbol id="sym-vessel">
+    <symbol id="sym-vessel" overflow="visible">
       <path d="M -45 -20 A 20 20 0 0 0 -45 20 L 45 20 A 20 20 0 0 0 45 -20 Z" fill="inherit" stroke="inherit"/>
     </symbol>
-    <symbol id="sym-pump">
+    <symbol id="sym-pump" overflow="visible">
       <circle cx="0.0" cy="0.0" r="25.0" fill="inherit" stroke="inherit"/>
       <path d="M -8 -18 L 22 0 L -8 18 Z" fill="inherit" stroke="inherit"/>
     </symbol>
-    <symbol id="sym-check_valve">
+    <symbol id="sym-check_valve" overflow="visible">
       <path d="M -18 -18 L 18 0 L -18 18 Z" fill="inherit" stroke="inherit"/>
       <line x1="18.0" y1="-18.0" x2="18.0" y2="18.0" fill="none" stroke="inherit"/>
     </symbol>
-    <symbol id="sym-control_valve">
+    <symbol id="sym-control_valve" overflow="visible">
       <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="inherit" stroke="inherit"/>
       <line x1="0.0" y1="0.0" x2="0.0" y2="-26.0" fill="none" stroke="inherit"/>
       <circle cx="0.0" cy="-33.0" r="8.0" fill="inherit" stroke="inherit"/>
     </symbol>
-    <symbol id="sym-instr_field">
+    <symbol id="sym-instr_field" overflow="visible">
       <circle cx="0.0" cy="0.0" r="18.0" fill="inherit" stroke="inherit"/>
     </symbol>
-    <symbol id="sym-instr_panel">
+    <symbol id="sym-instr_panel" overflow="visible">
       <circle cx="0.0" cy="0.0" r="18.0" fill="inherit" stroke="inherit"/>
       <line x1="-18.0" y1="0.0" x2="18.0" y2="0.0" fill="none" stroke="inherit"/>
     </symbol>
-    <symbol id="sym-instr_control_room">
+    <symbol id="sym-instr_control_room" overflow="visible">
       <circle cx="0.0" cy="0.0" r="18.0" fill="inherit" stroke="inherit"/>
       <circle cx="0.0" cy="0.0" r="13.0" fill="inherit" stroke="inherit"/>
     </symbol>
