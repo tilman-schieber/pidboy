@@ -6,9 +6,10 @@ use crate::model::*;
 const EQUIPMENT_TYPES: &[&str] = &[
     "pump", "pump_centrifugal", "pump_positive_displacement",
     "heat_exchanger", "heat_exchanger_shell_tube",
-    "tank", "vessel", "separator",
+    "tank", "vessel", "separator", "separator_3phase",
     "reactor_cstr", "reactor_batch", "reactor_pfr",
     "compressor", "blower", "mixer", "distillation_column",
+    "connector",
 ];
 
 const VALVE_TYPES: &[&str] = &[
@@ -27,7 +28,7 @@ const LINE_CLASSES: &[&str] = &["process", "utility", "drain", "vent"];
 
 const SIGNAL_TYPES: &[&str] = &["electrical", "pneumatic", "hydraulic", "digital"];
 
-const LOCATIONS: &[&str] = &["field", "panel", "control_room"];
+const LOCATIONS: &[&str] = &["field", "panel", "control_room", "shared"];
 
 pub fn validate(diagram: &Diagram, diags: &mut DiagEngine) {
     validate_equipment(diagram, diags);

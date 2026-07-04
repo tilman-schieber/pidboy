@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::model::*;
+use crate::symbols;
 
 pub const GRID_SCALE: f64 = 80.0;
 pub const SYMBOL_W: f64 = 80.0;
@@ -7,7 +8,13 @@ pub const SYMBOL_H: f64 = 80.0;
 pub const VALVE_W: f64 = 55.0;
 pub const VALVE_H: f64 = 55.0;
 
-#[derive(Debug, Clone)]
+/// Edge-to-edge spacing used by automatic placement.
+const H_GAP: f64 = 120.0;
+const V_GAP: f64 = 110.0;
+/// Minimum distance from canvas origin after normalisation.
+const MARGIN: f64 = 60.0;
+
+#[derive(Debug, Clone, Copy)]
 pub struct SvgPos {
     pub x: f64,
     pub y: f64,
@@ -24,6 +31,13 @@ pub struct SvgRect {
 impl SvgRect {
     pub fn contains_point(&self, x: f64, y: f64) -> bool {
         x >= self.x && x <= self.x + self.w && y >= self.y && y <= self.y + self.h
+    }
+
+    pub fn intersects_rect(&self, other: &SvgRect, margin: f64) -> bool {
+        self.x - margin < other.x + other.w
+            && other.x < self.x + self.w + margin
+            && self.y - margin < other.y + other.h
+            && other.y < self.y + self.h + margin
     }
 
     pub fn intersects_segment(&self, x1: f64, y1: f64, x2: f64, y2: f64) -> bool {
@@ -74,39 +88,57 @@ impl LayoutInfo {
         self.bounds.get(id)
     }
 
-    /// Get port position for an object.
+    /// Get port position for an object. Ports sharing a side are distributed
+    /// evenly along it in declaration order, so e.g. a vessel can have both a
+    /// gas outlet and a relief nozzle on top without them coinciding.
     pub fn port_pos(&self, id: &str, port_name: &str, ports: &[Port]) -> Option<SvgPos> {
         let center = self.positions.get(id)?;
         let bounds = self.bounds.get(id)?;
         let w = bounds.w;
         let h = bounds.h;
 
-        // Find port with this name
-        if let Some(port) = ports.iter().find(|p| p.name == port_name) {
-            if let Some(side) = port.side {
-                let (dx, dy) = match side {
-                    Side::West => (-w / 2.0, 0.0),
-                    Side::East => (w / 2.0, 0.0),
-                    Side::North => (0.0, -h / 2.0),
-                    Side::South => (0.0, h / 2.0),
-                };
-                return Some(SvgPos { x: center.x + dx, y: center.y + dy });
-            }
-        }
+        let resolved = |p: &Port| p.side.or_else(|| infer_port_side(&p.name));
 
-        // No side defined - infer from port name
-        let (dx, dy) = infer_port_offset(port_name, w, h);
+        let side = ports
+            .iter()
+            .find(|p| p.name == port_name)
+            .and_then(resolved)
+            .or_else(|| infer_port_side(port_name));
+
+        let Some(side) = side else {
+            return Some(SvgPos { x: center.x, y: center.y });
+        };
+
+        // Fraction along the side: single port sits centered; multiple ports
+        // spread evenly (1/(n+1), 2/(n+1), …) in declaration order.
+        let same_side: Vec<&Port> = ports
+            .iter()
+            .filter(|p| resolved(p) == Some(side))
+            .collect();
+        let idx = same_side.iter().position(|p| p.name == port_name);
+        let frac = match (idx, same_side.len()) {
+            (Some(i), n) if n > 0 => (i as f64 + 1.0) / (n as f64 + 1.0),
+            _ => 0.5,
+        };
+
+        let (dx, dy) = match side {
+            Side::West => (-w / 2.0, (frac - 0.5) * h),
+            Side::East => (w / 2.0, (frac - 0.5) * h),
+            Side::North => ((frac - 0.5) * w, -h / 2.0),
+            Side::South => ((frac - 0.5) * w, h / 2.0),
+        };
         Some(SvgPos { x: center.x + dx, y: center.y + dy })
     }
 }
 
-fn infer_port_offset(name: &str, w: f64, h: f64) -> (f64, f64) {
+/// Infer which side of a symbol a port sits on from its conventional name.
+pub fn infer_port_side(name: &str) -> Option<Side> {
     match name {
-        "in" | "inlet" | "west" => (-w / 2.0, 0.0),
-        "out" | "outlet" | "east" => (w / 2.0, 0.0),
-        "top" | "north" | "vent" => (0.0, -h / 2.0),
-        "bottom" | "south" | "drain" => (0.0, h / 2.0),
-        _ => (0.0, 0.0),
+        "in" | "inlet" | "west" => Some(Side::West),
+        "out" | "outlet" | "east" => Some(Side::East),
+        "top" | "north" | "vent" => Some(Side::North),
+        "bottom" | "south" | "drain" => Some(Side::South),
+        _ => None,
     }
 }
 
@@ -118,136 +150,509 @@ impl Default for LayoutInfo {
 
 pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
     let mut layout = LayoutInfo::new();
-    let mut fallback_idx = 0usize;
 
-    // Process objects in declaration order
+    // Real symbol dimensions per object, so ports and line endpoints land on
+    // the drawn geometry instead of a nominal bounding box.
+    let dims: HashMap<String, (f64, f64)> = diagram
+        .order
+        .iter()
+        .map(|(kind, id)| (id.clone(), symbol_dims(diagram, kind, id)))
+        .collect();
+
+    // Pass 1: explicit grid positions.
     for (kind, id) in &diagram.order {
-        let pos = get_explicit_pos(diagram, kind, id);
-
-        let svg_pos = if let Some(gp) = pos {
-            SvgPos {
+        if let Some(gp) = get_explicit_pos(diagram, kind, id) {
+            let pos = SvgPos {
                 x: gp.x as f64 * GRID_SCALE,
                 y: gp.y as f64 * GRID_SCALE,
-            }
-        } else {
-            // Fallback: arrange in rows of 3, 120px apart
-            let col = fallback_idx % 3;
-            let row = fallback_idx / 3;
-            fallback_idx += 1;
-            SvgPos {
-                x: 60.0 + col as f64 * 150.0,
-                y: 60.0 + row as f64 * 150.0,
-            }
-        };
-
-        let w = symbol_width(diagram, kind, id);
-        let h = symbol_height(diagram, kind, id);
-
-        let bounds = SvgRect {
-            x: svg_pos.x - w / 2.0,
-            y: svg_pos.y - h / 2.0,
-            w,
-            h,
-        };
-
-        layout.positions.insert(id.clone(), svg_pos);
-        layout.bounds.insert(id.clone(), bounds);
-    }
-
-    // Second pass: instruments with attach but no pos
-    // Track how many instruments have been placed at each (equip_id, port_name) to avoid overlap
-    let mut port_placement_count: HashMap<(String, String), usize> = HashMap::new();
-    let mut attach_updates: Vec<(String, SvgPos, SvgRect)> = Vec::new();
-    for instr in diagram.instruments.values() {
-        if instr.pos.is_none() {
-            if let Some(attach) = &instr.attach {
-                if let Some(attach_pos) = layout.positions.get(&attach.id) {
-                    // Place instrument near attached object - above it
-                    let attach_bounds = layout.bounds.get(&attach.id);
-                    let offset_y = attach_bounds.map(|b| b.h / 2.0 + 40.0).unwrap_or(80.0);
-
-                    // For port-attached instruments, use port position if available
-                    let base_pos = if let Some(port_name) = &attach.port {
-                        if let Some(ports) = diagram.get_ports(&attach.id) {
-                            layout.port_pos(&attach.id, port_name, ports)
-                                .map(|p| SvgPos { x: p.x, y: p.y - offset_y })
-                                .unwrap_or(SvgPos {
-                                    x: attach_pos.x,
-                                    y: attach_pos.y - offset_y,
-                                })
-                        } else {
-                            SvgPos {
-                                x: attach_pos.x,
-                                y: attach_pos.y - offset_y,
-                            }
-                        }
-                    } else {
-                        SvgPos {
-                            x: attach_pos.x,
-                            y: attach_pos.y - offset_y,
-                        }
-                    };
-
-                    // Determine perpendicular offset for instruments sharing the same port
-                    let port_key = (
-                        attach.id.clone(),
-                        attach.port.clone().unwrap_or_default(),
-                    );
-                    let count = port_placement_count.entry(port_key).or_insert(0);
-                    // Determine port side to choose perpendicular direction
-                    let port_side = attach.port.as_deref().and_then(|pn| {
-                        diagram.get_ports(&attach.id).and_then(|ports| {
-                            ports.iter().find(|p| p.name == pn).and_then(|p| p.side)
-                        })
-                    }).unwrap_or_else(|| {
-                        // Infer from port name
-                        match attach.port.as_deref().unwrap_or("") {
-                            "top" | "north" | "vent" => Side::North,
-                            "bottom" | "south" | "drain" => Side::South,
-                            "in" | "inlet" | "west" => Side::West,
-                            "out" | "outlet" | "east" => Side::East,
-                            _ => Side::North,
-                        }
-                    });
-
-                    // Perpendicular offset: for north/south ports offset in x; for east/west in y
-                    let perp_offset = (*count as f64) * 40.0;
-                    let svg_pos = if *count == 0 {
-                        base_pos
-                    } else {
-                        match port_side {
-                            Side::North | Side::South => SvgPos {
-                                x: base_pos.x + perp_offset,
-                                y: base_pos.y,
-                            },
-                            Side::East | Side::West => SvgPos {
-                                x: base_pos.x,
-                                y: base_pos.y + perp_offset,
-                            },
-                        }
-                    };
-                    *count += 1;
-
-                    let w = SYMBOL_W * 0.75;
-                    let h = SYMBOL_H * 0.75;
-                    let bounds = SvgRect {
-                        x: svg_pos.x - w / 2.0,
-                        y: svg_pos.y - h / 2.0,
-                        w,
-                        h,
-                    };
-                    attach_updates.push((instr.id.clone(), svg_pos, bounds));
-                }
-            }
+            };
+            place(&mut layout, id, pos, dim_of(&dims, id));
         }
     }
 
-    for (id, pos, bounds) in attach_updates {
-        layout.positions.insert(id.clone(), pos);
-        layout.bounds.insert(id, bounds);
-    }
+    // Pass 2: propagate placement along process lines.
+    place_line_endpoints(diagram, &mut layout, &dims);
+
+    // Pass 3: instruments attached to equipment.
+    place_attached_instruments(diagram, &mut layout, &dims);
+
+    // Pass 4: instruments placed relative to their signal peers.
+    place_signal_instruments(diagram, &mut layout, &dims);
+
+    // Pass 5: anything still unplaced goes in a row below the diagram.
+    place_leftovers(diagram, &mut layout, &dims);
+
+    // Pass 6: shift everything so the drawing starts inside the canvas margin.
+    normalize_origin(&mut layout);
 
     layout
+}
+
+fn place(layout: &mut LayoutInfo, id: &str, pos: SvgPos, (w, h): (f64, f64)) {
+    layout.bounds.insert(
+        id.to_string(),
+        SvgRect {
+            x: pos.x - w / 2.0,
+            y: pos.y - h / 2.0,
+            w,
+            h,
+        },
+    );
+    layout.positions.insert(id.to_string(), pos);
+}
+
+fn dim_of(dims: &HashMap<String, (f64, f64)>, id: &str) -> (f64, f64) {
+    dims.get(id).copied().unwrap_or((SYMBOL_W, SYMBOL_H))
+}
+
+fn unit(side: Side) -> (f64, f64) {
+    match side {
+        Side::East => (1.0, 0.0),
+        Side::West => (-1.0, 0.0),
+        Side::North => (0.0, -1.0),
+        Side::South => (0.0, 1.0),
+    }
+}
+
+/// The side of `ep`'s object that the connection leaves/enters through.
+fn endpoint_side(diagram: &Diagram, ep: &ObjRef, is_from: bool) -> Side {
+    if let Some(pn) = &ep.port {
+        if let Some(ports) = diagram.get_ports(&ep.id) {
+            if let Some(p) = ports.iter().find(|p| p.name == *pn) {
+                if let Some(s) = p.side {
+                    return s;
+                }
+            }
+        }
+        if let Some(s) = infer_port_side(pn) {
+            return s;
+        }
+    }
+    // Default flow direction: out of the east side, into the west side.
+    if is_from {
+        Side::East
+    } else {
+        Side::West
+    }
+}
+
+fn collides(layout: &LayoutInfo, rect: &SvgRect, margin: f64) -> bool {
+    layout.bounds.values().any(|b| b.intersects_rect(rect, margin))
+}
+
+/// Place `new_id` adjacent to the already-placed `anchor_id`, offset toward
+/// `side`, nudging further along that direction until it doesn't overlap
+/// anything already placed.
+fn place_adjacent(
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+    anchor_id: &str,
+    new_id: &str,
+    side: Side,
+) {
+    try_place_adjacent(layout, dims, anchor_id, new_id, side, 100, true, &[]);
+}
+
+/// Like [`place_adjacent`], but refuses (returns false, placing nothing) if
+/// no free spot exists within `max_nudges` steps — unless `force` is set,
+/// in which case the last attempted spot is used.
+fn try_place_adjacent(
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+    anchor_id: &str,
+    new_id: &str,
+    side: Side,
+    max_nudges: usize,
+    force: bool,
+    avoid: &[SvgRect],
+) -> bool {
+    let anchor_pos = match layout.positions.get(anchor_id) {
+        Some(p) => *p,
+        None => return false,
+    };
+    let (aw, ah) = layout
+        .bounds
+        .get(anchor_id)
+        .map(|b| (b.w, b.h))
+        .unwrap_or((SYMBOL_W, SYMBOL_H));
+    // Start from the anchor's boundary toward `side`.
+    let (ux, uy) = unit(side);
+    let half = match side {
+        Side::East | Side::West => aw / 2.0,
+        Side::North | Side::South => ah / 2.0,
+    };
+    let edge = SvgPos {
+        x: anchor_pos.x + ux * half,
+        y: anchor_pos.y + uy * half,
+    };
+    place_from_point(layout, dims, edge, new_id, side, max_nudges, force, avoid)
+}
+
+/// Place `new_id` one gap away from `pt` (a symbol boundary or port point)
+/// toward `side`, nudging along that direction until free.
+#[allow(clippy::too_many_arguments)]
+fn place_from_point(
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+    pt: SvgPos,
+    new_id: &str,
+    side: Side,
+    max_nudges: usize,
+    force: bool,
+    avoid: &[SvgRect],
+) -> bool {
+    let (nw, nh) = dim_of(dims, new_id);
+    let (ux, uy) = unit(side);
+    let dist = match side {
+        Side::East | Side::West => H_GAP + nw / 2.0,
+        Side::North | Side::South => V_GAP + nh / 2.0,
+    };
+    let mut pos = SvgPos {
+        x: pt.x + ux * dist,
+        y: pt.y + uy * dist,
+    };
+    for _ in 0..=max_nudges {
+        let rect = SvgRect {
+            x: pos.x - nw / 2.0,
+            y: pos.y - nh / 2.0,
+            w: nw,
+            h: nh,
+        };
+        if !collides(layout, &rect, 30.0)
+            && !avoid.iter().any(|c| c.intersects_rect(&rect, 0.0))
+        {
+            place(layout, new_id, pos, (nw, nh));
+            return true;
+        }
+        pos.x += ux * 40.0;
+        pos.y += uy * 40.0;
+    }
+    if force {
+        place(layout, new_id, pos, (nw, nh));
+        return true;
+    }
+    false
+}
+
+fn content_bottom(layout: &LayoutInfo) -> f64 {
+    layout
+        .bounds
+        .values()
+        .map(|b| b.y + b.h)
+        .fold(0.0, f64::max)
+}
+
+/// BFS-style placement along declared lines: any line with exactly one placed
+/// endpoint pulls its other endpoint next to it, on the side implied by the
+/// placed endpoint's port. Fully unplaced components get seeded below the
+/// existing content and grow from there.
+fn place_line_endpoints(
+    diagram: &Diagram,
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+) {
+    loop {
+        let mut progress = false;
+        for line in diagram.lines.values() {
+            let from_placed = layout.positions.contains_key(&line.from.id);
+            let to_placed = layout.positions.contains_key(&line.to.id);
+            if from_placed == to_placed {
+                continue;
+            }
+            let (anchor, new) = if from_placed {
+                (&line.from, &line.to)
+            } else {
+                (&line.to, &line.from)
+            };
+            let side = endpoint_side(diagram, anchor, from_placed);
+            // Anchor on the port the line connects to, so the new object
+            // lines up with its nozzle instead of the anchor's centerline.
+            let port_pt = anchor.port.as_ref().and_then(|pn| {
+                diagram
+                    .get_ports(&anchor.id)
+                    .and_then(|ports| layout.port_pos(&anchor.id, pn, ports))
+            });
+            match port_pt {
+                Some(pt) => {
+                    place_from_point(layout, dims, pt, &new.id, side, 100, true, &[]);
+                }
+                None => place_adjacent(layout, dims, &anchor.id, &new.id, side),
+            }
+            progress = true;
+        }
+        if progress {
+            continue;
+        }
+        // No half-placed line left; seed the next unplaced component (if any).
+        let seed = diagram
+            .lines
+            .values()
+            .find(|l| !layout.positions.contains_key(&l.from.id))
+            .map(|l| l.from.id.clone());
+        match seed {
+            Some(id) => {
+                let (w, h) = dim_of(dims, &id);
+                let y = content_bottom(layout) + 200.0;
+                place(layout, &id, SvgPos { x: MARGIN + w / 2.0, y }, (w, h));
+            }
+            None => break,
+        }
+    }
+}
+
+fn place_attached_instruments(
+    diagram: &Diagram,
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+) {
+    // Track how many instruments have been placed at each (equip_id, port_name) to avoid overlap
+    let mut port_placement_count: HashMap<(String, String), usize> = HashMap::new();
+    for instr in diagram.instruments.values() {
+        if instr.pos.is_some() {
+            continue;
+        }
+        let Some(attach) = &instr.attach else { continue };
+        let Some(attach_pos) = layout.positions.get(&attach.id).copied() else { continue };
+
+        // Far enough above the attach point that the bubble and its label
+        // clear the equipment outline, leaving room for a leader line.
+        let attach_bounds = layout.bounds.get(&attach.id);
+        let offset_y = attach_bounds.map(|b| b.h / 2.0 + 70.0).unwrap_or(110.0);
+
+        // For port-attached instruments, use port position if available
+        let base_pos = if let Some(port_name) = &attach.port {
+            diagram
+                .get_ports(&attach.id)
+                .and_then(|ports| layout.port_pos(&attach.id, port_name, ports))
+                .map(|p| SvgPos { x: p.x, y: p.y - offset_y })
+                .unwrap_or(SvgPos {
+                    x: attach_pos.x,
+                    y: attach_pos.y - offset_y,
+                })
+        } else {
+            SvgPos {
+                x: attach_pos.x,
+                y: attach_pos.y - offset_y,
+            }
+        };
+
+        // Determine perpendicular offset for instruments sharing the same port
+        let port_key = (
+            attach.id.clone(),
+            attach.port.clone().unwrap_or_default(),
+        );
+        let count = port_placement_count.entry(port_key).or_insert(0);
+        // Determine port side to choose perpendicular direction
+        let port_side = attach
+            .port
+            .as_deref()
+            .and_then(|pn| {
+                diagram.get_ports(&attach.id).and_then(|ports| {
+                    ports.iter().find(|p| p.name == pn).and_then(|p| p.side)
+                })
+            })
+            .or_else(|| attach.port.as_deref().and_then(infer_port_side))
+            .unwrap_or(Side::North);
+
+        // Perpendicular offset: for north/south ports offset in x; for east/west in y
+        let perp_offset = (*count as f64) * 44.0;
+        let (px, py) = match port_side {
+            Side::North | Side::South => (1.0, 0.0),
+            Side::East | Side::West => (0.0, 1.0),
+        };
+        let mut svg_pos = SvgPos {
+            x: base_pos.x + px * perp_offset,
+            y: base_pos.y + py * perp_offset,
+        };
+        *count += 1;
+
+        // Nudge perpendicular until clear of other placed symbols, previously
+        // placed attached instruments, and the corridors of ports that lines
+        // connect to (so the bubble doesn't sit on a pipe run).
+        let corridors = used_port_corridors(diagram, layout, &attach.id);
+        let (w, h) = dim_of(dims, &instr.id);
+        for _ in 0..100 {
+            let rect = SvgRect {
+                x: svg_pos.x - w / 2.0,
+                y: svg_pos.y - h / 2.0,
+                w,
+                h,
+            };
+            if !collides(layout, &rect, 16.0)
+                && !corridors.iter().any(|c| c.intersects_rect(&rect, 0.0))
+            {
+                break;
+            }
+            svg_pos.x += px * 40.0;
+            svg_pos.y += py * 40.0;
+        }
+
+        // Place immediately so later attached instruments see this one.
+        place(layout, &instr.id, svg_pos, (w, h));
+    }
+}
+
+/// Straight strips extending outward from every port of `id` that some line
+/// connects to — the space a pipe run will occupy once routed.
+fn used_port_corridors(diagram: &Diagram, layout: &LayoutInfo, id: &str) -> Vec<SvgRect> {
+    let mut out = Vec::new();
+    let Some(ports) = diagram.get_ports(id) else {
+        return out;
+    };
+    let used = |port_name: &str| {
+        diagram.lines.values().any(|l| {
+            (l.from.id == id && l.from.port.as_deref() == Some(port_name))
+                || (l.to.id == id && l.to.port.as_deref() == Some(port_name))
+        })
+    };
+    const LEN: f64 = 160.0;
+    const HALF_W: f64 = 10.0;
+    for p in ports {
+        if !used(&p.name) {
+            continue;
+        }
+        let Some(pos) = layout.port_pos(id, &p.name, ports) else {
+            continue;
+        };
+        let Some(side) = p.side.or_else(|| infer_port_side(&p.name)) else {
+            continue;
+        };
+        let (ux, uy) = unit(side);
+        let (x2, y2) = (pos.x + ux * LEN, pos.y + uy * LEN);
+        out.push(SvgRect {
+            x: pos.x.min(x2) - HALF_W,
+            y: pos.y.min(y2) - HALF_W,
+            w: (x2 - pos.x).abs() + HALF_W * 2.0,
+            h: (y2 - pos.y).abs() + HALF_W * 2.0,
+        });
+    }
+    out
+}
+
+/// Instruments with no position and no attach are placed relative to their
+/// signal partners. A controller goes above the valve it actuates (short,
+/// legible signal drop); otherwise fall back to any placed peer — above
+/// equipment/valves, beside other instruments (so transmitter → controller
+/// chains form a signal row).
+fn place_signal_instruments(
+    diagram: &Diagram,
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+) {
+    // Pipe runs occupy the corridors outside every line-connected port;
+    // instrument bubbles must stay off them. Equipment/valve positions are
+    // final by this pass, so compute once.
+    let corridors: Vec<SvgRect> = diagram
+        .order
+        .iter()
+        .flat_map(|(_, id)| used_port_corridors(diagram, layout, id))
+        .collect();
+    loop {
+        let mut progress = false;
+        for instr in diagram.instruments.values() {
+            if layout.positions.contains_key(&instr.id) {
+                continue;
+            }
+            // Anchor preference: the valve this instrument actuates, then any
+            // placed signal peer. A candidate is skipped when its spot is so
+            // congested that placement would drift far away.
+            let mut anchors: Vec<(String, Side)> = Vec::new();
+            for sig in diagram.signals.values() {
+                if sig.from.id == instr.id
+                    && diagram.valves.contains_key(&sig.to.id)
+                    && layout.positions.contains_key(&sig.to.id)
+                {
+                    anchors.push((sig.to.id.clone(), Side::North));
+                }
+            }
+            for sig in diagram.signals.values() {
+                let other = if sig.from.id == instr.id {
+                    Some(&sig.to.id)
+                } else if sig.to.id == instr.id {
+                    Some(&sig.from.id)
+                } else {
+                    None
+                };
+                if let Some(o) = other {
+                    if layout.positions.contains_key(o.as_str()) {
+                        let side = if diagram.instruments.contains_key(o.as_str()) {
+                            Side::East
+                        } else {
+                            Side::North
+                        };
+                        anchors.push((o.clone(), side));
+                    }
+                }
+            }
+            let mut done = false;
+            for (pid, side) in &anchors {
+                if try_place_adjacent(layout, dims, pid, &instr.id, *side, 3, false, &corridors) {
+                    done = true;
+                    break;
+                }
+            }
+            if !done {
+                if let Some((pid, side)) = anchors.first() {
+                    try_place_adjacent(layout, dims, pid, &instr.id, *side, 100, true, &corridors);
+                    done = true;
+                }
+            }
+            if done {
+                progress = true;
+            }
+        }
+        if !progress {
+            break;
+        }
+    }
+}
+
+fn place_leftovers(
+    diagram: &Diagram,
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+) {
+    use crate::ast::DeclKind;
+    let row_y = content_bottom(layout) + 160.0;
+    let mut x = MARGIN;
+    for (kind, id) in &diagram.order {
+        // Only symbols get placed; lines/signals are routed and groups/areas
+        // are annotations.
+        if !matches!(
+            kind,
+            DeclKind::Equipment | DeclKind::Valve | DeclKind::Instrument | DeclKind::Junction | DeclKind::Note
+        ) {
+            continue;
+        }
+        if layout.positions.contains_key(id) {
+            continue;
+        }
+        let (w, h) = dim_of(dims, id);
+        x += w / 2.0;
+        place(layout, id, SvgPos { x, y: row_y }, (w, h));
+        x += w / 2.0 + H_GAP;
+    }
+}
+
+fn normalize_origin(layout: &mut LayoutInfo) {
+    if layout.bounds.is_empty() {
+        return;
+    }
+    let min_x = layout.bounds.values().map(|b| b.x).fold(f64::INFINITY, f64::min);
+    let min_y = layout.bounds.values().map(|b| b.y).fold(f64::INFINITY, f64::min);
+    let dx = if min_x < MARGIN { MARGIN - min_x } else { 0.0 };
+    let dy = if min_y < MARGIN { MARGIN - min_y } else { 0.0 };
+    if dx == 0.0 && dy == 0.0 {
+        return;
+    }
+    for p in layout.positions.values_mut() {
+        p.x += dx;
+        p.y += dy;
+    }
+    for b in layout.bounds.values_mut() {
+        b.x += dx;
+        b.y += dy;
+    }
 }
 
 fn get_explicit_pos<'a>(diagram: &'a Diagram, kind: &crate::ast::DeclKind, id: &str) -> Option<&'a GridPos> {
@@ -262,50 +667,35 @@ fn get_explicit_pos<'a>(diagram: &'a Diagram, kind: &crate::ast::DeclKind, id: &
     }
 }
 
-fn symbol_width(diagram: &Diagram, kind: &crate::ast::DeclKind, id: &str) -> f64 {
+/// Width/height of the drawn symbol for an object, from the symbol library.
+fn symbol_dims(diagram: &Diagram, kind: &crate::ast::DeclKind, id: &str) -> (f64, f64) {
     use crate::ast::DeclKind;
     match kind {
-        DeclKind::Equipment => {
-            if let Some(e) = diagram.equipment.get(id) {
-                match e.equip_type.as_str() {
-                    "heat_exchanger" | "heat_exchanger_shell_tube" => 120.0,
-                    "distillation_column" => SYMBOL_W,
-                    "tank" | "vessel" => 100.0,
-                    "separator" => 80.0,
-                    "compressor" => 80.0,
-                    _ => SYMBOL_W,
-                }
-            } else {
-                SYMBOL_W
-            }
-        }
-        DeclKind::Valve => VALVE_W,
-        DeclKind::Instrument => SYMBOL_W * 0.75,
-        DeclKind::Junction => 10.0,
-        _ => SYMBOL_W,
-    }
-}
-
-fn symbol_height(diagram: &Diagram, kind: &crate::ast::DeclKind, id: &str) -> f64 {
-    use crate::ast::DeclKind;
-    match kind {
-        DeclKind::Equipment => {
-            if let Some(e) = diagram.equipment.get(id) {
-                match e.equip_type.as_str() {
-                    "distillation_column" => SYMBOL_H * 2.0,
-                    "heat_exchanger" | "heat_exchanger_shell_tube" => 60.0,
-                    "tank" | "vessel" => 50.0,
-                    "separator" => 50.0,
-                    "compressor" => 80.0,
-                    _ => SYMBOL_H,
-                }
-            } else {
-                SYMBOL_H
-            }
-        }
-        DeclKind::Valve => VALVE_H,
-        DeclKind::Instrument => SYMBOL_H * 0.75,
-        DeclKind::Junction => 10.0,
-        _ => SYMBOL_H,
+        DeclKind::Equipment => diagram
+            .equipment
+            .get(id)
+            .map(|e| {
+                let s = symbols::equipment_symbol(&e.equip_type);
+                (s.width, s.height)
+            })
+            .unwrap_or((SYMBOL_W, SYMBOL_H)),
+        DeclKind::Valve => diagram
+            .valves
+            .get(id)
+            .map(|v| {
+                let s = symbols::valve_symbol(&v.valve_type, v.actuator.as_deref());
+                (s.width, s.height)
+            })
+            .unwrap_or((VALVE_W, VALVE_H)),
+        DeclKind::Instrument => diagram
+            .instruments
+            .get(id)
+            .map(|i| {
+                let s = symbols::instrument_symbol(&i.instr_type, i.location.as_deref());
+                (s.width, s.height)
+            })
+            .unwrap_or((36.0, 36.0)),
+        DeclKind::Junction => (10.0, 10.0),
+        _ => (SYMBOL_W, SYMBOL_H),
     }
 }

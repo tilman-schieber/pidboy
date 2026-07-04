@@ -36,6 +36,11 @@ pub enum SymbolElement {
     Path { d: String },
     Line { x1: f64, y1: f64, x2: f64, y2: f64 },
     Polyline { points: Vec<(f64, f64)> },
+    /// Small annotation text baked into the symbol (internals like "Weir"),
+    /// centered horizontally on `x` with baseline at `y`.
+    Text { x: f64, y: f64, text: String, size: f64 },
+    /// Ink-filled circle (globe valve plug, junction dots).
+    Dot { cx: f64, cy: f64, r: f64 },
 }
 
 // Internal helper: build a SymbolDef with the default centred view_box.
@@ -59,22 +64,31 @@ pub fn equipment_symbol_key(equip_type: &str) -> &'static str {
         "heat_exchanger" | "heat_exchanger_shell_tube" => "heat_exchanger",
         "tank" | "vessel" => "vessel",
         "separator" => "separator",
+        "separator_3phase" => "separator_3phase",
         "reactor_cstr" | "reactor_batch" => "reactor_cstr",
         "reactor_pfr" => "reactor_pfr",
         "compressor" => "compressor",
         "blower" => "blower",
         "mixer" => "mixer",
         "distillation_column" => "column",
+        "connector" => "connector",
         _ => "equipment_default",
     }
 }
 
-/// Returns the canonical symbol key for a valve type.
-pub fn valve_symbol_key(valve_type: &str) -> &'static str {
+/// Returns the canonical symbol key for a valve type + actuator style.
+pub fn valve_symbol_key(valve_type: &str, actuator: Option<&str>) -> &'static str {
     match valve_type {
-        "control_valve" => "control_valve",
+        "control_valve" => {
+            if actuator == Some("diaphragm") {
+                "control_valve_diaphragm"
+            } else {
+                "control_valve"
+            }
+        }
         "check_valve" => "check_valve",
         "relief_valve" | "safety_valve" => "relief_valve",
+        "globe" => "valve_globe",
         _ => "valve_manual",
     }
 }
@@ -85,6 +99,7 @@ pub fn instrument_symbol_key(location: Option<&str>) -> &'static str {
     match location.unwrap_or("field") {
         "panel" => "instr_panel",
         "control_room" => "instr_control_room",
+        "shared" => "instr_shared",
         _ => "instr_field",
     }
 }
@@ -99,23 +114,39 @@ pub fn equipment_symbol(equip_type: &str) -> SymbolDef {
         "heat_exchanger" | "heat_exchanger_shell_tube" => heat_exchanger_symbol(),
         "tank" | "vessel" => vessel_symbol(),
         "separator" => separator_symbol(),
+        "separator_3phase" => separator_3phase_symbol(),
         "reactor_cstr" | "reactor_batch" => reactor_cstr_symbol(),
         "reactor_pfr" => reactor_pfr_symbol(),
         "compressor" => compressor_symbol(),
         "blower" => blower_symbol(),
         "mixer" => mixer_symbol(),
         "distillation_column" => column_symbol(),
+        "connector" => connector_symbol(),
         _ => default_equipment_symbol(),
     }
 }
 
 /// Get a symbol definition for a valve type (ISO 10628-2).
-pub fn valve_symbol(valve_type: &str) -> SymbolDef {
-    match valve_type {
+pub fn valve_symbol(valve_type: &str, actuator: Option<&str>) -> SymbolDef {
+    match valve_symbol_key(valve_type, actuator) {
         "control_valve" => control_valve_symbol(),
+        "control_valve_diaphragm" => control_valve_diaphragm_symbol(),
         "check_valve" => check_valve_symbol(),
-        "relief_valve" | "safety_valve" => relief_valve_symbol(),
+        "relief_valve" => relief_valve_symbol(),
+        "valve_globe" => globe_valve_symbol(),
         _ => manual_valve_symbol(),
+    }
+}
+
+/// Local-coordinate offset from the symbol center where an incoming signal
+/// line should terminate, for valves whose natural signal target is the
+/// actuator head rather than the body.
+pub fn valve_signal_anchor(valve_type: &str, actuator: Option<&str>) -> Option<(f64, f64)> {
+    match valve_symbol_key(valve_type, actuator) {
+        "control_valve" => Some((0.0, -41.0)),           // top of actuator circle
+        "control_valve_diaphragm" => Some((0.0, -28.0)), // top of diaphragm dome
+        "relief_valve" => Some((0.0, -34.0)),            // top of spring arch
+        _ => None,
     }
 }
 
@@ -126,6 +157,7 @@ pub fn instrument_symbol(_instr_type: &str, location: Option<&str>) -> SymbolDef
     match location.unwrap_or("field") {
         "panel" => instrument_bubble_panel(),
         "control_room" => instrument_bubble_control_room(),
+        "shared" => instrument_bubble_shared(),
         _ => instrument_bubble_field(),
     }
 }
@@ -185,6 +217,38 @@ fn separator_symbol() -> SymbolDef {
         // Internal level indicator line
         SymbolElement::Line { x1: -36.0, y1: 4.0, x2: 36.0, y2: 4.0 },
     ])
+}
+
+/// Horizontal three-phase separator: large drum with weir, demister pad and
+/// vortex breakers over the liquid outlets. Internals carry small text
+/// annotations. Intended port sides: inlet west, psv+gas north (declared in
+/// that order), water+oil south (in that order, water upstream of the weir).
+fn separator_3phase_symbol() -> SymbolDef {
+    // Declared width covers the full drawn extent including the heads
+    // (arcs centered ±110, radius 50 → ±160), so routed lines and bounds
+    // don't clip through the head curvature.
+    let mut elements = vec![
+        // Drum outline with elliptical heads
+        SymbolElement::Path {
+            d: "M -110 -50 A 50 50 0 0 0 -110 50 L 110 50 A 50 50 0 0 0 110 -50 Z".into(),
+        },
+        // Weir between the water and oil compartments (bottom half)
+        SymbolElement::Line { x1: 0.0, y1: 50.0, x2: 0.0, y2: 8.0 },
+        SymbolElement::Text { x: 0.0, y: 0.0, text: "Weir".into(), size: 9.0 },
+        // Demister pad under the gas nozzle (crosshatched strip)
+        SymbolElement::Rect { x: 33.0, y: -48.0, w: 40.0, h: 10.0, rx: 0.0 },
+        SymbolElement::Line { x1: 43.0, y1: -48.0, x2: 43.0, y2: -38.0 },
+        SymbolElement::Line { x1: 53.0, y1: -48.0, x2: 53.0, y2: -38.0 },
+        SymbolElement::Line { x1: 63.0, y1: -48.0, x2: 63.0, y2: -38.0 },
+        SymbolElement::Text { x: 53.0, y: -26.0, text: "Demister pad".into(), size: 8.0 },
+        SymbolElement::Text { x: -53.0, y: 30.0, text: "Vortex breakers".into(), size: 8.0 },
+    ];
+    // Vortex breaker tents over the two liquid outlets
+    for cx in [-53.3, 53.3] {
+        elements.push(SymbolElement::Line { x1: cx - 9.0, y1: 50.0, x2: cx, y2: 40.0 });
+        elements.push(SymbolElement::Line { x1: cx, y1: 40.0, x2: cx + 9.0, y2: 50.0 });
+    }
+    sym(320.0, 100.0, elements)
 }
 
 /// CSTR reactor: vessel with shaft and two-level Rushton impeller blades.
@@ -251,6 +315,16 @@ fn column_symbol() -> SymbolDef {
     ])
 }
 
+/// Off-page / utility-header connector: pentagon flag pointing east.
+/// Used for streams entering or leaving the sheet (CWS, CWR, flare, …).
+fn connector_symbol() -> SymbolDef {
+    sym(60.0, 30.0, vec![
+        SymbolElement::Path {
+            d: "M -30 -15 L 15 -15 L 30 0 L 15 15 L -30 15 Z".into(),
+        },
+    ])
+}
+
 /// Fallback for unrecognised equipment types.
 fn default_equipment_symbol() -> SymbolDef {
     sym(60.0, 60.0, vec![
@@ -263,7 +337,7 @@ fn default_equipment_symbol() -> SymbolDef {
 /// Manual valve (gate, globe, ball, butterfly, plug): bowtie — two filled triangles
 /// meeting tip-to-tip, with the flow axis left-to-right.
 fn manual_valve_symbol() -> SymbolDef {
-    sym(50.0, 50.0, vec![
+    sym(44.0, 36.0, vec![
         SymbolElement::Path {
             d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
         },
@@ -272,7 +346,7 @@ fn manual_valve_symbol() -> SymbolDef {
 
 /// Control valve: bowtie body + vertical actuator stem + circle actuator head.
 fn control_valve_symbol() -> SymbolDef {
-    sym(50.0, 60.0, vec![
+    sym(44.0, 60.0, vec![
         SymbolElement::Path {
             d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
         },
@@ -281,9 +355,31 @@ fn control_valve_symbol() -> SymbolDef {
     ])
 }
 
+/// Control valve with diaphragm actuator: bowtie body + stem + dome.
+fn control_valve_diaphragm_symbol() -> SymbolDef {
+    sym(44.0, 60.0, vec![
+        SymbolElement::Path {
+            d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
+        },
+        SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -18.0 },
+        // Diaphragm dome (half-ellipse closed by its chord)
+        SymbolElement::Path { d: "M -16 -18 A 16 10 0 0 1 16 -18 Z".into() },
+    ])
+}
+
+/// Globe valve: bowtie with a filled plug dot at the seat.
+fn globe_valve_symbol() -> SymbolDef {
+    sym(44.0, 36.0, vec![
+        SymbolElement::Path {
+            d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
+        },
+        SymbolElement::Dot { cx: 0.0, cy: 0.0, r: 5.0 },
+    ])
+}
+
 /// Check valve: single right-pointing triangle + vertical stop bar.
 fn check_valve_symbol() -> SymbolDef {
-    sym(50.0, 50.0, vec![
+    sym(36.0, 36.0, vec![
         SymbolElement::Path {
             d: "M -18 -18 L 18 0 L -18 18 Z".into(),
         },
@@ -293,7 +389,7 @@ fn check_valve_symbol() -> SymbolDef {
 
 /// Relief / safety valve: bowtie + stem + spring arch above.
 fn relief_valve_symbol() -> SymbolDef {
-    sym(50.0, 60.0, vec![
+    sym(44.0, 60.0, vec![
         SymbolElement::Path {
             d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
         },
@@ -327,5 +423,13 @@ fn instrument_bubble_control_room() -> SymbolDef {
     sym(36.0, 36.0, vec![
         SymbolElement::Circle { cx: 0.0, cy: 0.0, r: 18.0 },
         SymbolElement::Circle { cx: 0.0, cy: 0.0, r: 13.0 },
+    ])
+}
+
+/// Shared display / shared control (DCS function): circle inscribed in a square.
+fn instrument_bubble_shared() -> SymbolDef {
+    sym(36.0, 36.0, vec![
+        SymbolElement::Rect { x: -18.0, y: -18.0, w: 36.0, h: 36.0, rx: 0.0 },
+        SymbolElement::Circle { cx: 0.0, cy: 0.0, r: 18.0 },
     ])
 }

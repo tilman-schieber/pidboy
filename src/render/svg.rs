@@ -31,23 +31,27 @@ pub fn render(
     out.push_str(&format!("{}{}<style>{}", indent, indent, nl));
     out.push_str(&build_styles(indent, opts.pretty));
     out.push_str(&format!("{}{}</style>{}", indent, indent, nl));
-    out.push_str(&build_markers(indent, opts.pretty));
     out.push_str(&build_symbol_defs(diagram, indent, opts.pretty));
     out.push_str(&format!("{}</defs>{}", indent, nl));
 
     // Lines group
     out.push_str(&format!("{}<g id=\"lines\">{}", indent, nl));
     for seg in routes.iter().filter(|s| !s.is_signal) {
-        let class = line_class_for_id(&seg.connection_id, diagram);
-        out.push_str(&render_polyline(&seg.points, &class, indent, opts.pretty, None));
+        let class = seg
+            .class
+            .clone()
+            .unwrap_or_else(|| line_class_for_id(&seg.connection_id, diagram));
+        // Flow-direction arrow on piping, but not on instrument leaders.
+        let arrow = seg.class.is_none();
+        out.push_str(&render_polyline(&seg.points, &class, indent, opts.pretty, arrow));
     }
     out.push_str(&format!("{}</g>{}", indent, nl));
 
     // Signals group
     out.push_str(&format!("{}<g id=\"signals\">{}", indent, nl));
     for seg in routes.iter().filter(|s| s.is_signal) {
-        let (class, marker) = signal_style_for_id(&seg.connection_id, diagram);
-        out.push_str(&render_polyline(&seg.points, &class, indent, opts.pretty, marker.as_deref()));
+        let class = signal_class_for_id(&seg.connection_id, diagram);
+        out.push_str(&render_polyline(&seg.points, &class, indent, opts.pretty, true));
     }
     out.push_str(&format!("{}</g>{}", indent, nl));
 
@@ -89,6 +93,7 @@ pub fn render(
 
     // Labels group
     out.push_str(&format!("{}<g id=\"labels\">{}", indent, nl));
+    let mut label_rects: Vec<crate::layout::SvgRect> = Vec::new();
     for (kind, id) in &diagram.order {
         use crate::ast::DeclKind;
         let label_text = match kind {
@@ -100,11 +105,14 @@ pub fn render(
         if let Some(label) = label_text {
             if let Some(pos) = layout.get_pos(id) {
                 let bounds = layout.get_bounds(id);
-                let y_offset = bounds.map(|b| b.h / 2.0 + 14.0).unwrap_or(40.0);
+                let (half_w, half_h) = bounds.map(|b| (b.w / 2.0, b.h / 2.0)).unwrap_or((30.0, 30.0));
+                let (x, y, anchor, rect) =
+                    place_label(label, pos, half_w, half_h, routes, layout, id, &label_rects);
+                label_rects.push(rect);
                 out.push_str(&format!(
-                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"label\">{}</text>{}",
+                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"label\"{}>{}</text>{}",
                     indent, indent,
-                    pos.x, pos.y + y_offset,
+                    x, y, anchor,
                     escape_xml(label),
                     nl
                 ));
@@ -127,11 +135,13 @@ pub fn render(
                 let my = (p1.y + p2.y) / 2.0;
                 let dx = (p2.x - p1.x).abs();
                 let dy = (p2.y - p1.y).abs();
+                // Offset the label perpendicular to the line: above for
+                // horizontal runs, left for vertical (rotated) runs.
                 let (transform, tx, ty) = if dy > dx {
                     (
-                        format!(" transform=\"rotate(-90,{:.1},{:.1})\"", mx, my - 8.0),
-                        mx,
-                        my - 8.0,
+                        format!(" transform=\"rotate(-90,{:.1},{:.1})\"", mx - 6.0, my),
+                        mx - 6.0,
+                        my,
                     )
                 } else {
                     (String::new(), mx, my - 8.0)
@@ -167,6 +177,65 @@ pub fn render(
     out
 }
 
+/// Choose a spot for an object label that doesn't sit on a routed line,
+/// another symbol, or an already-placed label: below the symbol by default,
+/// then right, above, and the lower/upper right corners.
+#[allow(clippy::too_many_arguments)]
+fn place_label(
+    label: &str,
+    pos: &SvgPos,
+    half_w: f64,
+    half_h: f64,
+    routes: &[RouteSegment],
+    layout: &LayoutInfo,
+    own_id: &str,
+    placed_labels: &[crate::layout::SvgRect],
+) -> (f64, f64, &'static str, crate::layout::SvgRect) {
+    let text_w = label.chars().count() as f64 * 6.6;
+    let text_h = 12.0;
+    let start = r#" style="text-anchor:start""#;
+    let end = r#" style="text-anchor:end""#;
+
+    let below = (pos.x, pos.y + half_h + 14.0, "");
+    let above = (pos.x, pos.y - half_h - 8.0, "");
+    let right = (pos.x + half_w + 8.0, pos.y + 4.0, start);
+    let left = (pos.x - half_w - 8.0, pos.y + 4.0, end);
+    let below_right = (pos.x + half_w + 6.0, pos.y + half_h + 14.0, start);
+    let above_right = (pos.x + half_w + 6.0, pos.y - half_h - 8.0, start);
+
+    let rect_for = |x: f64, y: f64, anchor: &str| crate::layout::SvgRect {
+        x: if anchor.is_empty() {
+            x - text_w / 2.0
+        } else if anchor == end {
+            x - text_w
+        } else {
+            x
+        },
+        y: y - text_h + 2.0,
+        w: text_w,
+        h: text_h,
+    };
+
+    for (x, y, anchor) in [below, above, right, left, below_right, above_right] {
+        let rect = rect_for(x, y, anchor);
+        let hits_route = routes.iter().any(|seg| {
+            seg.points
+                .windows(2)
+                .any(|w| rect.intersects_segment(w[0].x, w[0].y, w[1].x, w[1].y))
+        });
+        let hits_symbol = layout
+            .bounds
+            .iter()
+            .any(|(bid, b)| bid != own_id && b.intersects_rect(&rect, 2.0));
+        let hits_label = placed_labels.iter().any(|r| r.intersects_rect(&rect, 2.0));
+        if !hits_route && !hits_symbol && !hits_label {
+            return (x, y, anchor, rect);
+        }
+    }
+    let rect = rect_for(below.0, below.1, below.2);
+    (below.0, below.1, below.2, rect)
+}
+
 // ---- <defs> / symbol building ----
 
 /// Collect all unique symbol types used in `diagram` and emit them as
@@ -191,9 +260,9 @@ fn build_symbol_defs(diagram: &Diagram, indent: &str, pretty: bool) -> String {
     }
 
     for v in diagram.valves.values() {
-        let key = symbols::valve_symbol_key(&v.valve_type);
+        let key = symbols::valve_symbol_key(&v.valve_type, v.actuator.as_deref());
         if seen.insert(key.to_string()) {
-            let sym = symbols::valve_symbol(&v.valve_type);
+            let sym = symbols::valve_symbol(&v.valve_type, v.actuator.as_deref());
             out.push_str(&emit_symbol_def(&format!("sym-{}", key), &sym, &i2, &i3, nl));
         }
     }
@@ -262,6 +331,14 @@ fn render_element(elem: &SymbolElement, indent: &str, nl: &str) -> String {
                 .join(" ");
             format!("{}<polyline points=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{}\"/>{}", indent, pts, SYM_STROKE, SYM_SW, nl)
         }
+        SymbolElement::Dot { cx, cy, r } => format!(
+            "{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"{:.1}\" fill=\"black\" stroke=\"none\"/>{}",
+            indent, cx, cy, r, nl
+        ),
+        SymbolElement::Text { x, y, text, size } => format!(
+            "{}<text x=\"{:.1}\" y=\"{:.1}\" font-family=\"sans-serif\" font-size=\"{:.1}\" text-anchor=\"middle\" fill=\"#555\" stroke=\"none\">{}</text>{}",
+            indent, x, y, size, escape_xml(text), nl
+        ),
     }
 }
 
@@ -302,25 +379,12 @@ fn build_styles(_indent: &str, _pretty: bool) -> String {
     .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
     .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 4,2; }
     .line-vent { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 2,3; }
-    .signal-electrical { fill: none; stroke: black; stroke-width: 1; }
-    .signal-pneumatic { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
-    .signal-hydraulic { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 10,2,1,2; }
-    .signal-digital { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 6,2,1,2; }
+    .line-attach { fill: none; stroke: black; stroke-width: 1; }
+    .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; }
+    .signal-pneumatic { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 4,3; }
+    .signal-hydraulic { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 10,2,1,2; }
+    .signal-digital { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,2,1,2; }
 "#.to_string()
-}
-
-fn build_markers(_indent: &str, _pretty: bool) -> String {
-    let mut s = String::new();
-    // Filled arrowhead for electrical signals
-    s.push_str("    <marker id=\"arrow-end\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\">\n");
-    s.push_str("      <path d=\"M 0 0 L 6 3 L 0 6 Z\" fill=\"black\"/>\n");
-    s.push_str("    </marker>\n");
-    // Open (double-chevron) arrowhead for pneumatic signals
-    s.push_str("    <marker id=\"arrow-end-pneumatic\" markerWidth=\"10\" markerHeight=\"8\" refX=\"8\" refY=\"4\" orient=\"auto\">\n");
-    s.push_str("      <path d=\"M 0 0 L 4 4 L 0 8\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n");
-    s.push_str("      <path d=\"M 4 0 L 8 4 L 4 8\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>\n");
-    s.push_str("    </marker>\n");
-    s
 }
 
 // ---- Polyline / use rendering ----
@@ -330,7 +394,7 @@ fn render_polyline(
     css_class: &str,
     indent: &str,
     pretty: bool,
-    marker_end: Option<&str>,
+    arrow: bool,
 ) -> String {
     let nl = if pretty { "\n" } else { "" };
     if points.is_empty() {
@@ -343,18 +407,44 @@ fn render_polyline(
         .collect::<Vec<_>>()
         .join(" ");
 
-    let marker_attr = marker_end
-        .map(|m| format!(" marker-end=\"url(#{})\"", m))
-        .unwrap_or_default();
-
     // Explicit presentation attributes alongside the CSS class so that the
     // polyline renders correctly in viewers that do not apply internal CSS
     // stylesheets (Illustrator, Affinity, many SVG 1.1 renderers).
     let attrs = line_presentation_attrs(css_class);
 
+    let mut out = format!(
+        "{}{}<polyline points=\"{}\" class=\"{}\"{}/>{}",
+        indent, indent, pts_str, css_class, attrs, nl
+    );
+    if arrow {
+        out.push_str(&render_arrowhead(points, indent, pretty));
+    }
+    out
+}
+
+/// Filled arrowhead drawn as an explicit `<path>` at the endpoint of a
+/// polyline. SVG `<marker>` is deliberately avoided: Illustrator and several
+/// other importers drop polylines carrying `marker-end`, which made every
+/// signal line disappear.
+fn render_arrowhead(points: &[SvgPos], indent: &str, pretty: bool) -> String {
+    let nl = if pretty { "\n" } else { "" };
+    let n = points.len();
+    if n < 2 {
+        return String::new();
+    }
+    let tip = &points[n - 1];
+    // Last point that isn't coincident with the tip, for direction.
+    let tail = points[..n - 1]
+        .iter()
+        .rev()
+        .find(|p| (p.x - tip.x).abs() > 1e-6 || (p.y - tip.y).abs() > 1e-6);
+    let Some(tail) = tail else {
+        return String::new();
+    };
+    let angle = (tip.y - tail.y).atan2(tip.x - tail.x).to_degrees();
     format!(
-        "{}{}<polyline points=\"{}\" class=\"{}\"{}{}/>{}",
-        indent, indent, pts_str, css_class, attrs, marker_attr, nl
+        "{}{}<path d=\"M 0 0 L -9 -3.5 L -9 3.5 Z\" fill=\"black\" stroke=\"none\" transform=\"translate({:.1},{:.1}) rotate({:.1})\"/>{}",
+        indent, indent, tip.x, tip.y, angle, nl
     )
 }
 
@@ -366,11 +456,12 @@ fn line_presentation_attrs(css_class: &str) -> &'static str {
         "line-utility"       => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4""#,
         "line-drain"         => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2""#,
         "line-vent"          => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3""#,
-        "signal-electrical"  => r#" fill="none" stroke="black" stroke-width="1""#,
-        "signal-pneumatic"   => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4""#,
-        "signal-hydraulic"   => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="10,2,1,2""#,
-        "signal-digital"     => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="6,2,1,2""#,
-        _                    => r#" fill="none" stroke="black" stroke-width="1""#,
+        "line-attach"        => r#" fill="none" stroke="black" stroke-width="1""#,
+        "signal-electrical"  => r#" fill="none" stroke="black" stroke-width="1.5""#,
+        "signal-pneumatic"   => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4,3""#,
+        "signal-hydraulic"   => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="10,2,1,2""#,
+        "signal-digital"     => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,2,1,2""#,
+        _                    => r#" fill="none" stroke="black" stroke-width="1.5""#,
     }
 }
 
@@ -391,7 +482,7 @@ fn render_equipment(eq: &Equipment, pos: &SvgPos, indent: &str, pretty: bool) ->
 }
 
 fn render_valve(v: &Valve, pos: &SvgPos, indent: &str, pretty: bool) -> String {
-    let key = symbols::valve_symbol_key(&v.valve_type);
+    let key = symbols::valve_symbol_key(&v.valve_type, v.actuator.as_deref());
     render_use(&v.id, &format!("sym-{}", key), "valve", pos, indent, pretty)
 }
 
@@ -418,17 +509,11 @@ fn line_class_for_id(id: &str, diagram: &Diagram) -> String {
     }
 }
 
-fn signal_style_for_id(id: &str, diagram: &Diagram) -> (String, Option<String>) {
+fn signal_class_for_id(id: &str, diagram: &Diagram) -> String {
     if let Some(sig) = diagram.signals.get(id) {
-        let class = format!("signal-{}", sig.sig_type);
-        let marker = match sig.sig_type.as_str() {
-            "electrical" => Some("arrow-end".to_string()),
-            "pneumatic"  => Some("arrow-end-pneumatic".to_string()),
-            _ => None,
-        };
-        (class, marker)
+        format!("signal-{}", sig.sig_type)
     } else {
-        ("signal-electrical".to_string(), None)
+        "signal-electrical".to_string()
     }
 }
 

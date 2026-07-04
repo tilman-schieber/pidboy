@@ -1,0 +1,252 @@
+# CSTR reactor section with once-through jacket cooling
+#
+# Feed:    TK-101 → P-101 → NRV-101 → E-101 (preheat) → FCV-101 → R-101
+# Product: R-101 (bottom) → LCV-101 → V-101 (separator) → TK-102
+# Cooling: CWS header → TCV-101 → R-101 jacket → CWR header
+#
+# Control loops:
+#   Flow:        FT-101 → FIC-101 (panel) → FCV-101 (pneumatic)
+#   Temperature: TT-101 → TIC-101 (control room) → TCV-101 (pneumatic)
+#   Level:       LT-101 → LIC-101 (control room) → LCV-101 (pneumatic)
+#
+# No `at:` coordinates anywhere — placement and routing are fully automatic.
+
+equipment TK101:
+  type: tank
+  ports:
+    out: east
+  label: "TK-101"
+
+equipment P101:
+  type: pump_centrifugal
+  ports:
+    in: west
+    out: east
+  label: "P-101"
+
+valve NRV101:
+  type: check_valve
+  ports: in, out
+  label: "NRV-101"
+
+equipment E101:
+  type: heat_exchanger
+  ports:
+    in: west
+    out: east
+  label: "E-101"
+
+valve FCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: closed
+  ports: in, out
+  label: "FCV-101"
+
+equipment R101:
+  type: reactor_cstr
+  ports:
+    in: west
+    out: south
+    cwin: east
+    cwout: north
+  label: "R-101"
+
+valve LCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: closed
+  ports: in, out
+  label: "LCV-101"
+
+equipment V101:
+  type: separator
+  ports:
+    in: west
+    vent: north
+    out: east
+  label: "V-101"
+
+equipment TK102:
+  type: vessel
+  ports:
+    in: west
+  label: "TK-102"
+
+# --- Utility and off-page connectors ---
+
+valve TCV101:
+  type: control_valve
+  actuator: pneumatic
+  fail: open
+  ports:
+    in: east
+    out: west
+  label: "TCV-101"
+
+equipment CWS:
+  type: connector
+  ports:
+    out: west
+  label: "CWS"
+
+equipment CWR:
+  type: connector
+  ports:
+    in: south
+  label: "CWR"
+
+equipment FLARE:
+  type: connector
+  ports:
+    in: south
+  label: "To flare"
+
+# --- Process backbone ---
+
+line L100:
+  class: process
+  from: TK101.out
+  to: P101.in
+
+line L101:
+  class: process
+  from: P101.out
+  to: NRV101.in
+
+line L102:
+  class: process
+  from: NRV101.out
+  to: E101.in
+
+line L103:
+  class: process
+  from: E101.out
+  to: FCV101.in
+  label: "3in-RF-0103"
+
+line L104:
+  class: process
+  from: FCV101.out
+  to: R101.in
+
+line L105:
+  class: process
+  from: R101.out
+  to: LCV101.in
+
+line L106:
+  class: process
+  from: LCV101.out
+  to: V101.in
+
+line L107:
+  class: process
+  from: V101.out
+  to: TK102.in
+  label: "3in-RP-0107"
+
+line L108:
+  class: vent
+  from: V101.vent
+  to: FLARE.in
+
+# --- Once-through jacket cooling ---
+
+line L109:
+  class: utility
+  from: CWS.out
+  to: TCV101.in
+
+line L110:
+  class: utility
+  from: TCV101.out
+  to: R101.cwin
+
+line L111:
+  class: utility
+  from: R101.cwout
+  to: CWR.in
+
+# --- Instrumentation ---
+
+instrument FT101:
+  type: flow_transmitter
+  attach: E101
+  location: field
+  label: "FT-101"
+
+instrument FIC101:
+  type: flow_controller
+  location: panel
+  label: "FIC-101"
+
+instrument TT101:
+  type: temperature_transmitter
+  attach: R101
+  location: field
+  label: "TT-101"
+
+instrument TIC101:
+  type: temperature_controller
+  location: control_room
+  label: "TIC-101"
+
+instrument LT101:
+  type: level_transmitter
+  attach: R101
+  location: field
+  label: "LT-101"
+
+instrument LIC101:
+  type: level_controller
+  location: control_room
+  label: "LIC-101"
+
+signal S100:
+  type: electrical
+  from: FT101
+  to: FIC101
+  label: "4-20mA"
+
+signal S101:
+  type: pneumatic
+  from: FIC101
+  to: FCV101
+  label: "3-15psi"
+
+signal S102:
+  type: electrical
+  from: TT101
+  to: TIC101
+  label: "4-20mA"
+
+signal S103:
+  type: pneumatic
+  from: TIC101
+  to: TCV101
+  label: "3-15psi"
+
+signal S104:
+  type: electrical
+  from: LT101
+  to: LIC101
+  label: "4-20mA"
+
+signal S105:
+  type: pneumatic
+  from: LIC101
+  to: LCV101
+  label: "3-15psi"
+
+group flow_loop:
+  members: FT101, FIC101, FCV101
+  label: "Feed flow control"
+
+group temp_loop:
+  members: TT101, TIC101, TCV101
+  label: "Reactor temperature control"
+
+group level_loop:
+  members: LT101, LIC101, LCV101
+  label: "Reactor level control"

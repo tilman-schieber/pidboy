@@ -1,0 +1,365 @@
+# Three-phase separator (gas / oil / water) with weir and demister pad
+#
+# 3-Phase Inlet → V-101. Gas leaves the top through the demister and PV-201
+# to the vapor header; a relief valve protects the vessel to flare.
+# Water collects upstream of the weir and leaves via LV-101; oil spills over
+# the weir and leaves via LV-201. Each outlet has isolation gate valves.
+#
+# Control loops:
+#   Pressure:    PT-101 → PC-201 → PV-201
+#   Water level: LT-101 → LC-101 → LV-101
+#   Oil level:   LT-201 → LC-201 → LV-201
+#
+# Both level control valves have globe-valve bypasses between tee junctions,
+# and the PSV discharges through an isolation valve to the flare header.
+
+equipment INLET:
+  type: connector
+  ports:
+    out: east
+  label: "3-Phase Inlet"
+
+valve IV101:
+  type: gate
+  ports: in, out
+  label: "IV-101"
+
+equipment SEP:
+  type: separator_3phase
+  ports:
+    inlet: west
+    psv: north
+    gas: north
+    water: south
+    oil: south
+  label: "V-101"
+
+# --- Relief to flare ---
+
+valve PSV101:
+  type: relief_valve
+  ports:
+    in: south
+    out: east
+  label: "PSV-101"
+
+valve FV101:
+  type: gate
+  ports: in, out
+  label: "FV-101"
+
+equipment FLARE:
+  type: connector
+  ports:
+    in: west
+  label: "To flare"
+
+# --- Vapor outlet train ---
+
+valve GV201:
+  type: gate
+  ports:
+    in: south
+    out: east
+  label: "GV-201"
+
+valve PV201:
+  type: control_valve
+  actuator: diaphragm
+  fail: closed
+  ports: in, out
+  label: "PV-201"
+
+valve GV202:
+  type: gate
+  ports: in, out
+  label: "GV-202"
+
+equipment VAPOR:
+  type: connector
+  ports:
+    in: west
+  label: "Vapor Outlet"
+
+# --- Water outlet train (flows west) ---
+
+valve WV101:
+  type: gate
+  ports:
+    in: north
+    out: west
+  label: "WV-101"
+
+valve LV101:
+  type: control_valve
+  actuator: diaphragm
+  fail: closed
+  ports:
+    in: east
+    out: west
+  label: "LV-101"
+
+valve WV102:
+  type: gate
+  ports:
+    in: east
+    out: west
+  label: "WV-102"
+
+junction J101
+junction J102
+
+valve WBP101:
+  type: globe
+  ports:
+    in: east
+    out: west
+  label: "WBP-101"
+
+equipment WATER:
+  type: connector
+  ports:
+    in: east
+  label: "Water Outlet"
+
+# --- Oil outlet train (flows east) ---
+
+valve OV201:
+  type: gate
+  ports:
+    in: north
+    out: east
+  label: "OV-201"
+
+valve LV201:
+  type: control_valve
+  actuator: diaphragm
+  fail: closed
+  ports: in, out
+  label: "LV-201"
+
+valve OV202:
+  type: gate
+  ports: in, out
+  label: "OV-202"
+
+junction J201
+junction J202
+
+valve OBP201:
+  type: globe
+  ports: in, out
+  label: "OBP-201"
+
+equipment OIL:
+  type: connector
+  ports:
+    in: west
+  label: "Oil Outlet"
+
+# --- Lines ---
+
+line L100:
+  class: process
+  from: INLET.out
+  to: IV101.in
+
+line L101:
+  class: process
+  from: IV101.out
+  to: SEP.inlet
+
+line L102:
+  class: vent
+  from: SEP.psv
+  to: PSV101.in
+
+line L103:
+  class: vent
+  from: PSV101.out
+  to: FV101.in
+
+line L103B:
+  class: vent
+  from: FV101.out
+  to: FLARE.in
+
+line L104:
+  class: process
+  from: SEP.gas
+  to: GV201.in
+
+line L105:
+  class: process
+  from: GV201.out
+  to: PV201.in
+
+line L106:
+  class: process
+  from: PV201.out
+  to: GV202.in
+
+line L107:
+  class: process
+  from: GV202.out
+  to: VAPOR.in
+  label: "Vapor"
+
+line L108:
+  class: process
+  from: SEP.water
+  to: WV101.in
+
+line L109:
+  class: process
+  from: WV101.out
+  to: J101.east
+
+line L109B:
+  class: process
+  from: J101.west
+  to: LV101.in
+
+line L110:
+  class: process
+  from: LV101.out
+  to: J102.east
+
+line L110B:
+  class: process
+  from: J102.west
+  to: WV102.in
+
+line L109C:
+  class: process
+  from: J101.south
+  to: WBP101.in
+
+line L109D:
+  class: process
+  from: WBP101.out
+  to: J102.south
+
+line L111:
+  class: process
+  from: WV102.out
+  to: WATER.in
+  label: "Water"
+
+line L112:
+  class: process
+  from: SEP.oil
+  to: OV201.in
+
+line L113:
+  class: process
+  from: OV201.out
+  to: J201.west
+
+line L113B:
+  class: process
+  from: J201.east
+  to: LV201.in
+
+line L114:
+  class: process
+  from: LV201.out
+  to: J202.west
+
+line L114B:
+  class: process
+  from: J202.east
+  to: OV202.in
+
+line L113C:
+  class: process
+  from: J201.south
+  to: OBP201.in
+
+line L113D:
+  class: process
+  from: OBP201.out
+  to: J202.south
+
+line L115:
+  class: process
+  from: OV202.out
+  to: OIL.in
+  label: "Oil"
+
+# --- Instrumentation ---
+
+instrument PT101:
+  type: pressure_transmitter
+  attach: SEP
+  location: field
+  label: "PT-101"
+
+instrument PC201:
+  type: pressure_controller
+  location: shared
+  label: "PC-201"
+
+instrument LT101:
+  type: level_transmitter
+  attach: SEP
+  location: field
+  label: "LT-101"
+
+instrument LC101:
+  type: level_controller
+  location: shared
+  label: "LC-101"
+
+instrument LT201:
+  type: level_transmitter
+  attach: SEP
+  location: field
+  label: "LT-201"
+
+instrument LC201:
+  type: level_controller
+  location: shared
+  label: "LC-201"
+
+signal S100:
+  type: electrical
+  from: PT101
+  to: PC201
+
+signal S101:
+  type: pneumatic
+  from: PC201
+  to: PV201
+
+signal S102:
+  type: electrical
+  from: LT101
+  to: LC101
+
+signal S103:
+  type: pneumatic
+  from: LC101
+  to: LV101
+
+signal S104:
+  type: electrical
+  from: LT201
+  to: LC201
+
+signal S105:
+  type: pneumatic
+  from: LC201
+  to: LV201
+
+group pressure_loop:
+  members: PT101, PC201, PV201
+  label: "Pressure control"
+
+group water_level_loop:
+  members: LT101, LC101, LV101
+  label: "Water level control"
+
+group oil_level_loop:
+  members: LT201, LC201, LV201
+  label: "Oil level control"

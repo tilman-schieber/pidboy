@@ -81,7 +81,19 @@ equipment E101:
   label: "E-101"
 ```
 
-**equipment.type values:** `pump`, `pump_centrifugal`, `pump_positive_displacement`, `heat_exchanger`, `heat_exchanger_shell_tube`, `tank`, `vessel`, `separator`, `reactor_cstr`, `reactor_batch`, `reactor_pfr`, `compressor`, `blower`, `mixer`, `distillation_column`
+**equipment.type values:** `pump`, `pump_centrifugal`, `pump_positive_displacement`, `heat_exchanger`, `heat_exchanger_shell_tube`, `tank`, `vessel`, `separator`, `separator_3phase`, `reactor_cstr`, `reactor_batch`, `reactor_pfr`, `compressor`, `blower`, `mixer`, `distillation_column`, `connector`
+
+**Multiple ports per side:** ports sharing a side are spread evenly along it in declaration order (top-to-bottom for east/west sides, left-to-right for north/south). For `separator_3phase` (drum with weir, demister pad and vortex breakers drawn in), declare ports in this order so nozzles land on the right internals: `inlet: west`, `psv: north`, `gas: north` (gas over the demister), `water: south`, `oil: south` (water upstream of the weir, oil downstream).
+
+**Off-page connectors:** use `type: connector` (a pentagon flag) for streams that enter or leave the sheet — utility headers (CWS/CWR), flare, battery limits. Prefer once-through utility runs via connectors over drawing closed recycle loops; loops render as tangled rectangles. Example:
+
+```
+equipment CWS:
+  type: connector
+  ports:
+    out: west
+  label: "CWS"
+```
 
 ---
 
@@ -90,7 +102,7 @@ equipment E101:
 ```
 valve CV101:
   type: control_valve       # required
-  actuator: pneumatic       # manual / pneumatic / electric (optional)
+  actuator: pneumatic       # manual / pneumatic / electric / diaphragm (optional; diaphragm draws a dome actuator)
   fail: closed              # open / closed / last (optional)
   at: (16,8)
   ports: in, out
@@ -98,6 +110,21 @@ valve CV101:
 ```
 
 **valve.type values:** `gate`, `globe`, `ball`, `butterfly`, `plug`, `control_valve`, `check_valve`, `relief_valve`, `safety_valve`
+
+`globe` renders as a bowtie with a filled plug dot (use it for bypass and throttling valves); `control_valve` with `actuator: diaphragm` renders a dome actuator.
+
+**Bypass loops:** junctions accept directional taps (`J1.west`, `J1.south`, …) even though they declare no ports. Standard control-valve station with bypass:
+
+```
+junction J1
+junction J2
+line: ... upstream valve → J1.east
+line: J1.west → CV.in       # main run through the control valve
+line: CV.out → J2.east
+line: J2.west → ... downstream valve
+line: J1.south → BPV.in     # globe-valve bypass below
+line: BPV.out → J2.south
+```
 
 ---
 
@@ -121,7 +148,7 @@ line L100:
 instrument TI101:
   type: temperature_indicator   # required
   attach: E101.top              # attach to equipment port (optional)
-  location: field               # field / panel / control_room (optional)
+  location: field               # field / panel / control_room / shared (optional; shared = circle in square, DCS shared display)
   label: "TI-101"
 
 instrument TIC101:
