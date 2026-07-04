@@ -21,18 +21,30 @@ equipment INLET:
 
 valve IV101:
   type: gate
-  ports: in, out
+  ports:
+    in: north
+    out: south
   label: "IV-101"
 
 equipment SEP:
   type: separator_3phase
   ports:
-    inlet: west
+    inlet: north
     psv: north
+    vent: north
     gas: north
     water: south
     oil: south
+    lt_w: west
+    lt_e: east
   label: "V-101"
+
+valve VV101:
+  type: gate
+  ports:
+    in: south
+    out: north
+  label: "VV-101"
 
 # --- Relief to flare ---
 
@@ -189,6 +201,15 @@ line L102:
   class: vent
   from: SEP.psv
   to: PSV101.in
+
+line L102V:
+  class: vent
+  from: SEP.vent
+  to: VV101.in
+
+line L102W:
+  class: vent
+  from: VV101.out
 
 line L103:
   class: vent
@@ -348,7 +369,7 @@ instrument PC201:
 
 instrument LT101:
   type: level_transmitter
-  attach: SEP
+  attach: SEP.lt_w
   location: field
   label: "LT-101"
 
@@ -359,7 +380,7 @@ instrument LC101:
 
 instrument LT201:
   type: level_transmitter
-  attach: SEP
+  attach: SEP.lt_e
   location: field
   label: "LT-201"
 

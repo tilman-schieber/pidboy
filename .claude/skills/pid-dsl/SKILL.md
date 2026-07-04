@@ -83,7 +83,9 @@ equipment E101:
 
 **equipment.type values:** `pump`, `pump_centrifugal`, `pump_positive_displacement`, `heat_exchanger`, `heat_exchanger_shell_tube`, `tank`, `vessel`, `separator`, `separator_3phase`, `reactor_cstr`, `reactor_batch`, `reactor_pfr`, `compressor`, `blower`, `mixer`, `distillation_column`, `connector`
 
-**Multiple ports per side:** ports sharing a side are spread evenly along it in declaration order (top-to-bottom for east/west sides, left-to-right for north/south). For `separator_3phase` (drum with weir, demister pad and vortex breakers drawn in), declare ports in this order so nozzles land on the right internals: `inlet: west`, `psv: north`, `gas: north` (gas over the demister), `water: south`, `oil: south` (water upstream of the weir, oil downstream).
+**Multiple ports per side:** ports sharing a side are spread evenly along it in declaration order (top-to-bottom for east/west sides, left-to-right for north/south). For `separator_3phase` (large drum with weir, demister pad and vortex breakers drawn in), declare ports in this order so nozzles land on the right internals: `inlet: north`, `psv: north`, `vent: north`, `gas: north` (gas over the demister), `water: south`, `oil: south` (water upstream of the weir, oil downstream), plus optional `lt_w: west` / `lt_e: east` for side-mounted level transmitters (`attach: SEP.lt_w`).
+
+**Attach direction:** `attach: X.port` places the bubble outward on that port's side (west port → bubble left of the vessel with a horizontal leader); plain `attach: X` places it above.
 
 **Off-page connectors:** use `type: connector` (a pentagon flag) for streams that enter or leave the sheet — utility headers (CWS/CWR), flare, battery limits. Prefer once-through utility runs via connectors over drawing closed recycle loops; loops render as tangled rectangles. Example:
 

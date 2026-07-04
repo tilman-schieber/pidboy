@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2023" height="1163" viewBox="0 0 2023 1163">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2076" height="1213" viewBox="0 0 2076 1213">
   <defs>
     <style>
 
@@ -23,36 +23,36 @@
       <path d="M -30 -15 L 15 -15 L 30 0 L 15 15 L -30 15 Z" fill="white" stroke="black" stroke-width="1.5"/>
     </g>
     <g id="sym-separator_3phase">
-      <path d="M -110 -50 A 50 50 0 0 0 -110 50 L 110 50 A 50 50 0 0 0 110 -50 Z" fill="white" stroke="black" stroke-width="1.5"/>
-      <line x1="0.0" y1="50.0" x2="0.0" y2="8.0" fill="none" stroke="black" stroke-width="1.5"/>
-      <text x="0.0" y="0.0" font-family="sans-serif" font-size="9.0" text-anchor="middle" fill="#555" stroke="none">Weir</text>
-      <rect x="33.0" y="-48.0" width="40.0" height="10.0" rx="0.0" fill="white" stroke="black" stroke-width="1.5"/>
-      <line x1="43.0" y1="-48.0" x2="43.0" y2="-38.0" fill="none" stroke="black" stroke-width="1.5"/>
-      <line x1="53.0" y1="-48.0" x2="53.0" y2="-38.0" fill="none" stroke="black" stroke-width="1.5"/>
-      <line x1="63.0" y1="-48.0" x2="63.0" y2="-38.0" fill="none" stroke="black" stroke-width="1.5"/>
-      <text x="53.0" y="-26.0" font-family="sans-serif" font-size="8.0" text-anchor="middle" fill="#555" stroke="none">Demister pad</text>
-      <text x="-53.0" y="30.0" font-family="sans-serif" font-size="8.0" text-anchor="middle" fill="#555" stroke="none">Vortex breakers</text>
-      <line x1="-62.3" y1="50.0" x2="-53.3" y2="40.0" fill="none" stroke="black" stroke-width="1.5"/>
-      <line x1="-53.3" y1="40.0" x2="-44.3" y2="50.0" fill="none" stroke="black" stroke-width="1.5"/>
-      <line x1="44.3" y1="50.0" x2="53.3" y2="40.0" fill="none" stroke="black" stroke-width="1.5"/>
-      <line x1="53.3" y1="40.0" x2="62.3" y2="50.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <path d="M -165 -75 A 75 75 0 0 0 -165 75 L 165 75 A 75 75 0 0 0 165 -75 Z" fill="white" stroke="black" stroke-width="1.5"/>
+      <line x1="0.0" y1="75.0" x2="0.0" y2="12.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <text x="0.0" y="4.0" font-family="sans-serif" font-size="10.0" text-anchor="middle" fill="#555" stroke="none">Weir</text>
+      <rect x="119.0" y="-73.0" width="50.0" height="12.0" rx="0.0" fill="white" stroke="black" stroke-width="1.5"/>
+      <line x1="131.5" y1="-73.0" x2="131.5" y2="-61.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <line x1="144.0" y1="-73.0" x2="144.0" y2="-61.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <line x1="156.5" y1="-73.0" x2="156.5" y2="-61.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <text x="144.0" y="-48.0" font-family="sans-serif" font-size="9.0" text-anchor="middle" fill="#555" stroke="none">Demister pad</text>
+      <text x="-80.0" y="50.0" font-family="sans-serif" font-size="9.0" text-anchor="middle" fill="#555" stroke="none">Vortex breakers</text>
+      <line x1="-91.0" y1="75.0" x2="-80.0" y2="62.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <line x1="-80.0" y1="62.0" x2="-69.0" y2="75.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <line x1="69.0" y1="75.0" x2="80.0" y2="62.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <line x1="80.0" y1="62.0" x2="91.0" y2="75.0" fill="none" stroke="black" stroke-width="1.5"/>
     </g>
     <g id="sym-valve_manual">
       <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="white" stroke="black" stroke-width="1.5"/>
     </g>
     <g id="sym-relief_valve">
-      <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="white" stroke="black" stroke-width="1.5"/>
-      <line x1="0.0" y1="0.0" x2="0.0" y2="-22.0" fill="none" stroke="black" stroke-width="1.5"/>
-      <path d="M -10 -22 Q 0 -34 10 -22" fill="white" stroke="black" stroke-width="1.5"/>
+      <path d="M -12 22 L 0 0 L 12 22 Z" fill="white" stroke="black" stroke-width="1.5"/>
+      <path d="M 22 -12 L 0 0 L 22 12 Z" fill="white" stroke="black" stroke-width="1.5"/>
+      <line x1="0.0" y1="0.0" x2="0.0" y2="-10.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <path d="M -8 -10 Q 0 -22 8 -10" fill="white" stroke="black" stroke-width="1.5"/>
     </g>
     <g id="sym-control_valve_diaphragm">
-      <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="white" stroke="black" stroke-width="1.5"/>
+      <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="black" stroke="black" stroke-width="1.5"/>
       <line x1="0.0" y1="0.0" x2="0.0" y2="-18.0" fill="none" stroke="black" stroke-width="1.5"/>
       <path d="M -16 -18 A 16 10 0 0 1 16 -18 Z" fill="white" stroke="black" stroke-width="1.5"/>
     </g>
     <g id="sym-valve_globe">
-      <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="white" stroke="black" stroke-width="1.5"/>
-      <circle cx="0.0" cy="0.0" r="5.0" fill="black" stroke="none"/>
+      <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="black" stroke="black" stroke-width="1.5"/>
     </g>
     <g id="sym-instr_field">
       <circle cx="0.0" cy="0.0" r="18.0" fill="white" stroke="black" stroke-width="1.5"/>
@@ -63,156 +63,162 @@
     </g>
   </defs>
   <g id="lines">
-    <polyline points="567.3,630.0 687.3,630.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(687.3,630.0) rotate(0.0)"/>
-    <polyline points="731.3,630.0 851.3,630.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(851.3,630.0) rotate(0.0)"/>
-    <polyline points="958.0,580.0 958.0,470.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(958.0,470.0) rotate(-90.0)"/>
-    <polyline points="980.0,440.0 1100.0,440.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1100.0,440.0) rotate(0.0)"/>
-    <polyline points="1144.0,440.0 1264.0,440.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1264.0,440.0) rotate(0.0)"/>
-    <polyline points="1064.7,580.0 1064.7,390.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1064.7,390.0) rotate(-90.0)"/>
-    <polyline points="1064.7,346.0 1064.7,236.0 1184.7,236.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1184.7,236.0) rotate(0.0)"/>
-    <polyline points="1228.7,236.0 1348.7,236.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1348.7,236.0) rotate(0.0)"/>
-    <polyline points="1392.7,236.0 1512.7,236.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1512.7,236.0) rotate(0.0)"/>
-    <polyline points="958.0,680.0 958.0,790.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(958.0,790.0) rotate(90.0)"/>
-    <polyline points="958.0,834.0 958.0,944.0 838.0,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(838.0,944.0) rotate(180.0)"/>
-    <polyline points="828.0,944.0 708.0,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(708.0,944.0) rotate(180.0)"/>
-    <polyline points="833.0,949.0 833.0,1059.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(833.0,1059.0) rotate(90.0)"/>
-    <polyline points="833.0,1103.0 833.0,1143.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(833.0,1143.0) rotate(90.0)"/>
-    <polyline points="698.0,944.0 578.0,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(578.0,944.0) rotate(180.0)"/>
-    <polyline points="534.0,944.0 414.0,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(414.0,944.0) rotate(180.0)"/>
-    <polyline points="404.0,944.0 284.0,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(284.0,944.0) rotate(180.0)"/>
-    <polyline points="703.0,949.0 703.0,1010.5 741.0,1010.5 741.0,1077.0 725.0,1077.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(725.0,1077.0) rotate(180.0)"/>
-    <polyline points="681.0,1077.0 409.0,1077.0 409.0,949.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(409.0,949.0) rotate(-90.0)"/>
-    <polyline points="240.0,944.0 120.0,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(120.0,944.0) rotate(180.0)"/>
-    <polyline points="1064.7,680.0 1064.7,790.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1064.7,790.0) rotate(90.0)"/>
-    <polyline points="1064.7,834.0 1064.7,944.0 1184.7,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1184.7,944.0) rotate(0.0)"/>
-    <polyline points="1194.7,944.0 1314.7,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1314.7,944.0) rotate(0.0)"/>
-    <polyline points="1189.7,949.0 1189.7,1059.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1189.7,1059.0) rotate(90.0)"/>
-    <polyline points="1189.7,1103.0 1189.7,1143.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1189.7,1143.0) rotate(90.0)"/>
-    <polyline points="1324.7,944.0 1444.7,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1444.7,944.0) rotate(0.0)"/>
-    <polyline points="1488.7,944.0 1608.7,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1608.7,944.0) rotate(0.0)"/>
-    <polyline points="1618.7,944.0 1738.7,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1738.7,944.0) rotate(0.0)"/>
-    <polyline points="1319.7,949.0 1319.7,1010.5 1281.7,1010.5 1281.7,1077.0 1297.7,1077.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1297.7,1077.0) rotate(0.0)"/>
-    <polyline points="1341.7,1077.0 1613.7,1077.0 1613.7,949.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1613.7,949.0) rotate(-90.0)"/>
-    <polyline points="1782.7,944.0 1902.7,944.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1902.7,944.0) rotate(0.0)"/>
-    <polyline points="1011.3,528.0 1011.3,580.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
-    <polyline points="1077.3,510.0 1053.3,510.0 1053.3,580.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
-    <polyline points="1179.3,528.0 1179.3,630.0 1171.3,630.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+    <polyline points="774.0,316.0 894.0,316.0 894.0,426.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(894.0,426.0) rotate(90.0)"/>
+    <polyline points="894.0,470.0 894.0,580.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(894.0,580.0) rotate(90.0)"/>
+    <polyline points="990.0,580.0 990.0,470.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(990.0,470.0) rotate(-90.0)"/>
+    <polyline points="1086.0,580.0 1086.0,470.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1086.0,470.0) rotate(-90.0)"/>
+    <polyline points="1086.0,426.0 1086.0,386.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1086.0,386.0) rotate(-90.0)"/>
+    <polyline points="1012.0,448.0 1028.0,448.0 1028.0,388.0 1156.0,388.0 1156.0,448.0 1172.0,448.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1172.0,448.0) rotate(0.0)"/>
+    <polyline points="1216.0,448.0 1336.0,448.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1336.0,448.0) rotate(0.0)"/>
+    <polyline points="1182.0,580.0 1182.0,564.0 1122.0,564.0 1122.0,406.0 1182.0,406.0 1182.0,390.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1182.0,390.0) rotate(-90.0)"/>
+    <polyline points="1182.0,346.0 1182.0,236.0 1302.0,236.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1302.0,236.0) rotate(0.0)"/>
+    <polyline points="1346.0,236.0 1466.0,236.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1466.0,236.0) rotate(0.0)"/>
+    <polyline points="1510.0,236.0 1630.0,236.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1630.0,236.0) rotate(0.0)"/>
+    <polyline points="958.0,730.0 958.0,840.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(958.0,840.0) rotate(90.0)"/>
+    <polyline points="958.0,884.0 958.0,994.0 838.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(838.0,994.0) rotate(180.0)"/>
+    <polyline points="828.0,994.0 708.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(708.0,994.0) rotate(180.0)"/>
+    <polyline points="833.0,999.0 833.0,1109.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(833.0,1109.0) rotate(90.0)"/>
+    <polyline points="833.0,1153.0 833.0,1193.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(833.0,1193.0) rotate(90.0)"/>
+    <polyline points="698.0,994.0 578.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(578.0,994.0) rotate(180.0)"/>
+    <polyline points="534.0,994.0 414.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(414.0,994.0) rotate(180.0)"/>
+    <polyline points="404.0,994.0 284.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(284.0,994.0) rotate(180.0)"/>
+    <polyline points="703.0,999.0 703.0,1060.5 741.0,1060.5 741.0,1127.0 725.0,1127.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(725.0,1127.0) rotate(180.0)"/>
+    <polyline points="681.0,1127.0 409.0,1127.0 409.0,999.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(409.0,999.0) rotate(-90.0)"/>
+    <polyline points="240.0,994.0 120.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(120.0,994.0) rotate(180.0)"/>
+    <polyline points="1118.0,730.0 1118.0,840.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1118.0,840.0) rotate(90.0)"/>
+    <polyline points="1118.0,884.0 1118.0,994.0 1238.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1238.0,994.0) rotate(0.0)"/>
+    <polyline points="1248.0,994.0 1368.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1368.0,994.0) rotate(0.0)"/>
+    <polyline points="1243.0,999.0 1243.0,1109.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1243.0,1109.0) rotate(90.0)"/>
+    <polyline points="1243.0,1153.0 1243.0,1193.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1243.0,1193.0) rotate(90.0)"/>
+    <polyline points="1378.0,994.0 1498.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1498.0,994.0) rotate(0.0)"/>
+    <polyline points="1542.0,994.0 1662.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1662.0,994.0) rotate(0.0)"/>
+    <polyline points="1672.0,994.0 1792.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1792.0,994.0) rotate(0.0)"/>
+    <polyline points="1373.0,999.0 1373.0,1060.5 1335.0,1060.5 1335.0,1127.0 1351.0,1127.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1351.0,1127.0) rotate(0.0)"/>
+    <polyline points="1395.0,1127.0 1667.0,1127.0 1667.0,999.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1667.0,999.0) rotate(-90.0)"/>
+    <polyline points="1836.0,994.0 1956.0,994.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1956.0,994.0) rotate(0.0)"/>
+    <polyline points="1038.0,528.0 1038.0,580.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+    <polyline points="746.0,655.0 798.0,655.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+    <polyline points="1330.0,655.0 1278.0,655.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
   </g>
   <g id="signals">
-    <polyline points="1011.3,492.0 1011.3,78.0 1188.7,78.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1188.7,78.0) rotate(0.0)"/>
-    <polyline points="1206.7,96.0 1206.7,208.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1206.7,208.0) rotate(90.0)"/>
-    <polyline points="1095.3,528.0 1095.3,786.0 574.0,786.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(574.0,786.0) rotate(180.0)"/>
-    <polyline points="556.0,804.0 556.0,916.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(556.0,916.0) rotate(90.0)"/>
-    <polyline points="1197.3,510.0 1466.7,510.0 1466.7,768.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1466.7,768.0) rotate(90.0)"/>
-    <polyline points="1466.7,804.0 1466.7,916.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1466.7,916.0) rotate(90.0)"/>
+    <polyline points="1038.0,492.0 1038.0,78.0 1306.0,78.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1306.0,78.0) rotate(0.0)"/>
+    <polyline points="1324.0,96.0 1324.0,208.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1324.0,208.0) rotate(90.0)"/>
+    <polyline points="710.0,655.0 556.0,655.0 556.0,818.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(556.0,818.0) rotate(90.0)"/>
+    <polyline points="556.0,854.0 556.0,966.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(556.0,966.0) rotate(90.0)"/>
+    <polyline points="1366.0,655.0 1520.0,655.0 1520.0,818.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1520.0,818.0) rotate(90.0)"/>
+    <polyline points="1520.0,854.0 1520.0,966.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1520.0,966.0) rotate(90.0)"/>
   </g>
   <g id="symbols">
-    <use id="INLET" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(537.3,630.0)"/>
-    <use id="IV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(709.3,630.0)"/>
-    <use id="SEP" href="#sym-separator_3phase" xlink:href="#sym-separator_3phase" class="equipment" transform="translate(1011.3,630.0)"/>
-    <use id="PSV101" href="#sym-relief_valve" xlink:href="#sym-relief_valve" class="valve" transform="translate(958.0,440.0)"/>
-    <use id="FV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1122.0,440.0)"/>
-    <use id="FLARE" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(1294.0,440.0)"/>
-    <use id="GV201" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1064.7,368.0) rotate(90)"/>
-    <use id="PV201" href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" class="valve" transform="translate(1206.7,236.0)"/>
-    <use id="GV202" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1370.7,236.0)"/>
-    <use id="VAPOR" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(1542.7,236.0)"/>
-    <use id="WV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(958.0,812.0) rotate(90)"/>
-    <use id="LV101" href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" class="valve" transform="translate(556.0,944.0)"/>
-    <use id="WV102" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(262.0,944.0)"/>
-    <circle id="JD101" cx="833.0" cy="944.0" r="4" class="junction"/>
-    <circle id="J101" cx="703.0" cy="944.0" r="4" class="junction"/>
-    <circle id="J102" cx="409.0" cy="944.0" r="4" class="junction"/>
-    <use id="DV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(833.0,1081.0) rotate(90)"/>
-    <use id="WBP101" href="#sym-valve_globe" xlink:href="#sym-valve_globe" class="valve" transform="translate(703.0,1077.0)"/>
-    <use id="WATER" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(90.0,944.0)"/>
-    <use id="OV201" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1064.7,812.0) rotate(90)"/>
-    <use id="LV201" href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" class="valve" transform="translate(1466.7,944.0)"/>
-    <use id="OV202" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1760.7,944.0)"/>
-    <circle id="JD201" cx="1189.7" cy="944.0" r="4" class="junction"/>
-    <circle id="J201" cx="1319.7" cy="944.0" r="4" class="junction"/>
-    <circle id="J202" cx="1613.7" cy="944.0" r="4" class="junction"/>
-    <use id="DV201" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1189.7,1081.0) rotate(90)"/>
-    <use id="OBP201" href="#sym-valve_globe" xlink:href="#sym-valve_globe" class="valve" transform="translate(1319.7,1077.0)"/>
-    <use id="OIL" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(1932.7,944.0)"/>
-    <use id="PT101" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(1011.3,510.0)"/>
-    <use id="PC201" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(1206.7,78.0)"/>
-    <use id="LT101" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(1095.3,510.0)"/>
-    <use id="LC101" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(556.0,786.0)"/>
-    <use id="LT201" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(1179.3,510.0)"/>
-    <use id="LC201" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(1466.7,786.0)"/>
+    <use id="INLET" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(744.0,316.0)"/>
+    <use id="IV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(894.0,448.0) rotate(90)"/>
+    <use id="SEP" href="#sym-separator_3phase" xlink:href="#sym-separator_3phase" class="equipment" transform="translate(1038.0,655.0)"/>
+    <use id="VV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1086.0,448.0) rotate(90)"/>
+    <use id="PSV101" href="#sym-relief_valve" xlink:href="#sym-relief_valve" class="valve" transform="translate(990.0,448.0)"/>
+    <use id="FV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1194.0,448.0)"/>
+    <use id="FLARE" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(1366.0,448.0)"/>
+    <use id="GV201" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1182.0,368.0) rotate(90)"/>
+    <use id="PV201" href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" class="valve" transform="translate(1324.0,236.0)"/>
+    <use id="GV202" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1488.0,236.0)"/>
+    <use id="VAPOR" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(1660.0,236.0)"/>
+    <use id="WV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(958.0,862.0) rotate(90)"/>
+    <use id="LV101" href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" class="valve" transform="translate(556.0,994.0)"/>
+    <use id="WV102" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(262.0,994.0)"/>
+    <circle id="JD101" cx="833.0" cy="994.0" r="4" class="junction"/>
+    <circle id="J101" cx="703.0" cy="994.0" r="4" class="junction"/>
+    <circle id="J102" cx="409.0" cy="994.0" r="4" class="junction"/>
+    <use id="DV101" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(833.0,1131.0) rotate(90)"/>
+    <use id="WBP101" href="#sym-valve_globe" xlink:href="#sym-valve_globe" class="valve" transform="translate(703.0,1127.0)"/>
+    <use id="WATER" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(90.0,994.0)"/>
+    <use id="OV201" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1118.0,862.0) rotate(90)"/>
+    <use id="LV201" href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" class="valve" transform="translate(1520.0,994.0)"/>
+    <use id="OV202" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1814.0,994.0)"/>
+    <circle id="JD201" cx="1243.0" cy="994.0" r="4" class="junction"/>
+    <circle id="J201" cx="1373.0" cy="994.0" r="4" class="junction"/>
+    <circle id="J202" cx="1667.0" cy="994.0" r="4" class="junction"/>
+    <use id="DV201" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(1243.0,1131.0) rotate(90)"/>
+    <use id="OBP201" href="#sym-valve_globe" xlink:href="#sym-valve_globe" class="valve" transform="translate(1373.0,1127.0)"/>
+    <use id="OIL" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(1986.0,994.0)"/>
+    <use id="PT101" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(1038.0,510.0)"/>
+    <use id="PC201" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(1324.0,78.0)"/>
+    <use id="LT101" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(728.0,655.0)"/>
+    <use id="LC101" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(556.0,836.0)"/>
+    <use id="LT201" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(1348.0,655.0)"/>
+    <use id="LC201" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(1520.0,836.0)"/>
   </g>
   <g id="labels">
-    <text x="537.3" y="659.0" class="label">3-Phase Inlet</text>
-    <text x="709.3" y="662.0" class="label">IV-101</text>
-    <text x="1011.3" y="694.0" class="label">V-101</text>
-    <text x="958.0" y="402.0" class="label">PSV-101</text>
-    <text x="1122.0" y="472.0" class="label">FV-101</text>
-    <text x="1294.0" y="469.0" class="label">To flare</text>
-    <text x="1090.7" y="372.0" class="label" style="text-anchor:start">GV-201</text>
-    <text x="1206.7" y="280.0" class="label">PV-201</text>
-    <text x="1370.7" y="268.0" class="label">GV-202</text>
-    <text x="1542.7" y="265.0" class="label">Vapor Outlet</text>
-    <text x="984.0" y="816.0" class="label" style="text-anchor:start">WV-101</text>
-    <text x="556.0" y="988.0" class="label">LV-101</text>
-    <text x="262.0" y="976.0" class="label">WV-102</text>
-    <text x="859.0" y="1085.0" class="label" style="text-anchor:start">DV-101</text>
-    <text x="703.0" y="1109.0" class="label">WBP-101</text>
-    <text x="90.0" y="973.0" class="label">Water Outlet</text>
-    <text x="1090.7" y="816.0" class="label" style="text-anchor:start">OV-201</text>
-    <text x="1466.7" y="988.0" class="label">LV-201</text>
-    <text x="1760.7" y="976.0" class="label">OV-202</text>
-    <text x="1215.7" y="1085.0" class="label" style="text-anchor:start">DV-201</text>
-    <text x="1319.7" y="1109.0" class="label">OBP-201</text>
-    <text x="1932.7" y="973.0" class="label">Oil Outlet</text>
-    <text x="1011.3" y="542.0" class="label">PT-101</text>
-    <text x="1206.7" y="52.0" class="label">PC-201</text>
-    <text x="1119.3" y="542.0" class="label" style="text-anchor:start">LT-101</text>
-    <text x="556.0" y="760.0" class="label">LC-101</text>
-    <text x="1179.3" y="484.0" class="label">LT-201</text>
-    <text x="1492.7" y="790.0" class="label" style="text-anchor:start">LC-201</text>
-    <text x="1452.7" y="228.0" class="line-label">Vapor</text>
-    <text x="827.0" y="1123.0" class="line-label" transform="rotate(-90,827.0,1123.0)">OD</text>
-    <text x="180.0" y="936.0" class="line-label">Water</text>
-    <text x="1183.7" y="1123.0" class="line-label" transform="rotate(-90,1183.7,1123.0)">OD</text>
-    <text x="1842.7" y="936.0" class="line-label">Oil</text>
+    <text x="744.0" y="345.0" class="label">3-Phase Inlet</text>
+    <text x="920.0" y="452.0" class="label" style="text-anchor:start">IV-101</text>
+    <text x="1038.0" y="744.0" class="label">V-101</text>
+    <text x="1086.0" y="484.0" class="label">VV-101</text>
+    <text x="990.0" y="418.0" class="label">PSV-101</text>
+    <text x="1194.0" y="480.0" class="label">FV-101</text>
+    <text x="1366.0" y="477.0" class="label">To flare</text>
+    <text x="1208.0" y="372.0" class="label" style="text-anchor:start">GV-201</text>
+    <text x="1324.0" y="280.0" class="label">PV-201</text>
+    <text x="1488.0" y="268.0" class="label">GV-202</text>
+    <text x="1660.0" y="265.0" class="label">Vapor Outlet</text>
+    <text x="984.0" y="866.0" class="label" style="text-anchor:start">WV-101</text>
+    <text x="556.0" y="1038.0" class="label">LV-101</text>
+    <text x="262.0" y="1026.0" class="label">WV-102</text>
+    <text x="859.0" y="1135.0" class="label" style="text-anchor:start">DV-101</text>
+    <text x="703.0" y="1159.0" class="label">WBP-101</text>
+    <text x="90.0" y="1023.0" class="label">Water Outlet</text>
+    <text x="1144.0" y="866.0" class="label" style="text-anchor:start">OV-201</text>
+    <text x="1520.0" y="1038.0" class="label">LV-201</text>
+    <text x="1814.0" y="1026.0" class="label">OV-202</text>
+    <text x="1269.0" y="1135.0" class="label" style="text-anchor:start">DV-201</text>
+    <text x="1373.0" y="1159.0" class="label">OBP-201</text>
+    <text x="1986.0" y="1023.0" class="label">Oil Outlet</text>
+    <text x="1038.0" y="542.0" class="label">PT-101</text>
+    <text x="1324.0" y="52.0" class="label">PC-201</text>
+    <text x="728.0" y="687.0" class="label">LT-101</text>
+    <text x="582.0" y="840.0" class="label" style="text-anchor:start">LC-101</text>
+    <text x="1348.0" y="687.0" class="label">LT-201</text>
+    <text x="1546.0" y="840.0" class="label" style="text-anchor:start">LC-201</text>
+    <text x="1570.0" y="228.0" class="line-label">Vapor</text>
+    <text x="827.0" y="1173.0" class="line-label" transform="rotate(-90,827.0,1173.0)">OD</text>
+    <text x="180.0" y="986.0" class="line-label">Water</text>
+    <text x="1237.0" y="1173.0" class="line-label" transform="rotate(-90,1237.0,1173.0)">OD</text>
+    <text x="1896.0" y="986.0" class="line-label">Oil</text>
   </g>
   <g id="notes">
   </g>

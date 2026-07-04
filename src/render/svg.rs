@@ -335,6 +335,10 @@ fn render_element(elem: &SymbolElement, indent: &str, nl: &str) -> String {
             "{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"{:.1}\" fill=\"black\" stroke=\"none\"/>{}",
             indent, cx, cy, r, nl
         ),
+        SymbolElement::SolidPath { d } => format!(
+            "{}<path d=\"{}\" fill=\"black\" stroke=\"black\" stroke-width=\"{}\"/>{}",
+            indent, d, SYM_SW, nl
+        ),
         SymbolElement::Text { x, y, text, size } => format!(
             "{}<text x=\"{:.1}\" y=\"{:.1}\" font-family=\"sans-serif\" font-size=\"{:.1}\" text-anchor=\"middle\" fill=\"#555\" stroke=\"none\">{}</text>{}",
             indent, x, y, size, escape_xml(text), nl

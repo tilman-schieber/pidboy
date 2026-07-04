@@ -41,6 +41,8 @@ pub enum SymbolElement {
     Text { x: f64, y: f64, text: String, size: f64 },
     /// Ink-filled circle (globe valve plug, junction dots).
     Dot { cx: f64, cy: f64, r: f64 },
+    /// Ink-filled path (solid valve bodies).
+    SolidPath { d: String },
 }
 
 // Internal helper: build a SymbolDef with the default centred view_box.
@@ -145,7 +147,7 @@ pub fn valve_signal_anchor(valve_type: &str, actuator: Option<&str>) -> Option<(
     match valve_symbol_key(valve_type, actuator) {
         "control_valve" => Some((0.0, -41.0)),           // top of actuator circle
         "control_valve_diaphragm" => Some((0.0, -28.0)), // top of diaphragm dome
-        "relief_valve" => Some((0.0, -34.0)),            // top of spring arch
+        "relief_valve" => Some((0.0, -22.0)),            // top of spring
         _ => None,
     }
 }
@@ -224,31 +226,33 @@ fn separator_symbol() -> SymbolDef {
 /// annotations. Intended port sides: inlet west, psv+gas north (declared in
 /// that order), water+oil south (in that order, water upstream of the weir).
 fn separator_3phase_symbol() -> SymbolDef {
-    // Declared width covers the full drawn extent including the heads
-    // (arcs centered ±110, radius 50 → ±160), so routed lines and bounds
-    // don't clip through the head curvature.
+    // Sized to dominate the sheet like a real separator drawing: declared
+    // width covers the full drawn extent including the heads (arcs centered
+    // ±165, radius 75 → ±240). Intended ports: `inlet: north, psv: north,
+    // vent: north, gas: north` (in that order, gas over the demister) and
+    // `water: south, oil: south` (water upstream of the weir).
     let mut elements = vec![
         // Drum outline with elliptical heads
         SymbolElement::Path {
-            d: "M -110 -50 A 50 50 0 0 0 -110 50 L 110 50 A 50 50 0 0 0 110 -50 Z".into(),
+            d: "M -165 -75 A 75 75 0 0 0 -165 75 L 165 75 A 75 75 0 0 0 165 -75 Z".into(),
         },
         // Weir between the water and oil compartments (bottom half)
-        SymbolElement::Line { x1: 0.0, y1: 50.0, x2: 0.0, y2: 8.0 },
-        SymbolElement::Text { x: 0.0, y: 0.0, text: "Weir".into(), size: 9.0 },
+        SymbolElement::Line { x1: 0.0, y1: 75.0, x2: 0.0, y2: 12.0 },
+        SymbolElement::Text { x: 0.0, y: 4.0, text: "Weir".into(), size: 10.0 },
         // Demister pad under the gas nozzle (crosshatched strip)
-        SymbolElement::Rect { x: 33.0, y: -48.0, w: 40.0, h: 10.0, rx: 0.0 },
-        SymbolElement::Line { x1: 43.0, y1: -48.0, x2: 43.0, y2: -38.0 },
-        SymbolElement::Line { x1: 53.0, y1: -48.0, x2: 53.0, y2: -38.0 },
-        SymbolElement::Line { x1: 63.0, y1: -48.0, x2: 63.0, y2: -38.0 },
-        SymbolElement::Text { x: 53.0, y: -26.0, text: "Demister pad".into(), size: 8.0 },
-        SymbolElement::Text { x: -53.0, y: 30.0, text: "Vortex breakers".into(), size: 8.0 },
+        SymbolElement::Rect { x: 119.0, y: -73.0, w: 50.0, h: 12.0, rx: 0.0 },
+        SymbolElement::Line { x1: 131.5, y1: -73.0, x2: 131.5, y2: -61.0 },
+        SymbolElement::Line { x1: 144.0, y1: -73.0, x2: 144.0, y2: -61.0 },
+        SymbolElement::Line { x1: 156.5, y1: -73.0, x2: 156.5, y2: -61.0 },
+        SymbolElement::Text { x: 144.0, y: -48.0, text: "Demister pad".into(), size: 9.0 },
+        SymbolElement::Text { x: -80.0, y: 50.0, text: "Vortex breakers".into(), size: 9.0 },
     ];
     // Vortex breaker tents over the two liquid outlets
-    for cx in [-53.3, 53.3] {
-        elements.push(SymbolElement::Line { x1: cx - 9.0, y1: 50.0, x2: cx, y2: 40.0 });
-        elements.push(SymbolElement::Line { x1: cx, y1: 40.0, x2: cx + 9.0, y2: 50.0 });
+    for cx in [-80.0, 80.0] {
+        elements.push(SymbolElement::Line { x1: cx - 11.0, y1: 75.0, x2: cx, y2: 62.0 });
+        elements.push(SymbolElement::Line { x1: cx, y1: 62.0, x2: cx + 11.0, y2: 75.0 });
     }
-    sym(320.0, 100.0, elements)
+    sym(480.0, 150.0, elements)
 }
 
 /// CSTR reactor: vessel with shaft and two-level Rushton impeller blades.
@@ -355,10 +359,11 @@ fn control_valve_symbol() -> SymbolDef {
     ])
 }
 
-/// Control valve with diaphragm actuator: bowtie body + stem + dome.
+/// Control valve with diaphragm actuator: solid bowtie body + stem + dome
+/// (the filled body matches common vendor P&ID style for automatic valves).
 fn control_valve_diaphragm_symbol() -> SymbolDef {
     sym(44.0, 60.0, vec![
-        SymbolElement::Path {
+        SymbolElement::SolidPath {
             d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
         },
         SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -18.0 },
@@ -367,13 +372,12 @@ fn control_valve_diaphragm_symbol() -> SymbolDef {
     ])
 }
 
-/// Globe valve: bowtie with a filled plug dot at the seat.
+/// Globe valve: solid bowtie (bypass/throttling valve style).
 fn globe_valve_symbol() -> SymbolDef {
     sym(44.0, 36.0, vec![
-        SymbolElement::Path {
+        SymbolElement::SolidPath {
             d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
         },
-        SymbolElement::Dot { cx: 0.0, cy: 0.0, r: 5.0 },
     ])
 }
 
@@ -387,15 +391,17 @@ fn check_valve_symbol() -> SymbolDef {
     ])
 }
 
-/// Relief / safety valve: bowtie + stem + spring arch above.
+/// Relief / safety valve, angle pattern: inlet from below, outlet to the
+/// side, spring on top. Declare `ports: in: south, out: east`.
 fn relief_valve_symbol() -> SymbolDef {
-    sym(44.0, 60.0, vec![
-        SymbolElement::Path {
-            d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
-        },
-        SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -22.0 },
-        // Spring arch (single quadratic arc)
-        SymbolElement::Path { d: "M -10 -22 Q 0 -34 10 -22".into() },
+    sym(44.0, 44.0, vec![
+        // Inlet triangle (base at the bottom nozzle, apex at the seat)
+        SymbolElement::Path { d: "M -12 22 L 0 0 L 12 22 Z".into() },
+        // Outlet triangle (base at the side nozzle)
+        SymbolElement::Path { d: "M 22 -12 L 0 0 L 22 12 Z".into() },
+        // Spring above the seat
+        SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -10.0 },
+        SymbolElement::Path { d: "M -8 -10 Q 0 -22 8 -10".into() },
     ])
 }
 

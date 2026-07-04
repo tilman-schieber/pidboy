@@ -94,41 +94,42 @@ impl LayoutInfo {
     pub fn port_pos(&self, id: &str, port_name: &str, ports: &[Port]) -> Option<SvgPos> {
         let center = self.positions.get(id)?;
         let bounds = self.bounds.get(id)?;
-        let w = bounds.w;
-        let h = bounds.h;
-
-        let resolved = |p: &Port| p.side.or_else(|| infer_port_side(&p.name));
-
-        let side = ports
-            .iter()
-            .find(|p| p.name == port_name)
-            .and_then(resolved)
-            .or_else(|| infer_port_side(port_name));
-
-        let Some(side) = side else {
-            return Some(SvgPos { x: center.x, y: center.y });
-        };
-
-        // Fraction along the side: single port sits centered; multiple ports
-        // spread evenly (1/(n+1), 2/(n+1), …) in declaration order.
-        let same_side: Vec<&Port> = ports
-            .iter()
-            .filter(|p| resolved(p) == Some(side))
-            .collect();
-        let idx = same_side.iter().position(|p| p.name == port_name);
-        let frac = match (idx, same_side.len()) {
-            (Some(i), n) if n > 0 => (i as f64 + 1.0) / (n as f64 + 1.0),
-            _ => 0.5,
-        };
-
-        let (dx, dy) = match side {
-            Side::West => (-w / 2.0, (frac - 0.5) * h),
-            Side::East => (w / 2.0, (frac - 0.5) * h),
-            Side::North => ((frac - 0.5) * w, -h / 2.0),
-            Side::South => ((frac - 0.5) * w, h / 2.0),
-        };
-        Some(SvgPos { x: center.x + dx, y: center.y + dy })
+        match port_offset(ports, port_name, bounds.w, bounds.h) {
+            Some((dx, dy)) => Some(SvgPos { x: center.x + dx, y: center.y + dy }),
+            None => Some(SvgPos { x: center.x, y: center.y }),
+        }
     }
+}
+
+/// Local offset of a named port from the symbol center, given the symbol's
+/// dimensions. Ports sharing a side are distributed evenly along it in
+/// declaration order (1/(n+1), 2/(n+1), …), so e.g. a vessel can have both a
+/// gas outlet and a relief nozzle on top without them coinciding.
+pub fn port_offset(ports: &[Port], port_name: &str, w: f64, h: f64) -> Option<(f64, f64)> {
+    let resolved = |p: &Port| p.side.or_else(|| infer_port_side(&p.name));
+
+    let side = ports
+        .iter()
+        .find(|p| p.name == port_name)
+        .and_then(resolved)
+        .or_else(|| infer_port_side(port_name))?;
+
+    let same_side: Vec<&Port> = ports
+        .iter()
+        .filter(|p| resolved(p) == Some(side))
+        .collect();
+    let idx = same_side.iter().position(|p| p.name == port_name);
+    let frac = match (idx, same_side.len()) {
+        (Some(i), n) if n > 0 => (i as f64 + 1.0) / (n as f64 + 1.0),
+        _ => 0.5,
+    };
+
+    Some(match side {
+        Side::West => (-w / 2.0, (frac - 0.5) * h),
+        Side::East => (w / 2.0, (frac - 0.5) * h),
+        Side::North => ((frac - 0.5) * w, -h / 2.0),
+        Side::South => ((frac - 0.5) * w, h / 2.0),
+    })
 }
 
 /// True when every sided port of the valve lies on north/south — it sits in
@@ -309,11 +310,12 @@ fn try_place_adjacent(
         x: anchor_pos.x + ux * half,
         y: anchor_pos.y + uy * half,
     };
-    place_from_point(layout, dims, edge, new_id, side, max_nudges, force, avoid)
+    place_from_point(layout, dims, edge, new_id, side, max_nudges, force, avoid, None)
 }
 
 /// Place `new_id` one gap away from `pt` (a symbol boundary or port point)
 /// toward `side`, nudging along that direction until free.
+#[allow(clippy::too_many_arguments)]
 #[allow(clippy::too_many_arguments)]
 fn place_from_point(
     layout: &mut LayoutInfo,
@@ -324,16 +326,21 @@ fn place_from_point(
     max_nudges: usize,
     force: bool,
     avoid: &[SvgRect],
+    // Local offset of the target's connecting port from its center; when
+    // known, the target is shifted so that port (not its centerline) lines
+    // up with `pt`. Defaults to a centered port on the facing side.
+    port_local: Option<(f64, f64)>,
 ) -> bool {
     let (nw, nh) = dim_of(dims, new_id);
     let (ux, uy) = unit(side);
-    let dist = match side {
-        Side::East | Side::West => H_GAP + nw / 2.0,
-        Side::North | Side::South => V_GAP + nh / 2.0,
+    let (plx, ply) = port_local.unwrap_or((-ux * nw / 2.0, -uy * nh / 2.0));
+    let gap = match side {
+        Side::East | Side::West => H_GAP,
+        Side::North | Side::South => V_GAP,
     };
     let mut pos = SvgPos {
-        x: pt.x + ux * dist,
-        y: pt.y + uy * dist,
+        x: pt.x + ux * gap - plx,
+        y: pt.y + uy * gap - ply,
     };
     for _ in 0..=max_nudges {
         let rect = SvgRect {
@@ -458,7 +465,13 @@ fn place_line_endpoints(
                     place_corner(layout, dims, pt, &new.id, side, tside);
                 }
                 (Some(pt), _) => {
-                    place_from_point(layout, dims, pt, &new.id, side, 100, true, &[]);
+                    let port_local = new.port.as_ref().and_then(|pn| {
+                        let (w, h) = dim_of(dims, &new.id);
+                        diagram
+                            .get_ports(&new.id)
+                            .and_then(|ports| port_offset(ports, pn, w, h))
+                    });
+                    place_from_point(layout, dims, pt, &new.id, side, 100, true, &[], port_local);
                 }
                 (None, _) => place_adjacent(layout, dims, &anchor.id, &new.id, side),
             }
@@ -498,35 +511,12 @@ fn place_attached_instruments(
         let Some(attach) = &instr.attach else { continue };
         let Some(attach_pos) = layout.positions.get(&attach.id).copied() else { continue };
 
-        // Far enough above the attach point that the bubble and its label
-        // clear the equipment outline, leaving room for a leader line.
+        // Bubble sits outward from the attach point on the side implied by
+        // the attach port (default: above), far enough that the bubble and
+        // its label clear the equipment outline, with room for a leader.
         let attach_bounds = layout.bounds.get(&attach.id);
-        let offset_y = attach_bounds.map(|b| b.h / 2.0 + 70.0).unwrap_or(110.0);
 
-        // For port-attached instruments, use port position if available
-        let base_pos = if let Some(port_name) = &attach.port {
-            diagram
-                .get_ports(&attach.id)
-                .and_then(|ports| layout.port_pos(&attach.id, port_name, ports))
-                .map(|p| SvgPos { x: p.x, y: p.y - offset_y })
-                .unwrap_or(SvgPos {
-                    x: attach_pos.x,
-                    y: attach_pos.y - offset_y,
-                })
-        } else {
-            SvgPos {
-                x: attach_pos.x,
-                y: attach_pos.y - offset_y,
-            }
-        };
-
-        // Determine perpendicular offset for instruments sharing the same port
-        let port_key = (
-            attach.id.clone(),
-            attach.port.clone().unwrap_or_default(),
-        );
-        let count = port_placement_count.entry(port_key).or_insert(0);
-        // Determine port side to choose perpendicular direction
+        // Determine port side to choose offset direction
         let port_side = attach
             .port
             .as_deref()
@@ -537,6 +527,36 @@ fn place_attached_instruments(
             })
             .or_else(|| attach.port.as_deref().and_then(infer_port_side))
             .unwrap_or(Side::North);
+        let (ox, oy) = unit(port_side);
+
+        // Port-attached: offset from the port point (already on the
+        // boundary); center-attached: offset from the center by the
+        // half-extent plus the same clearance.
+        let port_pt = attach.port.as_ref().and_then(|pn| {
+            diagram
+                .get_ports(&attach.id)
+                .and_then(|ports| layout.port_pos(&attach.id, pn, ports))
+        });
+        let (anchor_pt, clearance) = match port_pt {
+            Some(p) => (p, 70.0),
+            None => {
+                let half = attach_bounds
+                    .map(|b| if is_vertical_side(port_side) { b.h / 2.0 } else { b.w / 2.0 })
+                    .unwrap_or(40.0);
+                (attach_pos, half + 70.0)
+            }
+        };
+        let base_pos = SvgPos {
+            x: anchor_pt.x + ox * clearance,
+            y: anchor_pt.y + oy * clearance,
+        };
+
+        // Determine perpendicular offset for instruments sharing the same port
+        let port_key = (
+            attach.id.clone(),
+            attach.port.clone().unwrap_or_default(),
+        );
+        let count = port_placement_count.entry(port_key).or_insert(0);
 
         // Perpendicular offset: for north/south ports offset in x; for east/west in y
         let perp_offset = (*count as f64) * 44.0;
