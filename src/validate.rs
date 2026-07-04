@@ -80,7 +80,9 @@ fn validate_lines(diagram: &Diagram, diags: &mut DiagEngine) {
         validate_ref(diagram, &line.from, &format!("line `{}`", line.id), "from", diags);
 
         // Validate to reference
-        validate_ref(diagram, &line.to, &format!("line `{}`", line.id), "to", diags);
+        if let Some(to) = &line.to {
+            validate_ref(diagram, to, &format!("line `{}`", line.id), "to", diags);
+        }
     }
 }
 

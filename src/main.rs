@@ -213,7 +213,12 @@ fn cmd_dump_ast(input: &str, strict: bool) -> i32 {
 
     println!("## Lines ({} items)", diagram.lines.len());
     for (id, l) in &diagram.lines {
-        println!("  {} [{}]: {} -> {}", id, l.class, l.from, l.to);
+        let to = l
+            .to
+            .as_ref()
+            .map(|t| t.to_string())
+            .unwrap_or_else(|| "(open end)".to_string());
+        println!("  {} [{}]: {} -> {}", id, l.class, l.from, to);
     }
     println!();
 

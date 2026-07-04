@@ -140,7 +140,9 @@ pub struct Line {
     pub id: String,
     pub class: String,
     pub from: ObjRef,
-    pub to: ObjRef,
+    /// `None` makes an open-ended stub: a short run drawn outward from
+    /// `from` (drains, vents, sample points).
+    pub to: Option<ObjRef>,
     pub label: Option<String>,
 }
 

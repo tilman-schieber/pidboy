@@ -131,6 +131,17 @@ impl LayoutInfo {
     }
 }
 
+/// True when every sided port of the valve lies on north/south — it sits in
+/// a vertical run and its symbol is drawn rotated 90°.
+pub fn valve_is_vertical(v: &Valve) -> bool {
+    let sides: Vec<Side> = v
+        .ports
+        .iter()
+        .filter_map(|p| p.side.or_else(|| infer_port_side(&p.name)))
+        .collect();
+    !sides.is_empty() && sides.iter().all(|s| matches!(s, Side::North | Side::South))
+}
+
 /// Infer which side of a symbol a port sits on from its conventional name.
 pub fn infer_port_side(name: &str) -> Option<Side> {
     match name {
@@ -212,6 +223,19 @@ fn unit(side: Side) -> (f64, f64) {
         Side::North => (0.0, -1.0),
         Side::South => (0.0, 1.0),
     }
+}
+
+fn opposite(side: Side) -> Side {
+    match side {
+        Side::East => Side::West,
+        Side::West => Side::East,
+        Side::North => Side::South,
+        Side::South => Side::North,
+    }
+}
+
+fn is_vertical_side(side: Side) -> bool {
+    matches!(side, Side::North | Side::South)
 }
 
 /// The side of `ep`'s object that the connection leaves/enters through.
@@ -334,6 +358,47 @@ fn place_from_point(
     false
 }
 
+/// Place `new_id` around a pipe corner: the run leaves `pt` toward `along`,
+/// turns, and enters the target through its `entry` side. The target sits
+/// one gap along `along` and one approach-run away on the perpendicular.
+fn place_corner(
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+    pt: SvgPos,
+    new_id: &str,
+    along: Side,
+    entry: Side,
+) {
+    let (nw, nh) = dim_of(dims, new_id);
+    let (ax, ay) = unit(along);
+    let approach = opposite(entry);
+    let (tx, ty) = unit(approach);
+    let rise = if is_vertical_side(along) { V_GAP } else { H_GAP };
+    let run = if is_vertical_side(approach) {
+        V_GAP + nh / 2.0
+    } else {
+        H_GAP + nw / 2.0
+    };
+    let mut pos = SvgPos {
+        x: pt.x + ax * rise + tx * run,
+        y: pt.y + ay * rise + ty * run,
+    };
+    for _ in 0..100 {
+        let rect = SvgRect {
+            x: pos.x - nw / 2.0,
+            y: pos.y - nh / 2.0,
+            w: nw,
+            h: nh,
+        };
+        if !collides(layout, &rect, 30.0) {
+            break;
+        }
+        pos.x += ax * 40.0;
+        pos.y += ay * 40.0;
+    }
+    place(layout, new_id, pos, (nw, nh));
+}
+
 fn content_bottom(layout: &LayoutInfo) -> f64 {
     layout
         .bounds
@@ -354,15 +419,17 @@ fn place_line_endpoints(
     loop {
         let mut progress = false;
         for line in diagram.lines.values() {
+            // Open-ended stubs have no second object to place.
+            let Some(line_to) = &line.to else { continue };
             let from_placed = layout.positions.contains_key(&line.from.id);
-            let to_placed = layout.positions.contains_key(&line.to.id);
+            let to_placed = layout.positions.contains_key(&line_to.id);
             if from_placed == to_placed {
                 continue;
             }
             let (anchor, new) = if from_placed {
-                (&line.from, &line.to)
+                (&line.from, line_to)
             } else {
-                (&line.to, &line.from)
+                (line_to, &line.from)
             };
             let side = endpoint_side(diagram, anchor, from_placed);
             // Anchor on the port the line connects to, so the new object
@@ -372,11 +439,28 @@ fn place_line_endpoints(
                     .get_ports(&anchor.id)
                     .and_then(|ports| layout.port_pos(&anchor.id, pn, ports))
             });
-            match port_pt {
-                Some(pt) => {
+            // The target's own entry side, when explicitly resolvable.
+            let target_side = new.port.as_ref().and_then(|pn| {
+                diagram
+                    .get_ports(&new.id)
+                    .and_then(|ports| {
+                        ports.iter().find(|p| p.name == *pn).and_then(|p| p.side)
+                    })
+                    .or_else(|| infer_port_side(pn))
+            });
+            match (port_pt, target_side) {
+                // Ports on orthogonal axes: the pipe turns a corner. Place
+                // the target diagonally so the elbow lands in the run, not
+                // inside a symbol.
+                (Some(pt), Some(tside))
+                    if is_vertical_side(tside) != is_vertical_side(side) =>
+                {
+                    place_corner(layout, dims, pt, &new.id, side, tside);
+                }
+                (Some(pt), _) => {
                     place_from_point(layout, dims, pt, &new.id, side, 100, true, &[]);
                 }
-                None => place_adjacent(layout, dims, &anchor.id, &new.id, side),
+                (None, _) => place_adjacent(layout, dims, &anchor.id, &new.id, side),
             }
             progress = true;
         }
@@ -502,7 +586,9 @@ fn used_port_corridors(diagram: &Diagram, layout: &LayoutInfo, id: &str) -> Vec<
     let used = |port_name: &str| {
         diagram.lines.values().any(|l| {
             (l.from.id == id && l.from.port.as_deref() == Some(port_name))
-                || (l.to.id == id && l.to.port.as_deref() == Some(port_name))
+                || l.to.as_ref().is_some_and(|t| {
+                    t.id == id && t.port.as_deref() == Some(port_name)
+                })
         })
     };
     const LEN: f64 = 160.0;
@@ -684,7 +770,11 @@ fn symbol_dims(diagram: &Diagram, kind: &crate::ast::DeclKind, id: &str) -> (f64
             .get(id)
             .map(|v| {
                 let s = symbols::valve_symbol(&v.valve_type, v.actuator.as_deref());
-                (s.width, s.height)
+                if valve_is_vertical(v) {
+                    (s.height, s.width)
+                } else {
+                    (s.width, s.height)
+                }
             })
             .unwrap_or((VALVE_W, VALVE_H)),
         DeclKind::Instrument => diagram

@@ -44,7 +44,11 @@ pub fn route(diagram: &Diagram, layout: &LayoutInfo) -> RouteResult {
 
     // Route lines
     for line in diagram.lines.values() {
-        if let Some(seg) = route_connection(&line.id, &line.from, &line.to, false, diagram, layout, &segments) {
+        let seg = match &line.to {
+            Some(to) => route_connection(&line.id, &line.from, to, false, diagram, layout, &segments),
+            None => route_open_stub(line, diagram, layout),
+        };
+        if let Some(seg) = seg {
             segments.push(seg);
         }
     }
@@ -196,6 +200,60 @@ fn route_connection(
         connection_id: id.to_string(),
         points,
         is_signal,
+        class: None,
+    })
+}
+
+/// Length of an open-ended stub line beyond the symbol boundary.
+const OPEN_STUB_LEN: f64 = 40.0;
+
+/// A line with no `to`: a short open-ended run drawn outward from `from`
+/// (drain, vent, sample point). Direction comes from the port side; without
+/// one, vents point up, drains down, everything else east.
+fn route_open_stub(
+    line: &Line,
+    diagram: &Diagram,
+    layout: &LayoutInfo,
+) -> Option<RouteSegment> {
+    let e = get_endpoint(&line.from, diagram, layout, false)?;
+    let dir = e.dir.unwrap_or(match line.class.as_str() {
+        "vent" => Side::North,
+        "drain" => Side::South,
+        _ => Side::East,
+    });
+    let (ux, uy) = unit(dir);
+
+    // Center-anchored starts reach the boundary first, then extend beyond it.
+    let extra = if e.trim {
+        layout
+            .get_bounds(&line.from.id)
+            .map(|b| if uy != 0.0 { b.h / 2.0 } else { b.w / 2.0 })
+            .unwrap_or(0.0)
+    } else {
+        0.0
+    };
+    let len = extra + OPEN_STUB_LEN;
+    let mut points = vec![
+        e.pos,
+        SvgPos {
+            x: e.pos.x + ux * len,
+            y: e.pos.y + uy * len,
+        },
+    ];
+    if e.trim {
+        if let Some(b) = layout.get_bounds(&line.from.id) {
+            points.reverse();
+            trim_tail(&mut points, b);
+            points.reverse();
+        }
+    }
+    if points.len() < 2 {
+        return None;
+    }
+    Some(RouteSegment {
+        connection_id: line.id.clone(),
+        points,
+        is_signal: false,
         class: None,
     })
 }

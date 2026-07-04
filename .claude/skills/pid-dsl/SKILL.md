@@ -134,11 +134,24 @@ line: BPV.out → J2.south
 line L100:
   class: process            # required: process / utility / drain / vent
   from: P101.out            # required — object or object.port
-  to: CV101.in              # required
+  to: CV101.in              # optional — omit for an open-ended stub
   label: "3in-P-1023"       # optional
 ```
 
 **line.class values:** `process`, `utility`, `drain`, `vent`
+
+**Open-ended stubs:** a line with no `to` draws a short open run outward from `from` — use for drains, vents and sample points. Direction follows the `from` port side (else vents point up, drains down). Typical drain off a pipe run:
+
+```
+junction JD1                # tee on the main run
+valve DV1:
+  type: gate
+  ports:
+    in: north
+    out: south              # all-N/S ports draw the valve rotated vertical
+line: JD1.south → DV1.in    (class: drain)
+line: from: DV1.out, label: "OD"   (class: drain, no to:)
+```
 
 ---
 

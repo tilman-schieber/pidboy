@@ -300,19 +300,9 @@ fn normalize_line(decl: &Decl, diags: &mut DiagEngine) -> Option<Line> {
         }
     };
 
-    let to = match find_prop(props, "to").and_then(|p| prop_as_ref(p)) {
-        Some(r) => r,
-        None => {
-            diags.emit(
-                Diagnostic::error(format!(
-                    "line `{}` is missing required property `to`",
-                    decl.id
-                ))
-                .with_span(decl.span),
-            );
-            return None;
-        }
-    };
+    // `to` is optional: a line without one is an open-ended stub (drain,
+    // vent, sample point) drawn outward from `from`.
+    let to = find_prop(props, "to").and_then(|p| prop_as_ref(p));
 
     let label = find_prop(props, "label").and_then(|p| prop_as_str(p)).map(String::from);
 

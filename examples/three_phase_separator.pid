@@ -60,7 +60,7 @@ valve GV201:
   type: gate
   ports:
     in: south
-    out: east
+    out: north
   label: "GV-201"
 
 valve PV201:
@@ -87,7 +87,7 @@ valve WV101:
   type: gate
   ports:
     in: north
-    out: west
+    out: south
   label: "WV-101"
 
 valve LV101:
@@ -106,8 +106,16 @@ valve WV102:
     out: west
   label: "WV-102"
 
+junction JD101
 junction J101
 junction J102
+
+valve DV101:
+  type: gate
+  ports:
+    in: north
+    out: south
+  label: "DV-101"
 
 valve WBP101:
   type: globe
@@ -128,7 +136,7 @@ valve OV201:
   type: gate
   ports:
     in: north
-    out: east
+    out: south
   label: "OV-201"
 
 valve LV201:
@@ -143,8 +151,16 @@ valve OV202:
   ports: in, out
   label: "OV-202"
 
+junction JD201
 junction J201
 junction J202
+
+valve DV201:
+  type: gate
+  ports:
+    in: north
+    out: south
+  label: "DV-201"
 
 valve OBP201:
   type: globe
@@ -213,7 +229,22 @@ line L108:
 line L109:
   class: process
   from: WV101.out
+  to: JD101.east
+
+line L108B:
+  class: process
+  from: JD101.west
   to: J101.east
+
+line L108C:
+  class: drain
+  from: JD101.south
+  to: DV101.in
+
+line L108D:
+  class: drain
+  from: DV101.out
+  label: "OD"
 
 line L109B:
   class: process
@@ -254,7 +285,22 @@ line L112:
 line L113:
   class: process
   from: OV201.out
+  to: JD201.west
+
+line L112B:
+  class: process
+  from: JD201.east
   to: J201.west
+
+line L112C:
+  class: drain
+  from: JD201.south
+  to: DV201.in
+
+line L112D:
+  class: drain
+  from: DV201.out
+  label: "OD"
 
 line L113B:
   class: process

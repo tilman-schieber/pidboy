@@ -483,6 +483,13 @@ fn render_equipment(eq: &Equipment, pos: &SvgPos, indent: &str, pretty: bool) ->
 
 fn render_valve(v: &Valve, pos: &SvgPos, indent: &str, pretty: bool) -> String {
     let key = symbols::valve_symbol_key(&v.valve_type, v.actuator.as_deref());
+    if crate::layout::valve_is_vertical(v) {
+        let nl = if pretty { "\n" } else { "" };
+        return format!(
+            "{}{}<use id=\"{}\" href=\"#sym-{}\" xlink:href=\"#sym-{}\" class=\"valve\" transform=\"translate({:.1},{:.1}) rotate(90)\"/>{}",
+            indent, indent, v.id, key, key, pos.x, pos.y, nl
+        );
+    }
     render_use(&v.id, &format!("sym-{}", key), "valve", pos, indent, pretty)
 }
 
