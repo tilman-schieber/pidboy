@@ -49,6 +49,10 @@ pub enum Commands {
         /// Pretty-print SVG output
         #[arg(long)]
         pretty: bool,
+
+        /// Append a legend explaining every symbol used in the diagram
+        #[arg(long)]
+        legend: bool,
     },
 
     /// Validate a DSL file without generating output

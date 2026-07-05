@@ -27,7 +27,8 @@ fn main() {
             grid: _grid,
             no_route,
             pretty,
-        } => cmd_compile(&input, output.as_deref(), width, height, no_route, pretty, cli.strict, cli.quiet, cli.verbose),
+            legend,
+        } => cmd_compile(&input, output.as_deref(), width, height, no_route, pretty, legend, cli.strict, cli.quiet, cli.verbose),
         cli::Commands::Check { input } => cmd_check(&input, cli.strict, cli.quiet),
         cli::Commands::DumpAst { input } => cmd_dump_ast(&input, cli.strict),
     };
@@ -71,6 +72,7 @@ fn cmd_compile(
     height: Option<u32>,
     no_route: bool,
     pretty: bool,
+    legend: bool,
     strict: bool,
     quiet: bool,
     _verbose: bool,
@@ -101,6 +103,7 @@ fn cmd_compile(
         height,
         pretty,
         no_route,
+        legend,
     };
 
     let svg = render::svg::render(&diagram, &layout, &routes.segments, &opts);

@@ -12,8 +12,26 @@ pub fn render(
     routes: &[RouteSegment],
     opts: &SvgOptions,
 ) -> String {
-    // Compute canvas bounds
-    let (canvas_w, canvas_h) = compute_canvas(diagram, layout, opts);
+    // Compute canvas bounds; a legend goes below the drawing and grows the
+    // canvas so it can never clash with the diagram itself.
+    let (mut canvas_w, mut canvas_h) = compute_canvas(diagram, layout, opts);
+    let legend_entries = if opts.legend {
+        build_legend_entries(diagram)
+    } else {
+        Vec::new()
+    };
+    let legend_origin = if legend_entries.is_empty() {
+        None
+    } else {
+        let (_, content_bottom) = content_extent(diagram, layout);
+        let (lw, lh) = legend_dims(legend_entries.len());
+        let (ox, oy) = (60.0, content_bottom + 10.0);
+        if opts.width.is_none() && opts.height.is_none() {
+            canvas_w = canvas_w.max((ox + lw + 60.0).ceil() as u32);
+            canvas_h = canvas_h.max((oy + lh + 60.0).ceil() as u32);
+        }
+        Some((ox, oy))
+    };
 
     let nl = if opts.pretty { "\n" } else { "" };
     let indent = if opts.pretty { "  " } else { "" };
@@ -172,6 +190,10 @@ pub fn render(
         }
     }
     out.push_str(&format!("{}</g>{}", indent, nl));
+
+    if let Some((ox, oy)) = legend_origin {
+        out.push_str(&render_legend(&legend_entries, ox, oy, indent, opts.pretty));
+    }
 
     out.push_str("</svg>");
     out
@@ -348,11 +370,8 @@ fn render_element(elem: &SymbolElement, indent: &str, nl: &str) -> String {
 
 // ---- Canvas / styles / markers ----
 
-fn compute_canvas(diagram: &Diagram, layout: &LayoutInfo, opts: &SvgOptions) -> (u32, u32) {
-    if opts.width.is_some() || opts.height.is_some() {
-        return (opts.width.unwrap_or(800), opts.height.unwrap_or(600));
-    }
-
+/// Rightmost/bottommost drawing extent including a 60px margin.
+fn content_extent(diagram: &Diagram, layout: &LayoutInfo) -> (f64, f64) {
     let mut max_x = 400.0f64;
     let mut max_y = 300.0f64;
 
@@ -365,7 +384,256 @@ fn compute_canvas(diagram: &Diagram, layout: &LayoutInfo, opts: &SvgOptions) -> 
         }
     }
 
+    (max_x, max_y)
+}
+
+fn compute_canvas(diagram: &Diagram, layout: &LayoutInfo, opts: &SvgOptions) -> (u32, u32) {
+    if opts.width.is_some() || opts.height.is_some() {
+        return (opts.width.unwrap_or(800), opts.height.unwrap_or(600));
+    }
+    let (max_x, max_y) = content_extent(diagram, layout);
     (max_x.ceil() as u32, max_y.ceil() as u32)
+}
+
+// ---- Legend ----
+
+enum LegendSample {
+    /// A `<use>` of an already-emitted symbol def, scaled to fit the cell.
+    Symbol { key: String, w: f64, h: f64 },
+    /// A short sample line with the class's stroke/dash and a flow arrow.
+    Stroke { class: String, arrow: bool },
+    /// Junction/tee dot.
+    Junction,
+}
+
+struct LegendEntry {
+    sample: LegendSample,
+    label: &'static str,
+}
+
+const LEGEND_ROWS_PER_COL: usize = 5;
+const LEGEND_CELL_H: f64 = 50.0;
+const LEGEND_COL_W: f64 = 250.0;
+const LEGEND_PAD: f64 = 14.0;
+const LEGEND_TITLE_H: f64 = 26.0;
+
+fn legend_dims(n: usize) -> (f64, f64) {
+    let cols = n.div_ceil(LEGEND_ROWS_PER_COL).max(1);
+    let rows = n.min(LEGEND_ROWS_PER_COL).max(1);
+    (
+        LEGEND_PAD * 2.0 + cols as f64 * LEGEND_COL_W,
+        LEGEND_PAD + LEGEND_TITLE_H + rows as f64 * LEGEND_CELL_H + LEGEND_PAD,
+    )
+}
+
+fn equipment_key_label(key: &str) -> &'static str {
+    match key {
+        "pump" => "Centrifugal pump",
+        "pump_pd" => "Positive-displacement pump",
+        "heat_exchanger" => "Heat exchanger",
+        "vessel" => "Vessel / tank",
+        "separator" => "Separator",
+        "separator_3phase" => "Three-phase separator",
+        "reactor_cstr" => "Stirred reactor (CSTR)",
+        "reactor_pfr" => "Plug-flow reactor",
+        "compressor" => "Compressor",
+        "blower" => "Blower / fan",
+        "mixer" => "Mixer",
+        "column" => "Distillation column",
+        "connector" => "Off-page connector",
+        _ => "Equipment",
+    }
+}
+
+fn valve_key_label(key: &str) -> &'static str {
+    match key {
+        "control_valve" => "Control valve",
+        "control_valve_diaphragm" => "Control valve (diaphragm)",
+        "check_valve" => "Check valve",
+        "relief_valve" => "Relief valve (PSV)",
+        "valve_globe" => "Globe valve",
+        _ => "Manual valve",
+    }
+}
+
+fn instrument_key_label(key: &str) -> &'static str {
+    match key {
+        "instr_panel" => "Panel instrument",
+        "instr_control_room" => "Control-room instrument",
+        "instr_shared" => "Shared display (DCS)",
+        _ => "Field instrument",
+    }
+}
+
+fn line_class_label(class: &str) -> &'static str {
+    match class {
+        "process" => "Process line",
+        "utility" => "Utility line",
+        "drain" => "Drain line",
+        "vent" => "Vent line",
+        _ => "Line",
+    }
+}
+
+fn signal_type_label(sig: &str) -> &'static str {
+    match sig {
+        "electrical" => "Electrical signal",
+        "pneumatic" => "Pneumatic signal",
+        "hydraulic" => "Hydraulic signal",
+        "digital" => "Digital signal",
+        _ => "Signal",
+    }
+}
+
+/// One legend entry per distinct symbol / line style actually present in
+/// the diagram, in a stable order: equipment, valves, instruments,
+/// junctions, line classes, signal types.
+fn build_legend_entries(diagram: &Diagram) -> Vec<LegendEntry> {
+    let mut entries = Vec::new();
+    let mut seen: HashSet<String> = HashSet::new();
+
+    for eq in diagram.equipment.values() {
+        let key = symbols::equipment_symbol_key(&eq.equip_type);
+        if seen.insert(format!("e:{}", key)) {
+            let s = symbols::equipment_symbol(&eq.equip_type);
+            entries.push(LegendEntry {
+                sample: LegendSample::Symbol {
+                    key: key.to_string(),
+                    w: s.width,
+                    h: s.height,
+                },
+                label: equipment_key_label(key),
+            });
+        }
+    }
+    for v in diagram.valves.values() {
+        let key = symbols::valve_symbol_key(&v.valve_type, v.actuator.as_deref());
+        if seen.insert(format!("v:{}", key)) {
+            let s = symbols::valve_symbol(&v.valve_type, v.actuator.as_deref());
+            entries.push(LegendEntry {
+                sample: LegendSample::Symbol {
+                    key: key.to_string(),
+                    w: s.width,
+                    h: s.height,
+                },
+                label: valve_key_label(key),
+            });
+        }
+    }
+    for instr in diagram.instruments.values() {
+        let key = symbols::instrument_symbol_key(instr.location.as_deref());
+        if seen.insert(format!("i:{}", key)) {
+            let s = symbols::instrument_symbol(&instr.instr_type, instr.location.as_deref());
+            entries.push(LegendEntry {
+                sample: LegendSample::Symbol {
+                    key: key.to_string(),
+                    w: s.width,
+                    h: s.height,
+                },
+                label: instrument_key_label(key),
+            });
+        }
+    }
+    if !diagram.junctions.is_empty() {
+        entries.push(LegendEntry {
+            sample: LegendSample::Junction,
+            label: "Junction / tee",
+        });
+    }
+    for line in diagram.lines.values() {
+        if seen.insert(format!("l:{}", line.class)) {
+            entries.push(LegendEntry {
+                sample: LegendSample::Stroke {
+                    class: format!("line-{}", line.class),
+                    arrow: true,
+                },
+                label: line_class_label(&line.class),
+            });
+        }
+    }
+    for sig in diagram.signals.values() {
+        if seen.insert(format!("s:{}", sig.sig_type)) {
+            entries.push(LegendEntry {
+                sample: LegendSample::Stroke {
+                    class: format!("signal-{}", sig.sig_type),
+                    arrow: true,
+                },
+                label: signal_type_label(&sig.sig_type),
+            });
+        }
+    }
+
+    entries
+}
+
+fn render_legend(
+    entries: &[LegendEntry],
+    origin_x: f64,
+    origin_y: f64,
+    indent: &str,
+    pretty: bool,
+) -> String {
+    let nl = if pretty { "\n" } else { "" };
+    let (box_w, box_h) = legend_dims(entries.len());
+    let mut out = String::new();
+
+    out.push_str(&format!("{}<g id=\"legend\">{}", indent, nl));
+    out.push_str(&format!(
+        "{}{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" fill=\"white\" stroke=\"black\" stroke-width=\"1\"/>{}",
+        indent, indent, origin_x, origin_y, box_w, box_h, nl
+    ));
+    out.push_str(&format!(
+        "{}{}<text x=\"{:.1}\" y=\"{:.1}\" font-family=\"sans-serif\" font-size=\"12\" font-weight=\"bold\" fill=\"black\" stroke=\"none\">LEGEND</text>{}",
+        indent, indent,
+        origin_x + LEGEND_PAD,
+        origin_y + LEGEND_PAD + 6.0,
+        nl
+    ));
+
+    for (i, entry) in entries.iter().enumerate() {
+        let col = i / LEGEND_ROWS_PER_COL;
+        let row = i % LEGEND_ROWS_PER_COL;
+        let cell_x = origin_x + LEGEND_PAD + col as f64 * LEGEND_COL_W;
+        let cell_y = origin_y + LEGEND_PAD + LEGEND_TITLE_H + row as f64 * LEGEND_CELL_H;
+        // Sample centered in an 84px-wide slot; label text to its right.
+        let cx = cell_x + 42.0;
+        let cy = cell_y + LEGEND_CELL_H / 2.0;
+
+        match &entry.sample {
+            LegendSample::Symbol { key, w, h } => {
+                let scale = (72.0 / w).min(34.0 / h).min(0.75);
+                out.push_str(&format!(
+                    "{}{}<use href=\"#sym-{}\" xlink:href=\"#sym-{}\" transform=\"translate({:.1},{:.1}) scale({:.3})\"/>{}",
+                    indent, indent, key, key, cx, cy, scale, nl
+                ));
+            }
+            LegendSample::Stroke { class, arrow } => {
+                let pts = [
+                    SvgPos { x: cx - 36.0, y: cy },
+                    SvgPos { x: cx + 36.0, y: cy },
+                ];
+                out.push_str(&render_polyline(&pts, class, indent, pretty, *arrow));
+            }
+            LegendSample::Junction => {
+                out.push_str(&format!(
+                    "{}{}<circle cx=\"{:.1}\" cy=\"{:.1}\" r=\"4\" fill=\"black\" stroke=\"none\"/>{}",
+                    indent, indent, cx, cy, nl
+                ));
+            }
+        }
+
+        out.push_str(&format!(
+            "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"label\" style=\"text-anchor:start\">{}</text>{}",
+            indent, indent,
+            cell_x + 92.0,
+            cy + 4.0,
+            escape_xml(entry.label),
+            nl
+        ));
+    }
+
+    out.push_str(&format!("{}</g>{}", indent, nl));
+    out
 }
 
 fn build_styles(_indent: &str, _pretty: bool) -> String {

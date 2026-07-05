@@ -6,6 +6,8 @@ pub struct SvgOptions {
     pub height: Option<u32>,
     pub pretty: bool,
     pub no_route: bool,
+    /// Append a legend box below the drawing explaining used symbols.
+    pub legend: bool,
 }
 
 impl Default for SvgOptions {
@@ -15,6 +17,7 @@ impl Default for SvgOptions {
             height: None,
             pretty: false,
             no_route: false,
+            legend: false,
         }
     }
 }
