@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2076" height="1587" viewBox="0 0 2076 1587">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2076" height="1621" viewBox="0 0 2076 1621">
   <defs>
     <style>
 
@@ -235,50 +235,50 @@
   <g id="notes">
   </g>
   <g id="legend">
-    <rect x="60.0" y="1223.0" width="778.0" height="304.0" fill="white" stroke="black" stroke-width="1"/>
-    <text x="74.0" y="1243.0" font-family="sans-serif" font-size="12" font-weight="bold" fill="black" stroke="none">LEGEND</text>
-    <use href="#sym-connector" xlink:href="#sym-connector" transform="translate(116.0,1288.0) scale(0.750)"/>
-    <text x="166.0" y="1292.0" class="label" style="text-anchor:start">Off-page connector</text>
-    <g transform="translate(116.0,1338.0) scale(0.150)">
+    <rect x="60.0" y="1257.0" width="778.0" height="304.0" fill="white" stroke="black" stroke-width="1"/>
+    <text x="74.0" y="1277.0" font-family="sans-serif" font-size="12" font-weight="bold" fill="black" stroke="none">LEGEND</text>
+    <use href="#sym-connector" xlink:href="#sym-connector" transform="translate(116.0,1322.0) scale(0.750)"/>
+    <text x="166.0" y="1326.0" class="label" style="text-anchor:start">Off-page connector</text>
+    <g transform="translate(116.0,1372.0) scale(0.150)">
   <path d="M -165 -75 A 75 75 0 0 0 -165 75 L 165 75 A 75 75 0 0 0 165 -75 Z" fill="white" stroke="black" stroke-width="1.5"/>
     </g>
-    <text x="166.0" y="1342.0" class="label" style="text-anchor:start">Three-phase separator</text>
-    <g transform="translate(116.0,1388.0) scale(0.750)">
+    <text x="166.0" y="1376.0" class="label" style="text-anchor:start">Three-phase separator</text>
+    <g transform="translate(116.0,1422.0) scale(0.750)">
   <rect x="-25.0" y="-6.0" width="50.0" height="12.0" rx="0.0" fill="white" stroke="black" stroke-width="1.5"/>
   <line x1="-12.5" y1="-6.0" x2="-12.5" y2="6.0" fill="none" stroke="black" stroke-width="1.5"/>
   <line x1="0.0" y1="-6.0" x2="0.0" y2="6.0" fill="none" stroke="black" stroke-width="1.5"/>
   <line x1="12.5" y1="-6.0" x2="12.5" y2="6.0" fill="none" stroke="black" stroke-width="1.5"/>
     </g>
-    <text x="166.0" y="1392.0" class="label" style="text-anchor:start">Demister pad</text>
-    <use href="#sym-valve_manual" xlink:href="#sym-valve_manual" transform="translate(116.0,1438.0) scale(0.750)"/>
-    <text x="166.0" y="1442.0" class="label" style="text-anchor:start">Manual valve</text>
-    <use href="#sym-relief_valve" xlink:href="#sym-relief_valve" transform="translate(116.0,1488.0) scale(0.750)"/>
-    <text x="166.0" y="1492.0" class="label" style="text-anchor:start">Relief valve (PSV)</text>
-    <use href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" transform="translate(366.0,1288.0) scale(0.567)"/>
-    <text x="416.0" y="1292.0" class="label" style="text-anchor:start">Control valve (diaphragm)</text>
-    <use href="#sym-valve_globe" xlink:href="#sym-valve_globe" transform="translate(366.0,1338.0) scale(0.750)"/>
-    <text x="416.0" y="1342.0" class="label" style="text-anchor:start">Globe valve</text>
-    <use href="#sym-instr_field" xlink:href="#sym-instr_field" transform="translate(366.0,1388.0) scale(0.750)"/>
-    <text x="416.0" y="1392.0" class="label" style="text-anchor:start">Field instrument</text>
-    <use href="#sym-instr_shared" xlink:href="#sym-instr_shared" transform="translate(366.0,1438.0) scale(0.750)"/>
-    <text x="416.0" y="1442.0" class="label" style="text-anchor:start">Shared display (DCS)</text>
-    <circle cx="366.0" cy="1488.0" r="4" fill="black" stroke="none"/>
-    <text x="416.0" y="1492.0" class="label" style="text-anchor:start">Junction / tee</text>
-    <polyline points="580.0,1288.0 652.0,1288.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1288.0) rotate(0.0)"/>
-    <text x="666.0" y="1292.0" class="label" style="text-anchor:start">Process line</text>
-    <polyline points="580.0,1338.0 652.0,1338.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1338.0) rotate(0.0)"/>
-    <text x="666.0" y="1342.0" class="label" style="text-anchor:start">Vent line</text>
-    <polyline points="580.0,1388.0 652.0,1388.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="9,3,1.5,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1388.0) rotate(0.0)"/>
-    <text x="666.0" y="1392.0" class="label" style="text-anchor:start">Drain line</text>
-    <polyline points="580.0,1438.0 652.0,1438.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1438.0) rotate(0.0)"/>
-    <text x="666.0" y="1442.0" class="label" style="text-anchor:start">Electrical signal</text>
-    <polyline points="580.0,1488.0 652.0,1488.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
-    <path d="M 611.0 1493.4 L 616.0 1482.6 M 616.0 1493.4 L 621.0 1482.6" fill="none" stroke="black" stroke-width="1.2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1488.0) rotate(0.0)"/>
-    <text x="666.0" y="1492.0" class="label" style="text-anchor:start">Pneumatic signal</text>
+    <text x="166.0" y="1426.0" class="label" style="text-anchor:start">Demister pad</text>
+    <use href="#sym-valve_manual" xlink:href="#sym-valve_manual" transform="translate(116.0,1472.0) scale(0.750)"/>
+    <text x="166.0" y="1476.0" class="label" style="text-anchor:start">Manual valve</text>
+    <use href="#sym-relief_valve" xlink:href="#sym-relief_valve" transform="translate(116.0,1522.0) scale(0.750)"/>
+    <text x="166.0" y="1526.0" class="label" style="text-anchor:start">Relief valve (PSV)</text>
+    <use href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" transform="translate(366.0,1322.0) scale(0.567)"/>
+    <text x="416.0" y="1326.0" class="label" style="text-anchor:start">Control valve (diaphragm)</text>
+    <use href="#sym-valve_globe" xlink:href="#sym-valve_globe" transform="translate(366.0,1372.0) scale(0.750)"/>
+    <text x="416.0" y="1376.0" class="label" style="text-anchor:start">Globe valve</text>
+    <use href="#sym-instr_field" xlink:href="#sym-instr_field" transform="translate(366.0,1422.0) scale(0.750)"/>
+    <text x="416.0" y="1426.0" class="label" style="text-anchor:start">Field instrument</text>
+    <use href="#sym-instr_shared" xlink:href="#sym-instr_shared" transform="translate(366.0,1472.0) scale(0.750)"/>
+    <text x="416.0" y="1476.0" class="label" style="text-anchor:start">Shared display (DCS)</text>
+    <circle cx="366.0" cy="1522.0" r="4" fill="black" stroke="none"/>
+    <text x="416.0" y="1526.0" class="label" style="text-anchor:start">Junction / tee</text>
+    <polyline points="580.0,1322.0 652.0,1322.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1322.0) rotate(0.0)"/>
+    <text x="666.0" y="1326.0" class="label" style="text-anchor:start">Process line</text>
+    <polyline points="580.0,1372.0 652.0,1372.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1372.0) rotate(0.0)"/>
+    <text x="666.0" y="1376.0" class="label" style="text-anchor:start">Vent line</text>
+    <polyline points="580.0,1422.0 652.0,1422.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="9,3,1.5,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1422.0) rotate(0.0)"/>
+    <text x="666.0" y="1426.0" class="label" style="text-anchor:start">Drain line</text>
+    <polyline points="580.0,1472.0 652.0,1472.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1472.0) rotate(0.0)"/>
+    <text x="666.0" y="1476.0" class="label" style="text-anchor:start">Electrical signal</text>
+    <polyline points="580.0,1522.0 652.0,1522.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
+    <path d="M 611.0 1527.4 L 616.0 1516.6 M 616.0 1527.4 L 621.0 1516.6" fill="none" stroke="black" stroke-width="1.2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1522.0) rotate(0.0)"/>
+    <text x="666.0" y="1526.0" class="label" style="text-anchor:start">Pneumatic signal</text>
   </g>
 </svg>

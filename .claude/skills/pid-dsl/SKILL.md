@@ -249,6 +249,12 @@ group cooling_loop:
   label: "Cooling loop"
 ```
 
+Add `frame: true` to make the group a **plant module**: its members are
+clustered together during layout (internal connections placed first) and
+a dotted frame with the label in its corner is drawn around them —
+matching module-boxed P&IDs (A / GD / UD / T areas). Plain groups remain
+invisible logical groupings.
+
 ---
 
 ### area

@@ -85,7 +85,7 @@ fn known_props_for_kind(kind: DeclKind) -> &'static [&'static str] {
         DeclKind::Line => &["class", "from", "to", "label", "size", "spec", "route", "dir", "flexible", "insulated"],
         DeclKind::Instrument => &["type", "at", "attach", "location", "label", "loop"],
         DeclKind::Signal => &["type", "from", "to", "label"],
-        DeclKind::Group => &["members", "label"],
+        DeclKind::Group => &["members", "label", "frame"],
         DeclKind::Area => &["label", "bounds"],
         DeclKind::Note => &["at", "text"],
         DeclKind::Junction => &["at"],
@@ -472,11 +472,16 @@ fn normalize_group(decl: &Decl, diags: &mut DiagEngine) -> Option<Group> {
     };
 
     let label = find_prop(props, "label").and_then(|p| prop_as_str(p)).map(String::from);
+    let frame = find_prop(props, "frame")
+        .and_then(|p| prop_as_str(p))
+        .map(|v| v == "true" || v == "yes")
+        .unwrap_or(false);
 
     Some(Group {
         id: decl.id.clone(),
         members,
         label,
+        frame,
     })
 }
 

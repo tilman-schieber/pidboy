@@ -526,7 +526,9 @@ signal S101 type=pneumatic from=TIC101 to=CV101
 
 ## 6. group
 
-Represents a logical grouping of objects.
+Represents a logical grouping of objects. With `frame: true` the group
+becomes a plant module: members cluster together during layout and a
+dotted frame with the label in its corner is drawn around them.
 
 ### Required properties
 

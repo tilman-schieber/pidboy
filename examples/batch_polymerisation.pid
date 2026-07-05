@@ -10,8 +10,8 @@
 # through the reactor jacket via pump UD1.P1 with flexible, insulated
 # hoses; cooling water reaches T1 through a solenoid valve.
 #
-# Not yet represented (future iterations): module frames (A/GD/UD/T),
-# spare nozzle markers N1..N6, equipment data tables, title block.
+# Not yet represented (future iterations): spare nozzle markers N1..N6,
+# equipment data tables, title block.
 
 # --- Feeds and product ---
 
@@ -435,3 +435,30 @@ signal S02:
   type: electrical
   from: T1_T1
   to: T1
+
+# --- Plant modules (framed layout clusters) ---
+
+group MOD_A:
+  members: A1, A1_X02, A1_VV11, A1_F1
+  label: "A"
+  frame: true
+
+group MOD_GD:
+  members: GD1_VV55, GD1_VX56, GD1_VV52, GD1_VV51, GD1_VV54, GD1_VU1, GD1_F1
+  label: "GD"
+  frame: true
+
+group MOD_UD1:
+  members: UD1_P1
+  label: "UD1"
+  frame: true
+
+group MOD_UD2:
+  members: UD2_VV40, UD2_VC41
+  label: "UD2"
+  frame: true
+
+group MOD_T:
+  members: T1, T1_VV20, T1_VV21
+  label: "T"
+  frame: true

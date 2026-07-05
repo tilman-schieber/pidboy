@@ -179,6 +179,18 @@ fn capsule_surface(side: Side, (dx, dy): (f64, f64), w: f64, h: f64) -> (f64, f6
     }
 }
 
+/// Map object id → index of the framed group it belongs to (first framed
+/// group listing it wins). Framed groups act as layout clusters.
+pub fn framed_group_of(diagram: &Diagram) -> HashMap<String, usize> {
+    let mut map = HashMap::new();
+    for (gi, g) in diagram.groups.values().filter(|g| g.frame).enumerate() {
+        for m in &g.members {
+            map.entry(m.clone()).or_insert(gi);
+        }
+    }
+    map
+}
+
 /// Shape family of an object's drawn outline.
 pub fn symbol_shape(diagram: &Diagram, id: &str) -> SymbolShape {
     if let Some(e) = diagram.equipment.get(id) {
@@ -491,9 +503,25 @@ fn place_line_endpoints(
     layout: &mut LayoutInfo,
     dims: &HashMap<String, (f64, f64)>,
 ) {
+    // Framed groups are layout clusters: lines internal to a group are
+    // processed first each sweep, so members chain together before
+    // cross-group connections pull the layout apart.
+    let cluster = framed_group_of(diagram);
+    let mut ordered: Vec<&Line> = diagram.lines.values().collect();
+    ordered.sort_by_key(|l| {
+        let a = cluster.get(l.from.id.as_str());
+        let b = l
+            .to
+            .as_ref()
+            .and_then(|t| cluster.get(t.id.as_str()));
+        match (a, b) {
+            (Some(x), Some(y)) if x == y => 0usize,
+            _ => 1,
+        }
+    });
     loop {
         let mut progress = false;
-        for line in diagram.lines.values() {
+        for line in &ordered {
             // Open-ended stubs have no second object to place.
             let Some(line_to) = &line.to else { continue };
             let from_placed = layout.positions.contains_key(&line.from.id);
@@ -550,9 +578,8 @@ fn place_line_endpoints(
             continue;
         }
         // No half-placed line left; seed the next unplaced component (if any).
-        let seed = diagram
-            .lines
-            .values()
+        let seed = ordered
+            .iter()
             .find(|l| !layout.positions.contains_key(&l.from.id))
             .map(|l| l.from.id.clone());
         match seed {
@@ -821,6 +848,17 @@ fn place_signal_instruments(
                         anchors.push((o.clone(), side));
                     }
                 }
+            }
+            let cluster = framed_group_of(diagram);
+            let my_cluster = cluster.get(instr.id.as_str()).copied();
+            if my_cluster.is_some() {
+                anchors.sort_by_key(|(pid, _)| {
+                    if cluster.get(pid.as_str()).copied() == my_cluster {
+                        0usize
+                    } else {
+                        1
+                    }
+                });
             }
             let mut done = false;
             for (pid, side) in &anchors {

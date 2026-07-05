@@ -141,6 +141,9 @@ spaces; tabs are an error.
 - **Mounted equipment** — equipment can `attach:` to other equipment
   (heat pads, jackets), sitting flush against the host's shell and
   addressable by signals.
+- **Plant modules** — `group ... frame: true` clusters its members in
+  the layout and draws a dotted module frame with a corner label
+  (A / GD / UD-style plant modules).
 - **Off-page connectors** — `type: connector` draws a pentagon flag for
   streams entering/leaving the sheet (utility headers, flare, battery
   limits). Prefer once-through utility runs over closed recycle loops.

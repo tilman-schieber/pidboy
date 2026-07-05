@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1689" height="885" viewBox="0 0 1689 885">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1689" height="919" viewBox="0 0 1689 919">
   <defs>
     <style>
 
@@ -176,45 +176,45 @@
   <g id="notes">
   </g>
   <g id="legend">
-    <rect x="60.0" y="521.0" width="1028.0" height="304.0" fill="white" stroke="black" stroke-width="1"/>
-    <text x="74.0" y="541.0" font-family="sans-serif" font-size="12" font-weight="bold" fill="black" stroke="none">LEGEND</text>
-    <use href="#sym-vessel" xlink:href="#sym-vessel" transform="translate(116.0,586.0) scale(0.680)"/>
-    <text x="166.0" y="590.0" class="label" style="text-anchor:start">Vessel / tank</text>
-    <use href="#sym-pump" xlink:href="#sym-pump" transform="translate(116.0,636.0) scale(0.567)"/>
-    <text x="166.0" y="640.0" class="label" style="text-anchor:start">Centrifugal pump</text>
-    <use href="#sym-heat_exchanger" xlink:href="#sym-heat_exchanger" transform="translate(116.0,686.0) scale(0.567)"/>
-    <text x="166.0" y="690.0" class="label" style="text-anchor:start">Heat exchanger</text>
-    <use href="#sym-reactor_cstr" xlink:href="#sym-reactor_cstr" transform="translate(116.0,736.0) scale(0.486)"/>
-    <text x="166.0" y="740.0" class="label" style="text-anchor:start">Stirred reactor (CSTR)</text>
-    <use href="#sym-separator" xlink:href="#sym-separator" transform="translate(116.0,786.0) scale(0.567)"/>
-    <text x="166.0" y="790.0" class="label" style="text-anchor:start">Separator</text>
-    <use href="#sym-connector" xlink:href="#sym-connector" transform="translate(366.0,586.0) scale(0.750)"/>
-    <text x="416.0" y="590.0" class="label" style="text-anchor:start">Off-page connector</text>
-    <use href="#sym-check_valve" xlink:href="#sym-check_valve" transform="translate(366.0,636.0) scale(0.750)"/>
-    <text x="416.0" y="640.0" class="label" style="text-anchor:start">Check valve</text>
-    <use href="#sym-control_valve" xlink:href="#sym-control_valve" transform="translate(366.0,686.0) scale(0.567)"/>
-    <text x="416.0" y="690.0" class="label" style="text-anchor:start">Control valve</text>
-    <use href="#sym-instr_field" xlink:href="#sym-instr_field" transform="translate(366.0,736.0) scale(0.750)"/>
-    <text x="416.0" y="740.0" class="label" style="text-anchor:start">Field instrument</text>
-    <use href="#sym-instr_panel" xlink:href="#sym-instr_panel" transform="translate(366.0,786.0) scale(0.750)"/>
-    <text x="416.0" y="790.0" class="label" style="text-anchor:start">Panel instrument</text>
-    <use href="#sym-instr_control_room" xlink:href="#sym-instr_control_room" transform="translate(616.0,586.0) scale(0.750)"/>
-    <text x="666.0" y="590.0" class="label" style="text-anchor:start">Control-room instrument</text>
-    <polyline points="580.0,636.0 652.0,636.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,636.0) rotate(0.0)"/>
-    <text x="666.0" y="640.0" class="label" style="text-anchor:start">Process line</text>
-    <polyline points="580.0,686.0 652.0,686.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,686.0) rotate(0.0)"/>
-    <text x="666.0" y="690.0" class="label" style="text-anchor:start">Vent line</text>
-    <polyline points="580.0,736.0 652.0,736.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,736.0) rotate(0.0)"/>
-    <text x="666.0" y="740.0" class="label" style="text-anchor:start">Utility line</text>
-    <polyline points="580.0,786.0 652.0,786.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,786.0) rotate(0.0)"/>
-    <text x="666.0" y="790.0" class="label" style="text-anchor:start">Electrical signal</text>
-    <polyline points="830.0,586.0 902.0,586.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
-    <path d="M 861.0 591.4 L 866.0 580.6 M 866.0 591.4 L 871.0 580.6" fill="none" stroke="black" stroke-width="1.2"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(902.0,586.0) rotate(0.0)"/>
-    <text x="916.0" y="590.0" class="label" style="text-anchor:start">Pneumatic signal</text>
+    <rect x="60.0" y="555.0" width="1028.0" height="304.0" fill="white" stroke="black" stroke-width="1"/>
+    <text x="74.0" y="575.0" font-family="sans-serif" font-size="12" font-weight="bold" fill="black" stroke="none">LEGEND</text>
+    <use href="#sym-vessel" xlink:href="#sym-vessel" transform="translate(116.0,620.0) scale(0.680)"/>
+    <text x="166.0" y="624.0" class="label" style="text-anchor:start">Vessel / tank</text>
+    <use href="#sym-pump" xlink:href="#sym-pump" transform="translate(116.0,670.0) scale(0.567)"/>
+    <text x="166.0" y="674.0" class="label" style="text-anchor:start">Centrifugal pump</text>
+    <use href="#sym-heat_exchanger" xlink:href="#sym-heat_exchanger" transform="translate(116.0,720.0) scale(0.567)"/>
+    <text x="166.0" y="724.0" class="label" style="text-anchor:start">Heat exchanger</text>
+    <use href="#sym-reactor_cstr" xlink:href="#sym-reactor_cstr" transform="translate(116.0,770.0) scale(0.486)"/>
+    <text x="166.0" y="774.0" class="label" style="text-anchor:start">Stirred reactor (CSTR)</text>
+    <use href="#sym-separator" xlink:href="#sym-separator" transform="translate(116.0,820.0) scale(0.567)"/>
+    <text x="166.0" y="824.0" class="label" style="text-anchor:start">Separator</text>
+    <use href="#sym-connector" xlink:href="#sym-connector" transform="translate(366.0,620.0) scale(0.750)"/>
+    <text x="416.0" y="624.0" class="label" style="text-anchor:start">Off-page connector</text>
+    <use href="#sym-check_valve" xlink:href="#sym-check_valve" transform="translate(366.0,670.0) scale(0.750)"/>
+    <text x="416.0" y="674.0" class="label" style="text-anchor:start">Check valve</text>
+    <use href="#sym-control_valve" xlink:href="#sym-control_valve" transform="translate(366.0,720.0) scale(0.567)"/>
+    <text x="416.0" y="724.0" class="label" style="text-anchor:start">Control valve</text>
+    <use href="#sym-instr_field" xlink:href="#sym-instr_field" transform="translate(366.0,770.0) scale(0.750)"/>
+    <text x="416.0" y="774.0" class="label" style="text-anchor:start">Field instrument</text>
+    <use href="#sym-instr_panel" xlink:href="#sym-instr_panel" transform="translate(366.0,820.0) scale(0.750)"/>
+    <text x="416.0" y="824.0" class="label" style="text-anchor:start">Panel instrument</text>
+    <use href="#sym-instr_control_room" xlink:href="#sym-instr_control_room" transform="translate(616.0,620.0) scale(0.750)"/>
+    <text x="666.0" y="624.0" class="label" style="text-anchor:start">Control-room instrument</text>
+    <polyline points="580.0,670.0 652.0,670.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,670.0) rotate(0.0)"/>
+    <text x="666.0" y="674.0" class="label" style="text-anchor:start">Process line</text>
+    <polyline points="580.0,720.0 652.0,720.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,720.0) rotate(0.0)"/>
+    <text x="666.0" y="724.0" class="label" style="text-anchor:start">Vent line</text>
+    <polyline points="580.0,770.0 652.0,770.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,770.0) rotate(0.0)"/>
+    <text x="666.0" y="774.0" class="label" style="text-anchor:start">Utility line</text>
+    <polyline points="580.0,820.0 652.0,820.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,820.0) rotate(0.0)"/>
+    <text x="666.0" y="824.0" class="label" style="text-anchor:start">Electrical signal</text>
+    <polyline points="830.0,620.0 902.0,620.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
+    <path d="M 861.0 625.4 L 866.0 614.6 M 866.0 625.4 L 871.0 614.6" fill="none" stroke="black" stroke-width="1.2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(902.0,620.0) rotate(0.0)"/>
+    <text x="916.0" y="624.0" class="label" style="text-anchor:start">Pneumatic signal</text>
   </g>
 </svg>

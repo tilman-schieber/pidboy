@@ -25,7 +25,7 @@ pub fn render(
     } else {
         let (_, content_bottom) = content_extent(diagram, layout);
         let (lw, lh) = legend_dims(legend_entries.len());
-        let (ox, oy) = (60.0, content_bottom + 10.0);
+        let (ox, oy) = (60.0, content_bottom + 44.0);
         if opts.width.is_none() && opts.height.is_none() {
             canvas_w = canvas_w.max((ox + lw + 60.0).ceil() as u32);
             canvas_h = canvas_h.max((oy + lh + 60.0).ceil() as u32);
@@ -51,6 +51,43 @@ pub fn render(
     out.push_str(&format!("{}{}</style>{}", indent, indent, nl));
     out.push_str(&build_symbol_defs(diagram, indent, opts.pretty));
     out.push_str(&format!("{}</defs>{}", indent, nl));
+
+    // Module frames (framed groups): dashed boxes behind the drawing.
+    let framed: Vec<&Group> = diagram.groups.values().filter(|g| g.frame).collect();
+    if !framed.is_empty() {
+        out.push_str(&format!("{}<g id=\"frames\">{}", indent, nl));
+        for g in &framed {
+            let mut min_x = f64::INFINITY;
+            let mut min_y = f64::INFINITY;
+            let mut max_x = f64::NEG_INFINITY;
+            let mut max_y = f64::NEG_INFINITY;
+            for m in &g.members {
+                if let Some(b) = layout.get_bounds(m) {
+                    min_x = min_x.min(b.x);
+                    min_y = min_y.min(b.y);
+                    max_x = max_x.max(b.x + b.w);
+                    max_y = max_y.max(b.y + b.h);
+                }
+            }
+            if !min_x.is_finite() {
+                continue;
+            }
+            // Room for member labels and tags around the symbols.
+            let (fx, fy) = (min_x - 30.0, min_y - 30.0);
+            let (fw, fh) = (max_x - min_x + 60.0, max_y - min_y + 64.0);
+            out.push_str(&format!(
+                "{}{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" fill=\"none\" stroke=\"black\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/>{}",
+                indent, indent, fx, fy, fw, fh, nl
+            ));
+            if let Some(label) = &g.label {
+                out.push_str(&format!(
+                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" font-family=\"sans-serif\" font-size=\"12\" font-weight=\"bold\" text-anchor=\"end\" fill=\"black\" stroke=\"none\">{}</text>{}",
+                    indent, indent, fx + fw - 8.0, fy + fh - 8.0, escape_xml(label), nl
+                ));
+            }
+        }
+        out.push_str(&format!("{}</g>{}", indent, nl));
+    }
 
     // Lines group
     out.push_str(&format!("{}<g id=\"lines\">{}", indent, nl));

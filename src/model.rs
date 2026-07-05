@@ -196,6 +196,9 @@ pub struct Group {
     pub id: String,
     pub members: Vec<String>,
     pub label: Option<String>,
+    /// Framed module: members cluster together in layout and a dashed
+    /// frame with the label is drawn around them.
+    pub frame: bool,
 }
 
 #[derive(Debug, Clone)]
