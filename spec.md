@@ -1,5 +1,11 @@
 # spec.md — Rust Compiler for P&ID DSL to SVG (v0.1)
 
+> **Status: historical design document.** This is the original v0.1
+> implementation spec, kept for context. The implementation has moved
+> past it — see the [v0.2 addendum](#v02-addendum--implemented-beyond-this-spec)
+> at the end, `README.md` for current behavior, and `dsl.md` for the
+> current language reference.
+
 ## Objective
 
 Build a command-line compiler in Rust that reads the P&ID DSL defined in `dsl.md`, validates it, normalizes it into a typed intermediate representation, performs basic layout and orthogonal routing, and emits **SVG only** in the first implementation phase.
@@ -879,3 +885,39 @@ The compiler must successfully render this to SVG in v0.1.
 - Keep output deterministic
 - Prefer clarity over cleverness
 - Build a real compiler pipeline, not a string transformation script
+
+---
+
+## v0.2 addendum — implemented beyond this spec
+
+The shipped compiler extends v0.1 in the following ways (authoritative
+descriptions in `README.md` and `dsl.md`):
+
+**Language**
+- `line.to` is optional: omitting it draws an open-ended stub (drains,
+  vents, sample points).
+- Junctions accept directional taps (`J1.south`) although they declare
+  no ports; this is the bypass-loop idiom.
+- Ports sharing a side are distributed evenly in declaration order.
+- New equipment types: `separator_3phase` (drum with drawn internals),
+  `connector` (off-page flag). New instrument location: `shared`.
+  New actuator value: `diaphragm`.
+- `attach: X.port` places the instrument on that port's side.
+
+**Layout & routing**
+- Auto-placement is connectivity-driven (port-anchored, corner-aware),
+  not a fallback grid. Controllers place above the valve they actuate.
+- The router scores a candidate set (L/Z/local-hop/escape) by
+  collisions, bends, length, reversals, and overlap with earlier
+  routes; endpoints trim to symbol boundaries; signals into actuated
+  valves land on the actuator head.
+
+**Rendering**
+- Symbols/line styles follow ISO 10628 and ISA-5.1: pneumatic signals
+  are solid with slash-mark pairs; drain/vent/utility use distinct dash
+  cadences; flow arrowheads on all piping.
+- No SVG `<marker>`/`<symbol>`/CSS-only styling — output must survive
+  Adobe Illustrator's importer (see `CLAUDE.md` for the hard rules).
+- `pidc compile --legend` appends an auto-generated legend of exactly
+  the symbols used.
+- Vertical valves (all-N/S ports) render rotated 90°.

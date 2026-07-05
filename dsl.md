@@ -284,27 +284,29 @@ Use one of:
 
 ### Locations
 
-Typical instrument locations:
+Typical instrument locations (each renders a distinct ISA-5.1 bubble):
 
-- `field`
-- `panel`
-- `control_room`
+- `field` — plain circle
+- `panel` — circle with horizontal line
+- `control_room` — concentric circles
+- `shared` — circle inscribed in a square (shared display / DCS)
 
 ### Line classes
 
-Typical line classes:
+Typical line classes (rendered styles follow ISO 10628 / ISA-5.1
+conventions; see README "Drawing conventions"):
 
-- `process`
-- `utility`
-- `drain`
-- `vent`
+- `process` — heavy solid
+- `utility` — dashed
+- `drain` — dash-dot
+- `vent` — dotted
 
 ### Signal types
 
 Typical signal types:
 
-- `electrical`
-- `pneumatic`
+- `electrical` — thin solid
+- `pneumatic` — solid with double-slash marks (ISA-5.1)
 - `hydraulic`
 - `digital`
 
@@ -351,6 +353,11 @@ equipment E101:
   label: "E-101"
 ```
 
+Ports that share a side are distributed evenly along it in declaration
+order (left-to-right for north/south sides, top-to-bottom for east/west).
+A vessel can therefore carry e.g. `inlet: north, psv: north, vent: north,
+gas: north` without the nozzles coinciding.
+
 ---
 
 ## 2. valve
@@ -386,6 +393,7 @@ Represents a valve as a first-class semantic object.
 - `manual`
 - `pneumatic`
 - `electric`
+- `diaphragm` — renders the control valve with a dome (diaphragm) actuator
 
 ### Typical fail values
 
@@ -417,10 +425,12 @@ A `line` is semantic connectivity, not routed geometry.
 
 - `class`
 - `from`
-- `to`
 
 ### Optional properties
 
+- `to` — omit it to draw an **open-ended stub**: a short run outward from
+  `from` (drains, vents, sample points). Direction follows the `from` port
+  side; without one, `vent` lines point up, `drain` lines down, others east.
 - `label`
 - `size`
 - `spec`
@@ -454,7 +464,10 @@ Represents an instrument, indicator, transmitter, controller, alarm, or similar 
 ### Optional properties
 
 - `at`
-- `attach`
+- `attach` — places the bubble next to the referenced object with a leader
+  line. `attach: X.port` hangs the bubble outward on that port's side (a
+  west port puts it left of the vessel with a horizontal leader); plain
+  `attach: X` places it above.
 - `location`
 - `label`
 - `loop`
@@ -578,6 +591,18 @@ line L102 class=process from=E101.out to=J1
 line L103 class=vent from=J1 to=T101.vent
 ```
 
+Junctions accept **directional taps** even though they declare no ports:
+`J1.west`, `J1.east`, `J1.north`, `J1.south` give the connecting line (and
+the placement of whatever hangs off it) a direction. This is how bypass
+loops are written:
+
+```txt
+junction J1
+junction J2
+line B1 class=process from=J1.south to=BPV1.in
+line B2 class=process from=BPV1.out to=J2.south
+```
+
 ---
 
 ## Controlled vocabularies
@@ -596,6 +621,7 @@ Suggested values:
 - `tank`
 - `vessel`
 - `separator`
+- `separator_3phase` — large drum with weir, demister pad and vortex breakers drawn in
 - `reactor_cstr`
 - `reactor_batch`
 - `reactor_pfr`
@@ -603,6 +629,7 @@ Suggested values:
 - `blower`
 - `mixer`
 - `distillation_column`
+- `connector` — off-page connector flag (utility headers, flare, battery limits)
 
 ### instrument.type
 
@@ -749,7 +776,8 @@ A validator should enforce at least the following:
 - unknown properties are rejected
 - enum values are validated against the active profile
 - references resolve
-- `from` and `to` targets exist
+- `from` targets exist; `to` targets exist when given (a line without
+  `to` is a valid open-ended stub)
 - referenced ports exist when ports are explicitly declared
 - coordinates normalize to tuples
 - indentation is valid
