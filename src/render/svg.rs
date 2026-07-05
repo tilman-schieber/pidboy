@@ -1180,14 +1180,16 @@ fn render_equipment(eq: &Equipment, pos: &SvgPos, indent: &str, pretty: bool) ->
             sz.x as f64 * crate::layout::GRID_SCALE,
             sz.y as f64 * crate::layout::GRID_SCALE,
         );
-        let transform = if (scale - 1.0).abs() < 1e-9 {
-            format!("translate({:.1},{:.1})", pos.x, pos.y)
+        // Scale the geometry numerically instead of using an SVG scale()
+        // transform, so stroke widths stay at their nominal weight.
+        let def = if (scale - 1.0).abs() < 1e-9 {
+            def
         } else {
-            format!("translate({:.1},{:.1}) scale({:.3})", pos.x, pos.y, scale)
+            symbols::scale_symbol(&def, scale)
         };
         let mut out = format!(
-            "{}{}<g id=\"{}\" class=\"equipment\" transform=\"{}\">{}",
-            indent, indent, eq.id, transform, nl
+            "{}{}<g id=\"{}\" class=\"equipment\" transform=\"translate({:.1},{:.1})\">{}",
+            indent, indent, eq.id, pos.x, pos.y, nl
         );
         for elem in &def.elements {
             out.push_str(&render_element(elem, indent, nl));

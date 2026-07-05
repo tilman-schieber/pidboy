@@ -201,13 +201,13 @@
     <use id="DLP" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(750.9,764.0)"/>
     <use id="A3" href="#sym-canister" xlink:href="#sym-canister" class="equipment" transform="translate(1212.3,724.0)"/>
     <use id="PVA" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(1382.3,724.0)"/>
-    <g id="R1" class="equipment" transform="translate(986.6,724.0) scale(3.429)">
-  <rect x="-25.0" y="-35.0" width="50.0" height="70.0" rx="5.0" fill="white" stroke="black" stroke-width="1.5"/>
-  <line x1="0.0" y1="-35.0" x2="0.0" y2="15.0" fill="none" stroke="black" stroke-width="1.5"/>
-  <line x1="-18.0" y1="2.0" x2="-3.0" y2="2.0" fill="none" stroke="black" stroke-width="1.5"/>
-  <line x1="3.0" y1="2.0" x2="18.0" y2="2.0" fill="none" stroke="black" stroke-width="1.5"/>
-  <line x1="-18.0" y1="10.0" x2="-3.0" y2="10.0" fill="none" stroke="black" stroke-width="1.5"/>
-  <line x1="3.0" y1="10.0" x2="18.0" y2="10.0" fill="none" stroke="black" stroke-width="1.5"/>
+    <g id="R1" class="equipment" transform="translate(986.6,724.0)">
+  <rect x="-85.7" y="-120.0" width="171.4" height="240.0" rx="17.1" fill="white" stroke="black" stroke-width="1.5"/>
+  <line x1="0.0" y1="-120.0" x2="0.0" y2="51.4" fill="none" stroke="black" stroke-width="1.5"/>
+  <line x1="-61.7" y1="6.9" x2="-10.3" y2="6.9" fill="none" stroke="black" stroke-width="1.5"/>
+  <line x1="10.3" y1="6.9" x2="61.7" y2="6.9" fill="none" stroke="black" stroke-width="1.5"/>
+  <line x1="-61.7" y1="34.3" x2="-10.3" y2="34.3" fill="none" stroke="black" stroke-width="1.5"/>
+  <line x1="10.3" y1="34.3" x2="61.7" y2="34.3" fill="none" stroke="black" stroke-width="1.5"/>
     </g>
     <use id="R1_M1" href="#sym-motor" xlink:href="#sym-motor" class="equipment" transform="translate(986.6,584.0)"/>
     <use id="R1_VV01" href="#sym-valve_needle" xlink:href="#sym-valve_needle" class="valve" transform="translate(943.7,472.0) rotate(90)"/>

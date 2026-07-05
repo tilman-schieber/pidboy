@@ -386,6 +386,105 @@ pub fn sized_dims(equip_type: &str, w: f64, h: f64) -> (f64, f64) {
     (def.width * s, def.height * s)
 }
 
+/// Numerically scale a symbol's geometry (coordinates, radii, text sizes)
+/// so it can be rendered without an SVG `scale()` transform — keeping
+/// stroke widths constant. Arc flags/rotations are preserved.
+pub fn scale_symbol(def: &SymbolDef, s: f64) -> SymbolDef {
+    let elements = def
+        .elements
+        .iter()
+        .map(|e| match e {
+            SymbolElement::Rect { x, y, w, h, rx } => SymbolElement::Rect {
+                x: x * s,
+                y: y * s,
+                w: w * s,
+                h: h * s,
+                rx: rx * s,
+            },
+            SymbolElement::Circle { cx, cy, r } => SymbolElement::Circle {
+                cx: cx * s,
+                cy: cy * s,
+                r: r * s,
+            },
+            SymbolElement::Dot { cx, cy, r } => SymbolElement::Dot {
+                cx: cx * s,
+                cy: cy * s,
+                r: r * s,
+            },
+            SymbolElement::Line { x1, y1, x2, y2 } => SymbolElement::Line {
+                x1: x1 * s,
+                y1: y1 * s,
+                x2: x2 * s,
+                y2: y2 * s,
+            },
+            SymbolElement::Polyline { points } => SymbolElement::Polyline {
+                points: points.iter().map(|(x, y)| (x * s, y * s)).collect(),
+            },
+            SymbolElement::Text { x, y, text, size } => SymbolElement::Text {
+                x: x * s,
+                y: y * s,
+                text: text.clone(),
+                size: size * s,
+            },
+            SymbolElement::Path { d } => SymbolElement::Path { d: scale_path_data(d, s) },
+            SymbolElement::SolidPath { d } => {
+                SymbolElement::SolidPath { d: scale_path_data(d, s) }
+            }
+        })
+        .collect();
+    SymbolDef {
+        width: def.width * s,
+        height: def.height * s,
+        view_box: (
+            def.view_box.0 * s,
+            def.view_box.1 * s,
+            def.view_box.2 * s,
+            def.view_box.3 * s,
+        ),
+        elements,
+    }
+}
+
+/// Scale the numbers in an SVG path `d` string. For arc (`A`) commands the
+/// radii and endpoint scale but the x-rotation and the two flags do not.
+fn scale_path_data(d: &str, s: f64) -> String {
+    let mut out = String::new();
+    let mut chars = d.chars().peekable();
+    let mut cmd = ' ';
+    let mut idx = 0usize;
+    while let Some(&c) = chars.peek() {
+        if c.is_ascii_alphabetic() {
+            cmd = c;
+            idx = 0;
+            out.push(c);
+            out.push(' ');
+            chars.next();
+        } else if c.is_ascii_digit() || c == '-' || c == '.' {
+            let mut num = String::new();
+            while let Some(&c2) = chars.peek() {
+                let starts = num.is_empty();
+                if c2.is_ascii_digit()
+                    || c2 == '.'
+                    || (c2 == '-' && starts)
+                {
+                    num.push(c2);
+                    chars.next();
+                } else {
+                    break;
+                }
+            }
+            let v: f64 = num.parse().unwrap_or(0.0);
+            let keep = cmd.eq_ignore_ascii_case(&'a') && matches!(idx % 7, 2 | 3 | 4);
+            let scaled = if keep { v } else { v * s };
+            out.push_str(&format!("{:.2} ", scaled));
+            idx += 1;
+        } else {
+            chars.next();
+        }
+    }
+    out.trim_end().to_string()
+}
+
 /// Simplified stand-ins for the legend: composite symbols whose internals
 /// (weir, demister, annotations) would be illegible at thumbnail scale show
 /// just their outline; the internals get their own legend glyphs.
