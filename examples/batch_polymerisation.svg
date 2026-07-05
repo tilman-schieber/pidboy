@@ -334,8 +334,16 @@
     <polyline points="1080.0,1463.0 1152.0,1463.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1152.0,1463.0) rotate(0.0)"/>
     <text x="1166.0" y="1467.0" class="label" style="text-anchor:start">Utility line</text>
-    <polyline points="1080.0,1513.0 1152.0,1513.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
-    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1152.0,1513.0) rotate(0.0)"/>
-    <text x="1166.0" y="1517.0" class="label" style="text-anchor:start">Electrical signal</text>
+    <polyline points="1080.0,1513.0 1152.0,1513.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+    <path d="M 1088.0 1513.0 L 1144.0 1513.0" fill="none" stroke="white" stroke-width="6"/>
+    <path d="M 1088.0 1513.0 Q 1091.5 1523.0 1095.0 1513.0 Q 1098.5 1503.0 1102.0 1513.0 Q 1105.5 1523.0 1109.0 1513.0 Q 1112.5 1503.0 1116.0 1513.0 Q 1119.5 1523.0 1123.0 1513.0 Q 1126.5 1503.0 1130.0 1513.0 Q 1133.5 1523.0 1137.0 1513.0 Q 1140.5 1503.0 1144.0 1513.0" fill="none" stroke="black" stroke-width="1.2"/>
+    <text x="1166.0" y="1517.0" class="label" style="text-anchor:start">Flexible tube</text>
+    <polyline points="1080.0,1563.0 1152.0,1563.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+    <path d="M 1094.0 1570.0 L 1138.0 1570.0 L 1138.0 1556.0 L 1094.0 1556.0 Z" fill="white" stroke="black" stroke-width="1"/>
+    <path d="M 1097.0 1556.0 L 1102.0 1570.0 M 1105.0 1556.0 L 1110.0 1570.0 M 1113.0 1556.0 L 1118.0 1570.0 M 1121.0 1556.0 L 1126.0 1570.0" fill="none" stroke="black" stroke-width="0.8"/>
+    <text x="1166.0" y="1567.0" class="label" style="text-anchor:start">Insulation</text>
+    <polyline points="1080.0,1613.0 1152.0,1613.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1152.0,1613.0) rotate(0.0)"/>
+    <text x="1166.0" y="1617.0" class="label" style="text-anchor:start">Electrical signal</text>
   </g>
 </svg>

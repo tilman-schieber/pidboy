@@ -665,6 +665,10 @@ enum LegendSample {
     Inline(symbols::SymbolDef),
     /// A short sample line with the class's stroke/dash and a flow arrow.
     Stroke { class: String, arrow: bool },
+    /// Flexible-hose squiggle sample.
+    Flex,
+    /// Insulation hatch-band sample.
+    Insulation,
     /// Junction/tee dot.
     Junction,
 }
@@ -838,6 +842,18 @@ fn build_legend_entries(diagram: &Diagram) -> Vec<LegendEntry> {
             });
         }
     }
+    if diagram.lines.values().any(|l| l.flexible) {
+        entries.push(LegendEntry {
+            sample: LegendSample::Flex,
+            label: "Flexible tube",
+        });
+    }
+    if diagram.lines.values().any(|l| l.insulated) {
+        entries.push(LegendEntry {
+            sample: LegendSample::Insulation,
+            label: "Insulation",
+        });
+    }
     for sig in diagram.signals.values() {
         if seen.insert(format!("s:{}", sig.sig_type)) {
             entries.push(LegendEntry {
@@ -911,6 +927,22 @@ fn render_legend(
                     SvgPos { x: cx + 36.0, y: cy },
                 ];
                 out.push_str(&render_polyline(&pts, class, indent, pretty, *arrow));
+            }
+            LegendSample::Flex => {
+                let pts = [
+                    SvgPos { x: cx - 36.0, y: cy },
+                    SvgPos { x: cx + 36.0, y: cy },
+                ];
+                out.push_str(&render_polyline(&pts, "line-attach", indent, pretty, false));
+                out.push_str(&render_flex_hose(&pts, indent, pretty));
+            }
+            LegendSample::Insulation => {
+                let pts = [
+                    SvgPos { x: cx - 36.0, y: cy },
+                    SvgPos { x: cx + 36.0, y: cy },
+                ];
+                out.push_str(&render_polyline(&pts, "line-attach", indent, pretty, false));
+                out.push_str(&render_insulation(&pts, indent, pretty));
             }
             LegendSample::Junction => {
                 out.push_str(&format!(
