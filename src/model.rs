@@ -122,6 +122,8 @@ pub struct Equipment {
     pub label: Option<String>,
     pub pos: Option<GridPos>,
     pub ports: Vec<Port>,
+    /// Symbol size override in grid units (scaled by the grid scale).
+    pub size: Option<GridPos>,
 }
 
 #[derive(Debug, Clone)]
@@ -133,6 +135,8 @@ pub struct Valve {
     pub ports: Vec<Port>,
     pub actuator: Option<String>,
     pub fail: Option<String>,
+    /// Normal operating state: `nc` (normally closed) / `no` (normally open).
+    pub state: Option<String>,
 }
 
 #[derive(Debug, Clone)]

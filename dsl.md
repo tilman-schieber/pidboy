@@ -325,6 +325,10 @@ Represents major process equipment.
 ### Optional properties
 
 - `at`
+- `size` — symbol size in grid units, e.g. `(8,3)`; use for large
+  multi-nozzle vessels. Vessels/tanks draw parametrically at that exact
+  size (label moves inside the shell when it fits); other types scale
+  uniformly.
 - `ports`
 - `label`
 - `orient`
@@ -372,7 +376,8 @@ Represents a valve as a first-class semantic object.
 
 - `at`
 - `actuator`
-- `fail`
+- `fail` — renders an FC/FO/FL tag beside the valve
+- `state` — `nc` / `no`, renders an N.C./N.O. tag
 - `ports`
 - `label`
 
@@ -648,6 +653,9 @@ Suggested values:
 - `flow_controller`
 - `level_controller`
 - `alarm`
+- `relay` — PY/TY computing relay (split-range schemes)
+- `transducer`
+- `level_gauge`
 
 ### line.class
 

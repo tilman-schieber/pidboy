@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1092" height="1266" viewBox="0 0 1092 1266">
+  <defs>
+    <style>
+
+    .equipment { fill: white; stroke: black; stroke-width: 1.5; }
+    .valve { fill: white; stroke: black; stroke-width: 1.5; }
+    .instrument { fill: white; stroke: black; stroke-width: 1.5; }
+    .junction { fill: black; stroke: none; }
+    .label { font-family: sans-serif; font-size: 11px; text-anchor: middle; fill: #333; }
+    .line-label { font-family: sans-serif; font-size: 9px; text-anchor: middle; fill: #666; }
+    .note { font-family: sans-serif; font-size: 11px; fill: #555; font-style: italic; }
+    .line-process { fill: none; stroke: black; stroke-width: 2; }
+    .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 14,5; }
+    .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 9,3,1.5,3; }
+    .line-vent { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 1.5,4; stroke-linecap: round; }
+    .line-attach { fill: none; stroke: black; stroke-width: 1; }
+    .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,3; }
+    .signal-pneumatic { fill: none; stroke: black; stroke-width: 1.5; }
+    .signal-hydraulic { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 10,2,1,2; }
+    .signal-digital { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,2,1,2; }
+    </style>
+    <g id="sym-connector">
+      <path d="M -30 -15 L 15 -15 L 30 0 L 15 15 L -30 15 Z" fill="white" stroke="black" stroke-width="1.5"/>
+    </g>
+    <g id="sym-vessel">
+      <path d="M -45 -20 A 20 20 0 0 0 -45 20 L 45 20 A 20 20 0 0 0 45 -20 Z" fill="white" stroke="black" stroke-width="1.5"/>
+    </g>
+    <g id="sym-valve_manual">
+      <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="white" stroke="black" stroke-width="1.5"/>
+    </g>
+    <g id="sym-control_valve_diaphragm">
+      <path d="M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z" fill="black" stroke="black" stroke-width="1.5"/>
+      <line x1="0.0" y1="0.0" x2="0.0" y2="-18.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <path d="M -16 -18 A 16 10 0 0 1 16 -18 Z" fill="white" stroke="black" stroke-width="1.5"/>
+    </g>
+    <g id="sym-relief_valve">
+      <path d="M -12 22 L 0 0 L 12 22 Z" fill="white" stroke="black" stroke-width="1.5"/>
+      <path d="M 22 -12 L 0 0 L 22 12 Z" fill="white" stroke="black" stroke-width="1.5"/>
+      <line x1="0.0" y1="0.0" x2="0.0" y2="-10.0" fill="none" stroke="black" stroke-width="1.5"/>
+      <path d="M -8 -10 Q 0 -22 8 -10" fill="white" stroke="black" stroke-width="1.5"/>
+    </g>
+    <g id="sym-instr_field">
+      <circle cx="0.0" cy="0.0" r="18.0" fill="white" stroke="black" stroke-width="1.5"/>
+    </g>
+    <g id="sym-instr_shared">
+      <rect x="-18.0" y="-18.0" width="36.0" height="36.0" rx="0.0" fill="white" stroke="black" stroke-width="1.5"/>
+      <circle cx="0.0" cy="0.0" r="18.0" fill="white" stroke="black" stroke-width="1.5"/>
+    </g>
+  </defs>
+  <g id="lines">
+    <polyline points="156.0,200.0 172.0,200.0 172.0,294.0 276.0,294.0 276.0,310.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(276.0,310.0) rotate(90.0)"/>
+    <polyline points="276.0,354.0 276.0,464.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(276.0,464.0) rotate(90.0)"/>
+    <polyline points="284.0,200.0 404.0,200.0 404.0,310.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(404.0,310.0) rotate(90.0)"/>
+    <polyline points="404.0,354.0 404.0,464.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(404.0,464.0) rotate(90.0)"/>
+    <polyline points="532.0,464.0 532.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(532.0,354.0) rotate(-90.0)"/>
+    <polyline points="554.0,332.0 594.0,332.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(594.0,332.0) rotate(0.0)"/>
+    <polyline points="660.0,464.0 660.0,354.0 780.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(780.0,354.0) rotate(0.0)"/>
+    <polyline points="824.0,354.0 944.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(944.0,354.0) rotate(0.0)"/>
+    <polyline points="468.0,704.0 468.0,814.0 588.0,814.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(588.0,814.0) rotate(0.0)"/>
+    <polyline points="632.0,814.0 752.0,814.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(752.0,814.0) rotate(0.0)"/>
+    <polyline points="96.0,584.0 148.0,584.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+    <polyline points="840.0,544.0 788.0,544.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+    <polyline points="840.0,624.0 788.0,624.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+    <polyline points="468.0,412.0 468.0,464.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
+  </g>
+  <g id="signals">
+    <polyline points="78.0,566.0 78.0,256.0 450.0,256.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(450.0,256.0) rotate(0.0)"/>
+    <polyline points="486.0,256.0 568.0,256.0 568.0,464.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(568.0,464.0) rotate(90.0)"/>
+    <polyline points="876.0,624.0 996.0,624.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(996.0,624.0) rotate(0.0)"/>
+    <polyline points="486.0,394.0 606.0,394.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(606.0,394.0) rotate(0.0)"/>
+    <polyline points="624.0,376.0 624.0,102.0 422.0,102.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(422.0,102.0) rotate(180.0)"/>
+    <polyline points="642.0,394.0 713.0,394.0 713.0,196.0 784.0,196.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(784.0,196.0) rotate(0.0)"/>
+    <polyline points="404.0,120.0 404.0,304.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
+    <path d="M 398.6 145.6 L 409.4 150.7 M 398.6 150.6 L 409.4 155.7 M 398.6 207.0 L 409.4 212.0 M 398.6 212.0 L 409.4 217.0 M 398.6 268.3 L 409.4 273.4 M 398.6 273.3 L 409.4 278.4" fill="none" stroke="black" stroke-width="1.2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(404.0,304.0) rotate(90.0)"/>
+    <polyline points="802.0,214.0 802.0,326.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
+    <path d="M 796.6 265.0 L 807.4 270.0 M 796.6 270.0 L 807.4 275.0" fill="none" stroke="black" stroke-width="1.2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(802.0,326.0) rotate(90.0)"/>
+  </g>
+  <g id="symbols">
+    <use id="HW" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(126.0,200.0)"/>
+    <use id="V1" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(276.0,332.0) rotate(90)"/>
+    <use id="N2" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(254.0,200.0)"/>
+    <use id="PV101A" href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" class="valve" transform="translate(404.0,332.0) rotate(90)"/>
+    <g id="V100" class="equipment" transform="translate(468.0,584.0)">
+  <path d="M -200 -120 A 120 120 0 0 0 -200 120 L 200 120 A 120 120 0 0 0 200 -120 Z" fill="white" stroke="black" stroke-width="1.5"/>
+    </g>
+    <use id="RV100" href="#sym-relief_valve" xlink:href="#sym-relief_valve" class="valve" transform="translate(532.0,332.0)"/>
+    <use id="PV101B" href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" class="valve" transform="translate(802.0,354.0)"/>
+    <use id="VENT" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(974.0,354.0)"/>
+    <use id="V2" href="#sym-valve_manual" xlink:href="#sym-valve_manual" class="valve" transform="translate(610.0,814.0)"/>
+    <use id="USERS" href="#sym-connector" xlink:href="#sym-connector" class="equipment" transform="translate(782.0,814.0)"/>
+    <use id="TT102" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(78.0,584.0)"/>
+    <use id="TIC102" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(468.0,256.0)"/>
+    <use id="LG2" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(858.0,544.0)"/>
+    <use id="LT100" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(858.0,624.0)"/>
+    <use id="LI100" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(1014.0,624.0)"/>
+    <use id="PT101" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(468.0,394.0)"/>
+    <use id="PIC101" href="#sym-instr_shared" xlink:href="#sym-instr_shared" class="instrument" transform="translate(624.0,394.0)"/>
+    <use id="PY101A" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(404.0,102.0)"/>
+    <use id="PY101B" href="#sym-instr_field" xlink:href="#sym-instr_field" class="instrument" transform="translate(802.0,196.0)"/>
+  </g>
+  <g id="labels">
+    <text x="126.0" y="229.0" class="label">Hot Water</text>
+    <text x="302.0" y="336.0" class="label" style="text-anchor:start">V-1</text>
+    <text x="276.0" y="289.0" class="line-label">N.C.</text>
+    <text x="254.0" y="229.0" class="label">Nitrogen</text>
+    <text x="442.0" y="336.0" class="label" style="text-anchor:start">PV-101A</text>
+    <text x="366.0" y="336.0" class="line-label" style="text-anchor:end">FC</text>
+    <text x="468.0" y="588.0" class="label">V-100  HOT WATER STORAGE</text>
+    <text x="532.0" y="302.0" class="label">RV-100</text>
+    <text x="802.0" y="398.0" class="label">PV-101B</text>
+    <text x="830.0" y="411.0" class="line-label" style="text-anchor:start">FO</text>
+    <text x="974.0" y="383.0" class="label">To Vent</text>
+    <text x="610.0" y="846.0" class="label">V-2</text>
+    <text x="610.0" y="775.0" class="line-label">N.C.</text>
+    <text x="782.0" y="843.0" class="label">To Users</text>
+    <text x="78.0" y="616.0" class="label">TT-102</text>
+    <text x="468.0" y="288.0" class="label">TIC-102</text>
+    <text x="858.0" y="576.0" class="label">LG-2</text>
+    <text x="858.0" y="656.0" class="label">LT-100</text>
+    <text x="1014.0" y="656.0" class="label">LI-100</text>
+    <text x="468.0" y="368.0" class="label">PT-101</text>
+    <text x="624.0" y="426.0" class="label">PIC-101</text>
+    <text x="404.0" y="76.0" class="label">PY-101A</text>
+    <text x="802.0" y="170.0" class="label">PY-101B</text>
+    <text x="574.0" y="324.0" class="line-label">to atmosphere</text>
+    <text x="527.0" y="248.0" class="line-label">to heat pad</text>
+  </g>
+  <g id="notes">
+  </g>
+  <g id="legend">
+    <rect x="60.0" y="902.0" width="778.0" height="304.0" fill="white" stroke="black" stroke-width="1"/>
+    <text x="74.0" y="922.0" font-family="sans-serif" font-size="12" font-weight="bold" fill="black" stroke="none">LEGEND</text>
+    <use href="#sym-connector" xlink:href="#sym-connector" transform="translate(116.0,967.0) scale(0.750)"/>
+    <text x="166.0" y="971.0" class="label" style="text-anchor:start">Off-page connector</text>
+    <use href="#sym-vessel" xlink:href="#sym-vessel" transform="translate(116.0,1017.0) scale(0.680)"/>
+    <text x="166.0" y="1021.0" class="label" style="text-anchor:start">Vessel / tank</text>
+    <use href="#sym-valve_manual" xlink:href="#sym-valve_manual" transform="translate(116.0,1067.0) scale(0.750)"/>
+    <text x="166.0" y="1071.0" class="label" style="text-anchor:start">Manual valve</text>
+    <use href="#sym-control_valve_diaphragm" xlink:href="#sym-control_valve_diaphragm" transform="translate(116.0,1117.0) scale(0.567)"/>
+    <text x="166.0" y="1121.0" class="label" style="text-anchor:start">Control valve (diaphragm)</text>
+    <use href="#sym-relief_valve" xlink:href="#sym-relief_valve" transform="translate(116.0,1167.0) scale(0.750)"/>
+    <text x="166.0" y="1171.0" class="label" style="text-anchor:start">Relief valve (PSV)</text>
+    <use href="#sym-instr_field" xlink:href="#sym-instr_field" transform="translate(366.0,967.0) scale(0.750)"/>
+    <text x="416.0" y="971.0" class="label" style="text-anchor:start">Field instrument</text>
+    <use href="#sym-instr_shared" xlink:href="#sym-instr_shared" transform="translate(366.0,1017.0) scale(0.750)"/>
+    <text x="416.0" y="1021.0" class="label" style="text-anchor:start">Shared display (DCS)</text>
+    <polyline points="330.0,1067.0 402.0,1067.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(402.0,1067.0) rotate(0.0)"/>
+    <text x="416.0" y="1071.0" class="label" style="text-anchor:start">Process line</text>
+    <polyline points="330.0,1117.0 402.0,1117.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(402.0,1117.0) rotate(0.0)"/>
+    <text x="416.0" y="1121.0" class="label" style="text-anchor:start">Utility line</text>
+    <polyline points="330.0,1167.0 402.0,1167.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(402.0,1167.0) rotate(0.0)"/>
+    <text x="416.0" y="1171.0" class="label" style="text-anchor:start">Vent line</text>
+    <polyline points="580.0,967.0 652.0,967.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,967.0) rotate(0.0)"/>
+    <text x="666.0" y="971.0" class="label" style="text-anchor:start">Electrical signal</text>
+    <polyline points="580.0,1017.0 652.0,1017.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
+    <path d="M 611.0 1022.4 L 616.0 1011.6 M 616.0 1022.4 L 621.0 1011.6" fill="none" stroke="black" stroke-width="1.2"/>
+    <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1017.0) rotate(0.0)"/>
+    <text x="666.0" y="1021.0" class="label" style="text-anchor:start">Pneumatic signal</text>
+  </g>
+</svg>

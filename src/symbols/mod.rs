@@ -329,6 +329,41 @@ fn connector_symbol() -> SymbolDef {
     ])
 }
 
+/// Symbol for an equipment item with a `size:` override. Returns the def and
+/// a uniform scale factor for the renderer to apply.
+///
+/// Vessels/tanks are drawn parametrically at the exact requested size (a
+/// capsule whose heads have radius `h/2`), scale 1.0. Every other type keeps
+/// its canonical geometry and is scaled uniformly to fit the requested box.
+pub fn equipment_symbol_sized(equip_type: &str, w: f64, h: f64) -> (SymbolDef, f64) {
+    match equipment_symbol_key(equip_type) {
+        "vessel" => {
+            let r = h / 2.0;
+            let cap = (w / 2.0 - r).max(0.0);
+            let d = format!(
+                "M {x0} {yn} A {r} {r} 0 0 0 {x0} {yp} L {x1} {yp} A {r} {r} 0 0 0 {x1} {yn} Z",
+                x0 = -cap,
+                x1 = cap,
+                yn = -r,
+                yp = r,
+                r = r
+            );
+            (sym(w, h, vec![SymbolElement::Path { d }]), 1.0)
+        }
+        _ => {
+            let base = equipment_symbol(equip_type);
+            let s = (w / base.width).min(h / base.height);
+            (base, s)
+        }
+    }
+}
+
+/// Final drawn dimensions for an equipment item with a `size:` override.
+pub fn sized_dims(equip_type: &str, w: f64, h: f64) -> (f64, f64) {
+    let (def, s) = equipment_symbol_sized(equip_type, w, h);
+    (def.width * s, def.height * s)
+}
+
 /// Simplified stand-ins for the legend: composite symbols whose internals
 /// (weir, demister, annotations) would be illegible at thumbnail scale show
 /// just their outline; the internals get their own legend glyphs.

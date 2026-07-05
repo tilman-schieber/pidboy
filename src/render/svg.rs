@@ -124,8 +124,30 @@ pub fn render(
             if let Some(pos) = layout.get_pos(id) {
                 let bounds = layout.get_bounds(id);
                 let (half_w, half_h) = bounds.map(|b| (b.w / 2.0, b.h / 2.0)).unwrap_or((30.0, 30.0));
-                let (x, y, anchor, rect) =
-                    place_label(label, pos, half_w, half_h, routes, layout, id, &label_rects);
+
+                // Large vessels/tanks carry their tag inside the shell, as
+                // on real drawings. Only for symbols with an empty interior
+                // and only when the text actually fits.
+                let inside = matches!(kind, DeclKind::Equipment)
+                    && diagram
+                        .equipment
+                        .get(id)
+                        .map(|e| symbols::equipment_symbol_key(&e.equip_type) == "vessel")
+                        .unwrap_or(false)
+                    && label.chars().count() as f64 * 6.6 + 40.0 < half_w * 2.0
+                    && half_h * 2.0 >= 40.0;
+
+                let (x, y, anchor, rect) = if inside {
+                    let rect = crate::layout::SvgRect {
+                        x: pos.x - label.chars().count() as f64 * 3.3,
+                        y: pos.y - 8.0,
+                        w: label.chars().count() as f64 * 6.6,
+                        h: 12.0,
+                    };
+                    (pos.x, pos.y + 4.0, "", rect)
+                } else {
+                    place_label(label, pos, half_w, half_h, routes, layout, id, &label_rects)
+                };
                 label_rects.push(rect);
                 out.push_str(&format!(
                     "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"label\"{}>{}</text>{}",
@@ -134,6 +156,34 @@ pub fn render(
                     escape_xml(label),
                     nl
                 ));
+
+                // Valve state / fail-action tag ("N.C.", "FC", ...) under
+                // the valve, one line below where its label defaults to.
+                if let DeclKind::Valve = kind {
+                    if let Some(v) = diagram.valves.get(id) {
+                        let tag = match v.state.as_deref() {
+                            Some("nc") => Some("N.C.".to_string()),
+                            Some("no") => Some("N.O.".to_string()),
+                            Some(other) => Some(other.to_uppercase()),
+                            None => match v.fail.as_deref() {
+                                Some("closed") => Some("FC".to_string()),
+                                Some("open") => Some("FO".to_string()),
+                                Some("last") => Some("FL".to_string()),
+                                _ => None,
+                            },
+                        };
+                        if let Some(tag) = tag {
+                            let (tx, ty, tanchor, trect) = place_label(
+                                &tag, pos, half_w, half_h + 13.0, routes, layout, id, &label_rects,
+                            );
+                            label_rects.push(trect);
+                            out.push_str(&format!(
+                                "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"line-label\"{}>{}</text>{}",
+                                indent, indent, tx, ty, tanchor, escape_xml(&tag), nl
+                            ));
+                        }
+                    }
+                }
             }
         }
     }
@@ -831,6 +881,30 @@ fn render_use(id: &str, sym_id: &str, css_class: &str, pos: &SvgPos, indent: &st
 }
 
 fn render_equipment(eq: &Equipment, pos: &SvgPos, indent: &str, pretty: bool) -> String {
+    // Size-overridden equipment is drawn inline (parametric geometry for
+    // vessels, uniform scale otherwise) instead of via the shared def.
+    if let Some(sz) = &eq.size {
+        let nl = if pretty { "\n" } else { "" };
+        let (def, scale) = symbols::equipment_symbol_sized(
+            &eq.equip_type,
+            sz.x as f64 * crate::layout::GRID_SCALE,
+            sz.y as f64 * crate::layout::GRID_SCALE,
+        );
+        let transform = if (scale - 1.0).abs() < 1e-9 {
+            format!("translate({:.1},{:.1})", pos.x, pos.y)
+        } else {
+            format!("translate({:.1},{:.1}) scale({:.3})", pos.x, pos.y, scale)
+        };
+        let mut out = format!(
+            "{}{}<g id=\"{}\" class=\"equipment\" transform=\"{}\">{}",
+            indent, indent, eq.id, transform, nl
+        );
+        for elem in &def.elements {
+            out.push_str(&render_element(elem, indent, nl));
+        }
+        out.push_str(&format!("{}{}</g>{}", indent, indent, nl));
+        return out;
+    }
     let key = symbols::equipment_symbol_key(&eq.equip_type);
     render_use(&eq.id, &format!("sym-{}", key), "equipment", pos, indent, pretty)
 }

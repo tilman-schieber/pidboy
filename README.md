@@ -79,6 +79,7 @@ compiled `.svg`, generated with `--pretty --legend`):
 | `boiler_feed_water.pid` | Explicit grid coordinates, flow + level control loops, off-page connectors |
 | `reactor_cooling.pid` | Fully automatic layout, once-through utility runs via connectors, three control loops |
 | `three_phase_separator.pid` | Faithful replica of a classic separator P&ID: multi-nozzle drum with internals, bypass stations, drains, relief to flare |
+| `hot_water_storage.pid` | Sized multi-nozzle vessel, nitrogen blanketing with split-range pressure control via relays, level bridle, N.C. valve tags |
 
 Regenerate them after renderer changes:
 
@@ -132,6 +133,11 @@ spaces; tabs are an error.
 - **Ports with sides** — `ports: in: west, out: east`; multiple ports on
   the same side are distributed evenly in declaration order, so a vessel
   can carry several top nozzles.
+- **Sized equipment** — `size: (8,3)` (grid units) scales the symbol,
+  so a storage tank with six nozzles gets the room it needs; large
+  vessels carry their label inside the shell.
+- **Valve tags** — `state: nc` renders an N.C. tag; `fail: closed`
+  renders FC (FO/FL likewise).
 - **Off-page connectors** — `type: connector` draws a pentagon flag for
   streams entering/leaving the sheet (utility headers, flare, battery
   limits). Prefer once-through utility runs over closed recycle loops.

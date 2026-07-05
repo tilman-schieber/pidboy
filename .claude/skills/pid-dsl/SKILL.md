@@ -64,10 +64,13 @@ equipment P101:
 equipment P101:
   type: pump                # required
   at: (10,8)                # grid position (optional)
+  size: (8,3)               # symbol size in grid units (optional; use for large multi-nozzle vessels)
   ports: in, out            # simple port list (optional)
   label: "P-101"            # optional
   orient: east              # north/south/east/west (optional)
 ```
+
+**Large vessels:** give storage tanks/reactors with many nozzles a `size:` so the ports have room (e.g. `size: (8,3)` = 640x240 px). Vessels/tanks draw parametrically at that exact size and, when the label fits, carry it inside the shell. Other types scale uniformly.
 
 Structured ports with explicit sides:
 ```
@@ -105,7 +108,8 @@ equipment CWS:
 valve CV101:
   type: control_valve       # required
   actuator: pneumatic       # manual / pneumatic / electric / diaphragm (optional; diaphragm draws a dome actuator)
-  fail: closed              # open / closed / last (optional)
+  fail: closed              # open / closed / last (optional; renders FC/FO/FL tag)
+  state: nc                 # nc / no (optional; renders N.C./N.O. tag, e.g. normally-closed block valves)
   at: (16,8)
   ports: in, out
   label: "CV-101"
@@ -173,7 +177,9 @@ instrument TIC101:
   label: "TIC-101"
 ```
 
-**instrument.type values:** `temperature_indicator`, `pressure_indicator`, `flow_indicator`, `level_indicator`, `temperature_transmitter`, `pressure_transmitter`, `flow_transmitter`, `level_transmitter`, `temperature_controller`, `pressure_controller`, `flow_controller`, `level_controller`, `alarm`
+**instrument.type values:** `temperature_indicator`, `pressure_indicator`, `flow_indicator`, `level_indicator`, `temperature_transmitter`, `pressure_transmitter`, `flow_transmitter`, `level_transmitter`, `temperature_controller`, `pressure_controller`, `flow_controller`, `level_controller`, `alarm`, `relay`, `transducer`, `level_gauge`
+
+`relay` is for PY/TY-style computing relays in split-range schemes: controller → relay (electrical) → valve (pneumatic), one relay per valve.
 
 ---
 

@@ -1,0 +1,238 @@
+# V-100 hot water storage tank with nitrogen blanketing
+#
+# A large multi-nozzle vessel: hot water in through V-1 (N.C.), nitrogen
+# blanket makeup and tank vent under split-range pressure control
+# (PT-101 → PIC-101 → PY-101A/B relays → PV-101A/B), relief to
+# atmosphere, level bridle (LG-2 sight glass + LT-100 → LI-100) on the
+# right head, temperature reading on the left head, outlet to users
+# through V-2 (N.C.).
+#
+# Demonstrates: size: override on equipment, many nozzles per side,
+# inside-shell labeling, valve state tags, relay instruments.
+
+equipment HW:
+  type: connector
+  ports:
+    out: east
+  label: "Hot Water"
+
+valve V1:
+  type: gate
+  state: nc
+  ports:
+    in: north
+    out: south
+  label: "V-1"
+
+equipment N2:
+  type: connector
+  ports:
+    out: east
+  label: "Nitrogen"
+
+valve PV101A:
+  type: control_valve
+  actuator: diaphragm
+  fail: closed
+  ports:
+    in: north
+    out: south
+  label: "PV-101A"
+
+equipment V100:
+  type: vessel
+  size: (8,3)
+  ports:
+    win: north
+    n2in: north
+    relief: north
+    vent: north
+    out: south
+    tt: west
+    lg: east
+    lt: east
+  label: "V-100  HOT WATER STORAGE"
+
+valve RV100:
+  type: relief_valve
+  ports:
+    in: south
+    out: east
+  label: "RV-100"
+
+valve PV101B:
+  type: control_valve
+  actuator: diaphragm
+  fail: open
+  ports: in, out
+  label: "PV-101B"
+
+equipment VENT:
+  type: connector
+  ports:
+    in: west
+  label: "To Vent"
+
+valve V2:
+  type: gate
+  state: nc
+  ports: in, out
+  label: "V-2"
+
+equipment USERS:
+  type: connector
+  ports:
+    in: west
+  label: "To Users"
+
+# --- Lines ---
+
+line L100:
+  class: process
+  from: HW.out
+  to: V1.in
+
+line L101:
+  class: process
+  from: V1.out
+  to: V100.win
+
+line L102:
+  class: utility
+  from: N2.out
+  to: PV101A.in
+
+line L103:
+  class: utility
+  from: PV101A.out
+  to: V100.n2in
+
+line L104:
+  class: vent
+  from: V100.relief
+  to: RV100.in
+
+line L104B:
+  class: vent
+  from: RV100.out
+  label: "to atmosphere"
+
+line L105:
+  class: vent
+  from: V100.vent
+  to: PV101B.in
+
+line L106:
+  class: vent
+  from: PV101B.out
+  to: VENT.in
+
+line L107:
+  class: process
+  from: V100.out
+  to: V2.in
+
+line L108:
+  class: process
+  from: V2.out
+  to: USERS.in
+
+# --- Instrumentation ---
+
+instrument TT102:
+  type: temperature_transmitter
+  attach: V100.tt
+  location: field
+  label: "TT-102"
+
+instrument TIC102:
+  type: temperature_controller
+  location: shared
+  label: "TIC-102"
+
+instrument LG2:
+  type: level_gauge
+  attach: V100.lg
+  location: field
+  label: "LG-2"
+
+instrument LT100:
+  type: level_transmitter
+  attach: V100.lt
+  location: field
+  label: "LT-100"
+
+instrument LI100:
+  type: level_indicator
+  location: shared
+  label: "LI-100"
+
+instrument PT101:
+  type: pressure_transmitter
+  attach: V100
+  location: field
+  label: "PT-101"
+
+instrument PIC101:
+  type: pressure_controller
+  location: shared
+  label: "PIC-101"
+
+instrument PY101A:
+  type: relay
+  location: field
+  label: "PY-101A"
+
+instrument PY101B:
+  type: relay
+  location: field
+  label: "PY-101B"
+
+# --- Signals ---
+
+signal S100:
+  type: electrical
+  from: TT102
+  to: TIC102
+
+# heating pad control (heat pad itself is drawn on the vessel)
+signal S101:
+  type: electrical
+  from: TIC102
+  to: V100
+  label: "to heat pad"
+
+signal S102:
+  type: electrical
+  from: LT100
+  to: LI100
+
+signal S103:
+  type: electrical
+  from: PT101
+  to: PIC101
+
+# split-range: one controller drives both the makeup and the vent valve
+signal S104:
+  type: electrical
+  from: PIC101
+  to: PY101A
+
+signal S105:
+  type: electrical
+  from: PIC101
+  to: PY101B
+
+signal S106:
+  type: pneumatic
+  from: PY101A
+  to: PV101A
+
+signal S107:
+  type: pneumatic
+  from: PY101B
+  to: PV101B
+
+group pressure_blanket:
+  members: PT101, PIC101, PY101A, PY101B, PV101A, PV101B
+  label: "Split-range nitrogen blanketing"

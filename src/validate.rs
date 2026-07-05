@@ -21,7 +21,7 @@ const INSTRUMENT_TYPES: &[&str] = &[
     "temperature_indicator", "pressure_indicator", "flow_indicator", "level_indicator",
     "temperature_transmitter", "pressure_transmitter", "flow_transmitter", "level_transmitter",
     "temperature_controller", "pressure_controller", "flow_controller", "level_controller",
-    "alarm",
+    "alarm", "relay", "transducer", "level_gauge",
 ];
 
 const LINE_CLASSES: &[&str] = &["process", "utility", "drain", "vent"];

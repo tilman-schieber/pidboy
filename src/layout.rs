@@ -780,9 +780,16 @@ fn symbol_dims(diagram: &Diagram, kind: &crate::ast::DeclKind, id: &str) -> (f64
         DeclKind::Equipment => diagram
             .equipment
             .get(id)
-            .map(|e| {
-                let s = symbols::equipment_symbol(&e.equip_type);
-                (s.width, s.height)
+            .map(|e| match &e.size {
+                Some(sz) => symbols::sized_dims(
+                    &e.equip_type,
+                    sz.x as f64 * GRID_SCALE,
+                    sz.y as f64 * GRID_SCALE,
+                ),
+                None => {
+                    let s = symbols::equipment_symbol(&e.equip_type);
+                    (s.width, s.height)
+                }
             })
             .unwrap_or((SYMBOL_W, SYMBOL_H)),
         DeclKind::Valve => diagram
