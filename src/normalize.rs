@@ -80,7 +80,7 @@ pub fn normalize(doc: &Document, diags: &mut DiagEngine) -> Diagram {
 /// Known properties for each declaration kind - used for unknown-property warnings.
 fn known_props_for_kind(kind: DeclKind) -> &'static [&'static str] {
     match kind {
-        DeclKind::Equipment => &["type", "at", "size", "ports", "label", "orient", "zone"],
+        DeclKind::Equipment => &["type", "at", "size", "attach", "ports", "label", "orient", "zone"],
         DeclKind::Valve => &["type", "at", "actuator", "fail", "state", "ports", "label"],
         DeclKind::Line => &["class", "from", "to", "label", "size", "spec", "route", "dir"],
         DeclKind::Instrument => &["type", "at", "attach", "location", "label", "loop"],
@@ -215,6 +215,7 @@ fn normalize_equipment(decl: &Decl, diags: &mut DiagEngine) -> Option<Equipment>
     let label = find_prop(props, "label").and_then(|p| prop_as_str(p)).map(String::from);
     let pos = find_prop(props, "at").and_then(|p| prop_as_gridpos(p));
     let size = find_prop(props, "size").and_then(|p| prop_as_gridpos(p));
+    let attach = find_prop(props, "attach").and_then(|p| prop_as_ref(p));
     let ports = if let Some(p) = find_prop(props, "ports") {
         prop_as_ports(p, decl.span, diags)
     } else {
@@ -228,6 +229,7 @@ fn normalize_equipment(decl: &Decl, diags: &mut DiagEngine) -> Option<Equipment>
         pos,
         ports,
         size,
+        attach,
     })
 }
 

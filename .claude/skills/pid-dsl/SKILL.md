@@ -84,7 +84,17 @@ equipment E101:
   label: "E-101"
 ```
 
-**equipment.type values:** `pump`, `pump_centrifugal`, `pump_positive_displacement`, `heat_exchanger`, `heat_exchanger_shell_tube`, `tank`, `vessel`, `separator`, `separator_3phase`, `reactor_cstr`, `reactor_batch`, `reactor_pfr`, `compressor`, `blower`, `mixer`, `distillation_column`, `connector`
+**equipment.type values:** `pump`, `pump_centrifugal`, `pump_positive_displacement`, `heat_exchanger`, `heat_exchanger_shell_tube`, `tank`, `vessel`, `separator`, `separator_3phase`, `reactor_cstr`, `reactor_batch`, `reactor_pfr`, `compressor`, `blower`, `mixer`, `distillation_column`, `connector`, `heat_pad`
+
+**Equipment-on-equipment attachment:** equipment can carry `attach:` to mount flush against a host — heat pads, jackets. Declare a dedicated port on the host for it so pipe nozzles stay clear, and target signals at the attached item:
+
+```
+equipment HP1:
+  type: heat_pad
+  attach: V100.pad      # pad: south port on the vessel
+  label: "HEAT PAD"
+signal S1 type=electrical from=TIC102 to=HP1
+```
 
 **Multiple ports per side:** ports sharing a side are spread evenly along it in declaration order (top-to-bottom for east/west sides, left-to-right for north/south). For `separator_3phase` (large drum with weir, demister pad and vortex breakers drawn in), declare ports in this order so nozzles land on the right internals: `inlet: north`, `psv: north`, `vent: north`, `gas: north` (gas over the demister), `water: south`, `oil: south` (water upstream of the weir, oil downstream), plus optional `lt_w: west` / `lt_e: east` for side-mounted level transmitters (`attach: SEP.lt_w`).
 

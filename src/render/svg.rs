@@ -493,6 +493,7 @@ fn equipment_key_label(key: &str) -> &'static str {
         "mixer" => "Mixer",
         "column" => "Distillation column",
         "connector" => "Off-page connector",
+        "heat_pad" => "Heat pad (electric)",
         _ => "Equipment",
     }
 }

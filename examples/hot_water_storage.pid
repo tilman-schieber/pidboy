@@ -47,11 +47,17 @@ equipment V100:
     n2in: north
     relief: north
     vent: north
+    pad: south
     out: south
     tt: west
     lg: east
     lt: east
   label: "V-100  HOT WATER STORAGE"
+
+equipment HP102:
+  type: heat_pad
+  attach: V100.pad
+  label: "HEAT PAD"
 
 valve RV100:
   type: relief_valve
@@ -195,12 +201,10 @@ signal S100:
   from: TT102
   to: TIC102
 
-# heating pad control (heat pad itself is drawn on the vessel)
 signal S101:
   type: electrical
   from: TIC102
-  to: V100
-  label: "to heat pad"
+  to: HP102
 
 signal S102:
   type: electrical

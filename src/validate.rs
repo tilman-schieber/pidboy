@@ -9,7 +9,7 @@ const EQUIPMENT_TYPES: &[&str] = &[
     "tank", "vessel", "separator", "separator_3phase",
     "reactor_cstr", "reactor_batch", "reactor_pfr",
     "compressor", "blower", "mixer", "distillation_column",
-    "connector",
+    "connector", "heat_pad",
 ];
 
 const VALVE_TYPES: &[&str] = &[
@@ -47,6 +47,9 @@ fn validate_equipment(diagram: &Diagram, diags: &mut DiagEngine) {
                 eq.id,
                 EQUIPMENT_TYPES.join(", ")
             )));
+        }
+        if let Some(attach) = &eq.attach {
+            validate_ref(diagram, attach, &format!("equipment `{}`", eq.id), "attach", diags);
         }
     }
 }

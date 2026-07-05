@@ -185,6 +185,10 @@ pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
     // Pass 2: propagate placement along process lines.
     place_line_endpoints(diagram, &mut layout, &dims);
 
+    // Pass 2.5: equipment mounted flush on other equipment (heat pads,
+    // jackets), before instruments so bubbles avoid their bounds.
+    place_attached_equipment(diagram, &mut layout, &dims);
+
     // Pass 3: instruments attached to equipment.
     place_attached_instruments(diagram, &mut layout, &dims);
 
@@ -494,6 +498,69 @@ fn place_line_endpoints(
             }
             None => break,
         }
+    }
+}
+
+/// Equipment with `attach:` mounts flush against its host — a heat pad
+/// under a vessel, a jacket on its side. The attach port picks the side
+/// (plain `attach: X` means below); the piece sits a hair off the shell,
+/// centered on the port.
+fn place_attached_equipment(
+    diagram: &Diagram,
+    layout: &mut LayoutInfo,
+    dims: &HashMap<String, (f64, f64)>,
+) {
+    const FLUSH_GAP: f64 = 6.0;
+    for eq in diagram.equipment.values() {
+        if eq.pos.is_some() || layout.positions.contains_key(&eq.id) {
+            continue;
+        }
+        let Some(attach) = &eq.attach else { continue };
+        let Some(host_pos) = layout.positions.get(&attach.id).copied() else {
+            continue;
+        };
+
+        let side = attach
+            .port
+            .as_deref()
+            .and_then(|pn| {
+                diagram.get_ports(&attach.id).and_then(|ports| {
+                    ports.iter().find(|p| p.name == pn).and_then(|p| p.side)
+                })
+            })
+            .or_else(|| attach.port.as_deref().and_then(infer_port_side))
+            .unwrap_or(Side::South);
+
+        let anchor_pt = attach
+            .port
+            .as_ref()
+            .and_then(|pn| {
+                diagram
+                    .get_ports(&attach.id)
+                    .and_then(|ports| layout.port_pos(&attach.id, pn, ports))
+            })
+            .unwrap_or_else(|| {
+                // Plain attach: middle of the host's boundary on `side`.
+                let (hw, hh) = layout
+                    .bounds
+                    .get(&attach.id)
+                    .map(|b| (b.w, b.h))
+                    .unwrap_or((SYMBOL_W, SYMBOL_H));
+                let (ux, uy) = unit(side);
+                SvgPos {
+                    x: host_pos.x + ux * hw / 2.0,
+                    y: host_pos.y + uy * hh / 2.0,
+                }
+            });
+
+        let (w, h) = dim_of(dims, &eq.id);
+        let (ux, uy) = unit(side);
+        let half = if is_vertical_side(side) { h / 2.0 } else { w / 2.0 };
+        let pos = SvgPos {
+            x: anchor_pt.x + ux * (FLUSH_GAP + half),
+            y: anchor_pt.y + uy * (FLUSH_GAP + half),
+        };
+        place(layout, &eq.id, pos, (w, h));
     }
 }
 

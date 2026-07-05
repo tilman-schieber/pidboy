@@ -74,6 +74,7 @@ pub fn equipment_symbol_key(equip_type: &str) -> &'static str {
         "mixer" => "mixer",
         "distillation_column" => "column",
         "connector" => "connector",
+        "heat_pad" => "heat_pad",
         _ => "equipment_default",
     }
 }
@@ -124,6 +125,7 @@ pub fn equipment_symbol(equip_type: &str) -> SymbolDef {
         "mixer" => mixer_symbol(),
         "distillation_column" => column_symbol(),
         "connector" => connector_symbol(),
+        "heat_pad" => heat_pad_symbol(),
         _ => default_equipment_symbol(),
     }
 }
@@ -384,6 +386,28 @@ pub fn demister_glyph() -> SymbolDef {
         SymbolElement::Line { x1: 0.0, y1: -6.0, x2: 0.0, y2: 6.0 },
         SymbolElement::Line { x1: 12.5, y1: -6.0, x2: 12.5, y2: 6.0 },
     ])
+}
+
+/// Electric heat pad / tracing panel: thin strip with a resistive
+/// serpentine element. Mount flush against a vessel with `attach:`.
+fn heat_pad_symbol() -> SymbolDef {
+    let mut elements = vec![SymbolElement::Rect {
+        x: -180.0,
+        y: -14.0,
+        w: 360.0,
+        h: 28.0,
+        rx: 3.0,
+    }];
+    // Serpentine heating element
+    let mut points = Vec::new();
+    let n = 12;
+    for i in 0..=n {
+        let x = -150.0 + 300.0 * (i as f64) / (n as f64);
+        let y = if i % 2 == 0 { -6.0 } else { 6.0 };
+        points.push((x, y));
+    }
+    elements.push(SymbolElement::Polyline { points });
+    sym(360.0, 28.0, elements)
 }
 
 /// Fallback for unrecognised equipment types.

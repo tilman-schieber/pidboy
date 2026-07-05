@@ -138,6 +138,9 @@ spaces; tabs are an error.
   vessels carry their label inside the shell.
 - **Valve tags** — `state: nc` renders an N.C. tag; `fail: closed`
   renders FC (FO/FL likewise).
+- **Mounted equipment** — equipment can `attach:` to other equipment
+  (heat pads, jackets), sitting flush against the host's shell and
+  addressable by signals.
 - **Off-page connectors** — `type: connector` draws a pentagon flag for
   streams entering/leaving the sheet (utility headers, flare, battery
   limits). Prefer once-through utility runs over closed recycle loops.

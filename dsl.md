@@ -329,6 +329,10 @@ Represents major process equipment.
   multi-nozzle vessels. Vessels/tanks draw parametrically at that exact
   size (label moves inside the shell when it fits); other types scale
   uniformly.
+- `attach` — mount this equipment flush against another (heat pads,
+  jackets, agitator drives). `attach: V100.pad` picks the side from
+  that port; plain `attach: V100` mounts below. Signals may target the
+  attached item directly.
 - `ports`
 - `label`
 - `orient`
@@ -635,6 +639,7 @@ Suggested values:
 - `mixer`
 - `distillation_column`
 - `connector` — off-page connector flag (utility headers, flare, battery limits)
+- `heat_pad` — electric heating strip; mount with `attach:`
 
 ### instrument.type
 

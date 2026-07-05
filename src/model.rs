@@ -124,6 +124,9 @@ pub struct Equipment {
     pub ports: Vec<Port>,
     /// Symbol size override in grid units (scaled by the grid scale).
     pub size: Option<GridPos>,
+    /// Mount this equipment flush against another (heat pads, jackets,
+    /// agitator drives). `X.port` picks the side; plain `X` means below.
+    pub attach: Option<ObjRef>,
 }
 
 #[derive(Debug, Clone)]
