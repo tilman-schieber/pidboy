@@ -82,6 +82,10 @@ equipment P101:
 
 **Large vessels:** give storage tanks/reactors with many nozzles a `size:` so the ports have room (e.g. `size: (8,3)` = 640x240 px). Vessels/tanks draw parametrically at that exact size and, when the label fits, carry it inside the shell. Other types scale uniformly.
 
+**Spare nozzles:** declared ports that no line or attachment uses render as short blind stubs labeled with the uppercased port name — declare `n4: north, n5: north` for spare-nozzle markers.
+
+**Design data:** an optional `data:` block (nested key: value pairs, e.g. `material: "Hastalloy"`, `design_p: "300 barg"`) feeds the `--table` equipment table; keys are shared across items to form the rows.
+
 Structured ports with explicit sides:
 ```
 equipment E101:

@@ -42,6 +42,9 @@ Options:
     --no-route         Skip routing, draw direct connections
     --pretty           Pretty-print SVG output
     --legend           Append a legend explaining every symbol used
+    --table            Append a table of equipment/valve data: blocks
+    --title <TEXT>     Diagram title, drawn bottom-right
+    --footer <TEXT>    Footer line under the title (repeatable)
     --strict           Treat warnings as errors
 -q, --quiet
 -v, --verbose
@@ -141,9 +144,15 @@ spaces; tabs are an error.
 - **Mounted equipment** — equipment can `attach:` to other equipment
   (heat pads, jackets), sitting flush against the host's shell and
   addressable by signals.
-- **Plant modules** — `group ... frame: true` clusters its members in
-  the layout and draws a dotted module frame with a corner label
-  (A / GD / UD-style plant modules).
+- **Plant modules** — `group ... frame: true` lays its members out as an
+  independent sub-diagram, places the whole module as a super-node
+  (aligned on whichever member port connects outward, avoiding other
+  objects and pipe corridors), and draws a dotted frame with a corner
+  label (A / GD / UD-style plant modules).
+- **Spare nozzles** — equipment ports declared but not connected render
+  as short blind stubs labeled with the port name (N4, N5, ...).
+- **Design data** — a `data:` block on equipment/valves (material,
+  design pressure, ...) feeds the `--table` equipment table.
 - **Off-page connectors** — `type: connector` draws a pentagon flag for
   streams entering/leaving the sheet (utility headers, flare, battery
   limits). Prefer once-through utility runs over closed recycle loops.

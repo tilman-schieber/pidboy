@@ -55,7 +55,9 @@ shipping; they catch different problems.
   done
   ```
 
-  Examples are committed with `--pretty --legend`.
+  Examples are committed with `--pretty --legend`;
+  `batch_polymerisation` additionally uses `--table --title ...
+  --footer ...` (see its header comment for the exact command).
 - The three examples are regression fixtures as much as documentation:
   `boiler_feed_water` (explicit coordinates), `reactor_cooling` (fully
   automatic layout), `three_phase_separator` (replica of a reference

@@ -80,8 +80,8 @@ pub fn normalize(doc: &Document, diags: &mut DiagEngine) -> Diagram {
 /// Known properties for each declaration kind - used for unknown-property warnings.
 fn known_props_for_kind(kind: DeclKind) -> &'static [&'static str] {
     match kind {
-        DeclKind::Equipment => &["type", "at", "size", "attach", "ports", "label", "orient", "zone"],
-        DeclKind::Valve => &["type", "at", "actuator", "fail", "state", "setpoint", "ports", "label"],
+        DeclKind::Equipment => &["type", "at", "size", "attach", "ports", "label", "orient", "zone", "data"],
+        DeclKind::Valve => &["type", "at", "actuator", "fail", "state", "setpoint", "ports", "label", "data"],
         DeclKind::Line => &["class", "from", "to", "label", "size", "spec", "route", "dir", "flexible", "insulated"],
         DeclKind::Instrument => &["type", "at", "attach", "location", "label", "loop"],
         DeclKind::Signal => &["type", "from", "to", "label"],
@@ -131,6 +131,22 @@ fn prop_as_ref(prop: &Prop) -> Option<ObjRef> {
             }
         }
         _ => None,
+    }
+}
+
+/// Nested `data:` block → ordered key/value pairs.
+fn prop_as_data(prop: &Prop) -> Vec<(String, String)> {
+    match &prop.value {
+        PropVal::Block(sub) => sub
+            .iter()
+            .filter_map(|p| match &p.value {
+                PropVal::Value(Value::Str(v)) | PropVal::Value(Value::Ref(v, None)) => {
+                    Some((p.key.clone(), v.clone()))
+                }
+                _ => None,
+            })
+            .collect(),
+        _ => vec![],
     }
 }
 
@@ -216,6 +232,7 @@ fn normalize_equipment(decl: &Decl, diags: &mut DiagEngine) -> Option<Equipment>
     let pos = find_prop(props, "at").and_then(|p| prop_as_gridpos(p));
     let size = find_prop(props, "size").and_then(|p| prop_as_gridpos(p));
     let attach = find_prop(props, "attach").and_then(|p| prop_as_ref(p));
+    let data = find_prop(props, "data").map(prop_as_data).unwrap_or_default();
     let ports = if let Some(p) = find_prop(props, "ports") {
         prop_as_ports(p, decl.span, diags)
     } else {
@@ -230,6 +247,7 @@ fn normalize_equipment(decl: &Decl, diags: &mut DiagEngine) -> Option<Equipment>
         ports,
         size,
         attach,
+        data,
     })
 }
 
@@ -257,6 +275,7 @@ fn normalize_valve(decl: &Decl, diags: &mut DiagEngine) -> Option<Valve> {
     let fail = find_prop(props, "fail").and_then(|p| prop_as_str(p)).map(String::from);
     let state = find_prop(props, "state").and_then(|p| prop_as_str(p)).map(String::from);
     let setpoint = find_prop(props, "setpoint").and_then(|p| prop_as_str(p)).map(String::from);
+    let data_v = find_prop(props, "data").map(prop_as_data).unwrap_or_default();
     let ports = if let Some(p) = find_prop(props, "ports") {
         prop_as_ports(p, decl.span, diags)
     } else {
@@ -273,6 +292,7 @@ fn normalize_valve(decl: &Decl, diags: &mut DiagEngine) -> Option<Valve> {
         fail,
         state,
         setpoint,
+        data: data_v,
     })
 }
 

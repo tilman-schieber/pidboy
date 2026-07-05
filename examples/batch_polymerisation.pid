@@ -10,8 +10,10 @@
 # through the reactor jacket via pump UD1.P1 with flexible, insulated
 # hoses; cooling water reaches T1 through a solenoid valve.
 #
-# Not yet represented (future iterations): spare nozzle markers N1..N6,
-# equipment data tables, title block.
+# Compile with the full annex:
+#   pidc compile examples/batch_polymerisation.pid --pretty --legend --table \
+#     --title "P&ID Polymerisation in batch reactor" --footer "DRAFT for APP_v3"
+
 
 # --- Feeds and product ---
 
@@ -58,10 +60,19 @@ equipment R1:
     n2: north
     m: north
     bd: north
+    n4: north
+    n5: north
+    n6: north
     out: east
     jin: south
     jout: south
   label: "R1 EXR"
+  data:
+    service: "Reactor"
+    material: "Hastalloy"
+    design_t: "-10..250 C"
+    design_p: "300 barg"
+    capacity: "125 mL"
 
 equipment R1_M1:
   type: motor
@@ -78,6 +89,9 @@ valve R1_VV01:
 valve R1_X01:
   type: bursting_disc
   setpoint: "300 barg"
+  data:
+    service: "Bursting disc"
+    design_p: "300 barg"
   ports:
     in: south
     out: north
@@ -93,10 +107,18 @@ equipment A1:
     dr: south
     vent: north
   label: "A1\nBlow down Tank"
+  data:
+    service: "Blowdown tank"
+    material: "1.4404"
+    design_p: "6 barg"
+    capacity: "20 L"
 
 valve A1_X02:
   type: safety_valve
   setpoint: "0.75 barg"
+  data:
+    service: "Safety valve"
+    design_p: "0.75 barg"
   ports:
     in: south
     out: east
@@ -183,6 +205,10 @@ equipment T1:
     cws: west
     cwr: west
   label: "T1\nHuber Unistat"
+  data:
+    service: "Thermostat"
+    design_t: "-20..235 C"
+    power: "3 kW"
 
 equipment UD1_P1:
   type: pump_centrifugal
@@ -190,6 +216,10 @@ equipment UD1_P1:
     in: west
     out: east
   label: "UD1.P1"
+  data:
+    service: "Pump"
+    material: "1.4581 CrNiMo"
+    power: "3 kW"
 
 valve T1_VV21:
   type: gate

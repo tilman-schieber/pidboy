@@ -191,6 +191,164 @@ pub fn framed_group_of(diagram: &Diagram) -> HashMap<String, usize> {
     map
 }
 
+/// A framed group laid out as an independent sub-diagram: local member
+/// positions/bounds plus the overall extent, ready to be dropped into the
+/// global layout as one super-node.
+struct ModuleLayout {
+    local: HashMap<String, (SvgPos, SvgRect)>,
+    extent: SvgRect,
+}
+
+/// Sub-diagram of a framed module: its members plus the connections fully
+/// inside it. Members whose placement depends on the outside world
+/// (instruments attached elsewhere, equipment mounted elsewhere) are left
+/// to the global passes. Explicit `at:` on members is ignored — the module
+/// is positioned as a whole.
+fn make_subdiagram(diagram: &Diagram, members: &[String]) -> Diagram {
+    use crate::ast::DeclKind;
+    let mset: std::collections::HashSet<&str> = members.iter().map(|s| s.as_str()).collect();
+    let mut included: std::collections::HashSet<String> = std::collections::HashSet::new();
+    for m in members {
+        let ok = if let Some(e) = diagram.equipment.get(m) {
+            e.attach
+                .as_ref()
+                .map(|a| mset.contains(a.id.as_str()))
+                .unwrap_or(true)
+        } else if let Some(i) = diagram.instruments.get(m) {
+            match &i.attach {
+                Some(a) => mset.contains(a.id.as_str()),
+                None => diagram.signals.values().any(|sg| {
+                    (sg.from.id == *m && mset.contains(sg.to.id.as_str()))
+                        || (sg.to.id == *m && mset.contains(sg.from.id.as_str()))
+                }),
+            }
+        } else {
+            diagram.valves.contains_key(m) || diagram.junctions.contains_key(m)
+        };
+        if ok {
+            included.insert(m.clone());
+        }
+    }
+
+    let mut sub = Diagram::new();
+    for (kind, id) in &diagram.order {
+        match kind {
+            DeclKind::Equipment => {
+                if included.contains(id) {
+                    let mut e = diagram.equipment[id.as_str()].clone();
+                    e.pos = None;
+                    sub.equipment.insert(id.clone(), e);
+                    sub.order.push((*kind, id.clone()));
+                }
+            }
+            DeclKind::Valve => {
+                if included.contains(id) {
+                    let mut v = diagram.valves[id.as_str()].clone();
+                    v.pos = None;
+                    sub.valves.insert(id.clone(), v);
+                    sub.order.push((*kind, id.clone()));
+                }
+            }
+            DeclKind::Junction => {
+                if included.contains(id) {
+                    let mut j = diagram.junctions[id.as_str()].clone();
+                    j.pos = None;
+                    sub.junctions.insert(id.clone(), j);
+                    sub.order.push((*kind, id.clone()));
+                }
+            }
+            DeclKind::Instrument => {
+                if included.contains(id) {
+                    let mut i = diagram.instruments[id.as_str()].clone();
+                    i.pos = None;
+                    sub.instruments.insert(id.clone(), i);
+                    sub.order.push((*kind, id.clone()));
+                }
+            }
+            DeclKind::Line => {
+                let l = &diagram.lines[id.as_str()];
+                let from_in = included.contains(&l.from.id);
+                let to_in = l
+                    .to
+                    .as_ref()
+                    .map(|t| included.contains(&t.id))
+                    .unwrap_or(true);
+                if from_in && to_in {
+                    sub.lines.insert(id.clone(), l.clone());
+                    sub.order.push((*kind, id.clone()));
+                }
+            }
+            DeclKind::Signal => {
+                let sg = &diagram.signals[id.as_str()];
+                if included.contains(&sg.from.id) && included.contains(&sg.to.id) {
+                    sub.signals.insert(id.clone(), sg.clone());
+                    sub.order.push((*kind, id.clone()));
+                }
+            }
+            _ => {}
+        }
+    }
+    sub
+}
+
+fn build_modules(diagram: &Diagram) -> Vec<ModuleLayout> {
+    diagram
+        .groups
+        .values()
+        .filter(|g| g.frame)
+        .map(|g| {
+            let sub = make_subdiagram(diagram, &g.members);
+            let sub_layout = compute_layout(&sub);
+            let mut local = HashMap::new();
+            let mut ext: Option<SvgRect> = None;
+            for m in &g.members {
+                if let (Some(p), Some(b)) =
+                    (sub_layout.positions.get(m), sub_layout.bounds.get(m))
+                {
+                    ext = Some(match ext {
+                        None => b.clone(),
+                        Some(e) => {
+                            let x = e.x.min(b.x);
+                            let y = e.y.min(b.y);
+                            let x2 = (e.x + e.w).max(b.x + b.w);
+                            let y2 = (e.y + e.h).max(b.y + b.h);
+                            SvgRect { x, y, w: x2 - x, h: y2 - y }
+                        }
+                    });
+                    local.insert(m.clone(), (*p, b.clone()));
+                }
+            }
+            ModuleLayout {
+                local,
+                extent: ext.unwrap_or(SvgRect { x: 0.0, y: 0.0, w: 10.0, h: 10.0 }),
+            }
+        })
+        .collect()
+}
+
+/// Drop a module into the global layout at the given offset.
+fn place_module(layout: &mut LayoutInfo, module: &ModuleLayout, dx: f64, dy: f64) {
+    for (id, (p, b)) in &module.local {
+        layout.positions.insert(id.clone(), SvgPos { x: p.x + dx, y: p.y + dy });
+        layout.bounds.insert(
+            id.clone(),
+            SvgRect { x: b.x + dx, y: b.y + dy, w: b.w, h: b.h },
+        );
+    }
+}
+
+/// Whether the module's extent (shifted by dx,dy) collides with anything
+/// already placed.
+fn module_collides(layout: &LayoutInfo, module: &ModuleLayout, dx: f64, dy: f64) -> bool {
+    let rect = SvgRect {
+        x: module.extent.x + dx,
+        y: module.extent.y + dy,
+        w: module.extent.w,
+        h: module.extent.h,
+    };
+    collides(layout, &rect, 30.0)
+}
+
 /// Shape family of an object's drawn outline.
 pub fn symbol_shape(diagram: &Diagram, id: &str) -> SymbolShape {
     if let Some(e) = diagram.equipment.get(id) {
@@ -247,8 +405,18 @@ pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
         layout.shapes.insert(id.clone(), symbol_shape(diagram, id));
     }
 
-    // Pass 1: explicit grid positions.
+    // Framed groups are laid out first as independent sub-diagrams; the
+    // global pass then treats each as a super-node, positioning the whole
+    // module so a member port lines up with whatever it connects to.
+    let cluster = framed_group_of(diagram);
+    let modules = build_modules(diagram);
+
+    // Pass 1: explicit grid positions (module members are positioned by
+    // their module, so `at:` on them is ignored).
     for (kind, id) in &diagram.order {
+        if cluster.contains_key(id) {
+            continue;
+        }
         if let Some(gp) = get_explicit_pos(diagram, kind, id) {
             let pos = SvgPos {
                 x: gp.x as f64 * GRID_SCALE,
@@ -259,7 +427,7 @@ pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
     }
 
     // Pass 2: propagate placement along process lines.
-    place_line_endpoints(diagram, &mut layout, &dims);
+    place_line_endpoints(diagram, &mut layout, &dims, &modules, &cluster);
 
     // Pass 2.5: equipment mounted flush on other equipment (heat pads,
     // jackets), before instruments so bubbles avoid their bounds.
@@ -502,23 +670,20 @@ fn place_line_endpoints(
     diagram: &Diagram,
     layout: &mut LayoutInfo,
     dims: &HashMap<String, (f64, f64)>,
+    modules: &[ModuleLayout],
+    cluster: &HashMap<String, usize>,
 ) {
-    // Framed groups are layout clusters: lines internal to a group are
-    // processed first each sweep, so members chain together before
-    // cross-group connections pull the layout apart.
-    let cluster = framed_group_of(diagram);
-    let mut ordered: Vec<&Line> = diagram.lines.values().collect();
-    ordered.sort_by_key(|l| {
-        let a = cluster.get(l.from.id.as_str());
-        let b = l
-            .to
-            .as_ref()
-            .and_then(|t| cluster.get(t.id.as_str()));
-        match (a, b) {
-            (Some(x), Some(y)) if x == y => 0usize,
-            _ => 1,
-        }
-    });
+    // Lines fully inside one module were consumed by its sub-layout; the
+    // global sweep only walks cross-module and free connections.
+    let ordered: Vec<&Line> = diagram
+        .lines
+        .values()
+        .filter(|l| {
+            let a = cluster.get(l.from.id.as_str());
+            let b = l.to.as_ref().and_then(|t| cluster.get(t.id.as_str()));
+            !matches!((a, b), (Some(x), Some(y)) if x == y)
+        })
+        .collect();
     loop {
         let mut progress = false;
         for line in &ordered {
@@ -542,6 +707,72 @@ fn place_line_endpoints(
                     .get_ports(&anchor.id)
                     .and_then(|ports| layout.port_pos(&anchor.id, pn, ports))
             });
+
+            // The unplaced side belongs to a module: position the whole
+            // module so that this member's port meets the anchor.
+            if let Some(&mi) = cluster.get(new.id.as_str()) {
+                let module = &modules[mi];
+                if let Some((lp, lb)) = module.local.get(&new.id) {
+                    let anchor_pt = port_pt.unwrap_or_else(|| {
+                        let apos = layout.positions[&anchor.id];
+                        let ab = &layout.bounds[&anchor.id];
+                        let (ux, uy) = unit(side);
+                        SvgPos {
+                            x: apos.x + ux * ab.w / 2.0,
+                            y: apos.y + uy * ab.h / 2.0,
+                        }
+                    });
+                    let (ux, uy) = unit(side);
+                    let gap = if is_vertical_side(side) { V_GAP } else { H_GAP };
+                    // Member port in module-local coordinates
+                    let (plx, ply) = new
+                        .port
+                        .as_ref()
+                        .and_then(|pn| {
+                            diagram.get_ports(&new.id).and_then(|ports| {
+                                port_offset(
+                                    ports,
+                                    pn,
+                                    lb.w,
+                                    lb.h,
+                                    symbol_shape(diagram, &new.id),
+                                )
+                            })
+                        })
+                        .unwrap_or((-ux * lb.w / 2.0, -uy * lb.h / 2.0));
+                    let target_x = anchor_pt.x + ux * gap;
+                    let target_y = anchor_pt.y + uy * gap;
+                    let mut dx = target_x - (lp.x + plx);
+                    let mut dy = target_y - (lp.y + ply);
+                    // Keep the module off other objects AND off the pipe
+                    // corridors of already-placed ports, so it doesn't wall
+                    // in a nozzle that still needs its riser.
+                    let corridors: Vec<SvgRect> = diagram
+                        .order
+                        .iter()
+                        .filter(|(_, oid)| !cluster.get(oid.as_str()).map_or(false, |&c| c == mi))
+                        .flat_map(|(_, oid)| used_port_corridors(diagram, layout, oid))
+                        .collect();
+                    for _ in 0..100 {
+                        let rect = SvgRect {
+                            x: module.extent.x + dx,
+                            y: module.extent.y + dy,
+                            w: module.extent.w,
+                            h: module.extent.h,
+                        };
+                        if !module_collides(layout, module, dx, dy)
+                            && !corridors.iter().any(|c| c.intersects_rect(&rect, 0.0))
+                        {
+                            break;
+                        }
+                        dx += ux * 40.0;
+                        dy += uy * 40.0;
+                    }
+                    place_module(layout, module, dx, dy);
+                    progress = true;
+                    continue;
+                }
+            }
             // The target's own entry side, when explicitly resolvable.
             let target_side = new.port.as_ref().and_then(|pn| {
                 diagram
@@ -584,12 +815,35 @@ fn place_line_endpoints(
             .map(|l| l.from.id.clone());
         match seed {
             Some(id) => {
-                let (w, h) = dim_of(dims, &id);
                 let y = content_bottom(layout) + 200.0;
-                place(layout, &id, SvgPos { x: MARGIN + w / 2.0, y }, (w, h));
+                if let Some(&mi) = cluster.get(id.as_str()) {
+                    let module = &modules[mi];
+                    let dx = MARGIN - module.extent.x;
+                    let dy = y - module.extent.y;
+                    place_module(layout, module, dx, dy);
+                } else {
+                    let (w, h) = dim_of(dims, &id);
+                    place(layout, &id, SvgPos { x: MARGIN + w / 2.0, y }, (w, h));
+                }
             }
             None => break,
         }
+    }
+    // Modules with no cross connections at all: park below the content.
+    for module in modules {
+        if module
+            .local
+            .keys()
+            .next()
+            .map(|k| layout.positions.contains_key(k))
+            .unwrap_or(true)
+        {
+            continue;
+        }
+        let y = content_bottom(layout) + 200.0;
+        let dx = MARGIN - module.extent.x;
+        let dy = y - module.extent.y;
+        place_module(layout, module, dx, dy);
     }
 }
 
@@ -664,7 +918,7 @@ fn place_attached_instruments(
     // Track how many instruments have been placed at each (equip_id, port_name) to avoid overlap
     let mut port_placement_count: HashMap<(String, String), usize> = HashMap::new();
     for instr in diagram.instruments.values() {
-        if instr.pos.is_some() {
+        if instr.pos.is_some() || layout.positions.contains_key(&instr.id) {
             continue;
         }
         let Some(attach) = &instr.attach else { continue };

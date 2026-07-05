@@ -8,6 +8,12 @@ pub struct SvgOptions {
     pub no_route: bool,
     /// Append a legend box below the drawing explaining used symbols.
     pub legend: bool,
+    /// Append the equipment data table.
+    pub table: bool,
+    /// Title block text, drawn bottom-right.
+    pub title: Option<String>,
+    /// Footer lines under the title.
+    pub footers: Vec<String>,
 }
 
 impl Default for SvgOptions {
@@ -18,6 +24,9 @@ impl Default for SvgOptions {
             pretty: false,
             no_route: false,
             legend: false,
+            table: false,
+            title: None,
+            footers: Vec::new(),
         }
     }
 }

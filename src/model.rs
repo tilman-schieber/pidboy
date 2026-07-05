@@ -127,6 +127,9 @@ pub struct Equipment {
     /// Mount this equipment flush against another (heat pads, jackets,
     /// agitator drives). `X.port` picks the side; plain `X` means below.
     pub attach: Option<ObjRef>,
+    /// Free-form design data (material, design pressure, ...) shown in the
+    /// equipment table (`--table`).
+    pub data: Vec<(String, String)>,
 }
 
 #[derive(Debug, Clone)]
@@ -142,6 +145,8 @@ pub struct Valve {
     pub state: Option<String>,
     /// Set pressure / setpoint annotation, e.g. "5 barg".
     pub setpoint: Option<String>,
+    /// Free-form design data shown in the equipment table (`--table`).
+    pub data: Vec<(String, String)>,
 }
 
 #[derive(Debug, Clone)]

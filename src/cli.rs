@@ -53,6 +53,18 @@ pub enum Commands {
         /// Append a legend explaining every symbol used in the diagram
         #[arg(long)]
         legend: bool,
+
+        /// Append a table of equipment/valve `data:` blocks
+        #[arg(long)]
+        table: bool,
+
+        /// Diagram title, drawn bottom-right
+        #[arg(long)]
+        title: Option<String>,
+
+        /// Footer line under the title (repeatable)
+        #[arg(long)]
+        footer: Vec<String>,
     },
 
     /// Validate a DSL file without generating output

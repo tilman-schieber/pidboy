@@ -20,18 +20,71 @@ pub fn render(
     } else {
         Vec::new()
     };
+    let (_, content_bottom) = content_extent(diagram, layout);
+    let annex_y = content_bottom + 44.0;
     let legend_origin = if legend_entries.is_empty() {
         None
     } else {
-        let (_, content_bottom) = content_extent(diagram, layout);
         let (lw, lh) = legend_dims(legend_entries.len());
-        let (ox, oy) = (60.0, content_bottom + 44.0);
         if opts.width.is_none() && opts.height.is_none() {
-            canvas_w = canvas_w.max((ox + lw + 60.0).ceil() as u32);
-            canvas_h = canvas_h.max((oy + lh + 60.0).ceil() as u32);
+            canvas_w = canvas_w.max((60.0 + lw + 60.0).ceil() as u32);
+            canvas_h = canvas_h.max((annex_y + lh + 60.0).ceil() as u32);
         }
-        Some((ox, oy))
+        Some((60.0, annex_y))
     };
+
+    // Equipment data table sits right of the legend (or at the left margin).
+    let table_items: Vec<(&str, &Vec<(String, String)>)> = if opts.table {
+        let mut items = Vec::new();
+        for (kind, id) in &diagram.order {
+            use crate::ast::DeclKind;
+            let (label, data) = match kind {
+                DeclKind::Equipment => diagram
+                    .equipment
+                    .get(id)
+                    .map(|e| (e.label.as_deref().unwrap_or(id), &e.data)),
+                DeclKind::Valve => diagram
+                    .valves
+                    .get(id)
+                    .map(|v| (v.label.as_deref().unwrap_or(id), &v.data)),
+                _ => None,
+            }
+            .unwrap_or(("", &EMPTY_DATA));
+            if !data.is_empty() {
+                items.push((label.split('\n').next().unwrap_or(label), data));
+            }
+        }
+        items
+    } else {
+        Vec::new()
+    };
+    let table_origin = if table_items.is_empty() {
+        None
+    } else {
+        let ox = match &legend_origin {
+            Some((lx, _)) => lx + legend_dims(legend_entries.len()).0 + 40.0,
+            None => 60.0,
+        };
+        let keys = table_keys(&table_items);
+        let tw = 120.0 + table_items.len() as f64 * 115.0;
+        let th = (keys.len() + 1) as f64 * 20.0;
+        if opts.width.is_none() && opts.height.is_none() {
+            canvas_w = canvas_w.max((ox + tw + 60.0).ceil() as u32);
+            canvas_h = canvas_h.max((annex_y + th + 60.0).ceil() as u32);
+        }
+        Some((ox, annex_y))
+    };
+
+    // Title block bottom-right.
+    let title_lines: Vec<String> = opts
+        .title
+        .iter()
+        .cloned()
+        .chain(opts.footers.iter().cloned())
+        .collect();
+    if !title_lines.is_empty() && opts.width.is_none() && opts.height.is_none() {
+        canvas_h = canvas_h.max((annex_y + title_lines.len() as f64 * 16.0 + 40.0).ceil() as u32);
+    }
 
     let nl = if opts.pretty { "\n" } else { "" };
     let indent = if opts.pretty { "  " } else { "" };
@@ -153,6 +206,80 @@ pub fn render(
         }
     }
     out.push_str(&format!("{}</g>{}", indent, nl));
+
+    // Spare nozzles: equipment ports declared but not used by any line or
+    // attachment render as short blind stubs with the port name.
+    {
+        let mut used: HashSet<(String, String)> = HashSet::new();
+        let mut mark = |r: &ObjRef| {
+            if let Some(p) = &r.port {
+                used.insert((r.id.clone(), p.clone()));
+            }
+        };
+        for l in diagram.lines.values() {
+            mark(&l.from);
+            if let Some(t) = &l.to {
+                mark(t);
+            }
+        }
+        for sg in diagram.signals.values() {
+            mark(&sg.from);
+            mark(&sg.to);
+        }
+        for i in diagram.instruments.values() {
+            if let Some(a) = &i.attach {
+                mark(a);
+            }
+        }
+        for e in diagram.equipment.values() {
+            if let Some(a) = &e.attach {
+                mark(a);
+            }
+        }
+        let mut spare = String::new();
+        for eq in diagram.equipment.values() {
+            for port in &eq.ports {
+                if used.contains(&(eq.id.clone(), port.name.clone())) {
+                    continue;
+                }
+                let Some(pos) = layout.port_pos(&eq.id, &port.name, &eq.ports) else {
+                    continue;
+                };
+                let Some(side) = port
+                    .side
+                    .or_else(|| crate::layout::infer_port_side(&port.name))
+                else {
+                    continue;
+                };
+                let (ux, uy) = match side {
+                    Side::East => (1.0, 0.0),
+                    Side::West => (-1.0, 0.0),
+                    Side::North => (0.0, -1.0),
+                    Side::South => (0.0, 1.0),
+                };
+                let (px, py) = (-uy, ux);
+                let (ex, ey) = (pos.x + ux * 12.0, pos.y + uy * 12.0);
+                spare.push_str(&format!(
+                    "{}{}<path d=\"M {:.1} {:.1} L {:.1} {:.1} M {:.1} {:.1} L {:.1} {:.1}\" fill=\"none\" stroke=\"black\" stroke-width=\"1\"/>{}",
+                    indent, indent, pos.x, pos.y, ex, ey,
+                    ex - px * 5.0, ey - py * 5.0, ex + px * 5.0, ey + py * 5.0, nl
+                ));
+                spare.push_str(&format!(
+                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"line-label\">{}</text>{}",
+                    indent, indent,
+                    ex + ux * 12.0,
+                    ey + uy * 12.0 + 3.0,
+                    escape_xml(&port.name.to_uppercase()),
+                    nl
+                ));
+            }
+        }
+        if !spare.is_empty() {
+            out.push_str(&format!("{}<g id=\"spare-nozzles\">{}", indent, nl));
+            out.push_str(&spare);
+            out.push_str(&format!("{}</g>{}", indent, nl));
+        }
+    }
 
     // Labels group
     out.push_str(&format!("{}<g id=\"labels\">{}", indent, nl));
@@ -310,6 +437,35 @@ pub fn render(
             diagram.lines.get(&seg.connection_id).and_then(|l| l.label.as_deref())
         };
         if let Some(label) = line_label {
+            // Open-ended stubs carry their label just past the arrow tip
+            // instead of at the (very short) midpoint.
+            let is_stub = !seg.is_signal
+                && diagram
+                    .lines
+                    .get(&seg.connection_id)
+                    .map(|l| l.to.is_none())
+                    .unwrap_or(false);
+            if is_stub && seg.points.len() >= 2 {
+                let tip = seg.points[seg.points.len() - 1];
+                let prev = seg.points[seg.points.len() - 2];
+                let dx = tip.x - prev.x;
+                let dy = tip.y - prev.y;
+                let len = (dx * dx + dy * dy).sqrt().max(1e-9);
+                let (ux, uy) = (dx / len, dy / len);
+                let (tx, ty, anchor) = if uy.abs() > ux.abs() {
+                    // vertical stub: label below/above the tip
+                    (tip.x, tip.y + uy * 14.0 + if uy > 0.0 { 6.0 } else { 0.0 }, "")
+                } else if ux > 0.0 {
+                    (tip.x + 8.0, tip.y + 3.0, " style=\"text-anchor:start\"")
+                } else {
+                    (tip.x - 8.0, tip.y + 3.0, " style=\"text-anchor:end\"")
+                };
+                out.push_str(&format!(
+                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"line-label\"{}>{}</text>{}",
+                    indent, indent, tx, ty, anchor, escape_xml(label), nl
+                ));
+                continue;
+            }
             if seg.points.len() >= 2 {
                 let mid_idx = seg.points.len() / 2;
                 let p1 = &seg.points[mid_idx - 1];
@@ -359,8 +515,113 @@ pub fn render(
     if let Some((ox, oy)) = legend_origin {
         out.push_str(&render_legend(&legend_entries, ox, oy, indent, opts.pretty));
     }
+    if let Some((ox, oy)) = table_origin {
+        out.push_str(&render_table(&table_items, ox, oy, indent, opts.pretty));
+    }
+    if !title_lines.is_empty() {
+        out.push_str(&format!("{}<g id=\"titleblock\">{}", indent, nl));
+        let base_y = canvas_h as f64 - 24.0 - (title_lines.len() as f64 - 1.0) * 16.0;
+        for (i, line) in title_lines.iter().enumerate() {
+            let weight = if i == 0 { " font-weight=\"bold\"" } else { "" };
+            let size = if i == 0 { 13 } else { 11 };
+            out.push_str(&format!(
+                "{}{}<text x=\"{:.1}\" y=\"{:.1}\" font-family=\"sans-serif\" font-size=\"{}\"{} text-anchor=\"end\" fill=\"black\" stroke=\"none\">{}</text>{}",
+                indent, indent,
+                canvas_w as f64 - 60.0,
+                base_y + i as f64 * 16.0,
+                size, weight,
+                escape_xml(line),
+                nl
+            ));
+        }
+        out.push_str(&format!("{}</g>{}", indent, nl));
+    }
 
     out.push_str("</svg>");
+    out
+}
+
+static EMPTY_DATA: Vec<(String, String)> = Vec::new();
+
+/// Attribute keys across all table items, in first-seen order.
+fn table_keys<'a>(items: &[(&'a str, &'a Vec<(String, String)>)]) -> Vec<String> {
+    let mut keys: Vec<String> = Vec::new();
+    for (_, data) in items {
+        for (k, _) in data.iter() {
+            if !keys.contains(k) {
+                keys.push(k.clone());
+            }
+        }
+    }
+    keys
+}
+
+/// Equipment data table: one column per item, one row per attribute
+/// (reference drawing style).
+fn render_table(
+    items: &[(&str, &Vec<(String, String)>)],
+    ox: f64,
+    oy: f64,
+    indent: &str,
+    pretty: bool,
+) -> String {
+    let nl = if pretty { "\n" } else { "" };
+    let keys = table_keys(items);
+    let key_w = 120.0;
+    let col_w = 115.0;
+    let row_h = 20.0;
+    let w = key_w + items.len() as f64 * col_w;
+    let h = (keys.len() + 1) as f64 * row_h;
+
+    let mut out = format!("{}<g id=\"equipment-table\">{}", indent, nl);
+    out.push_str(&format!(
+        "{}{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" fill=\"white\" stroke=\"black\" stroke-width=\"1\"/>{}",
+        indent, indent, ox, oy, w, h, nl
+    ));
+    let mut grid = String::new();
+    for r in 1..=keys.len() {
+        let y = oy + r as f64 * row_h;
+        grid.push_str(&format!("M {:.1} {:.1} L {:.1} {:.1} ", ox, y, ox + w, y));
+    }
+    for c in 0..items.len() {
+        let x = ox + key_w + c as f64 * col_w;
+        grid.push_str(&format!("M {:.1} {:.1} L {:.1} {:.1} ", x, oy, x, oy + h));
+    }
+    out.push_str(&format!(
+        "{}{}<path d=\"{}\" fill=\"none\" stroke=\"black\" stroke-width=\"0.6\"/>{}",
+        indent, indent, grid.trim_end(), nl
+    ));
+
+    let cell = |x: f64, y: f64, text: &str, bold: bool| {
+        format!(
+            "{}{}<text x=\"{:.1}\" y=\"{:.1}\" font-family=\"sans-serif\" font-size=\"10\"{} fill=\"black\" stroke=\"none\">{}</text>{}",
+            indent, indent, x, y,
+            if bold { " font-weight=\"bold\"" } else { "" },
+            escape_xml(text), nl
+        )
+    };
+    out.push_str(&cell(ox + 6.0, oy + 14.0, "Position", true));
+    for (c, (label, _)) in items.iter().enumerate() {
+        out.push_str(&cell(ox + key_w + c as f64 * col_w + 6.0, oy + 14.0, label, true));
+    }
+    for (r, key) in keys.iter().enumerate() {
+        let y = oy + (r + 1) as f64 * row_h + 14.0;
+        let disp = {
+            let mut d = key.replace('_', " ");
+            if let Some(c0) = d.get_mut(0..1) {
+                let up = c0.to_uppercase();
+                d.replace_range(0..1, &up);
+            }
+            d
+        };
+        out.push_str(&cell(ox + 6.0, y, &disp, false));
+        for (c, (_, data)) in items.iter().enumerate() {
+            if let Some((_, v)) = data.iter().find(|(k, _)| k == key) {
+                out.push_str(&cell(ox + key_w + c as f64 * col_w + 6.0, y, v, false));
+            }
+        }
+    }
+    out.push_str(&format!("{}</g>{}", indent, nl));
     out
 }
 
