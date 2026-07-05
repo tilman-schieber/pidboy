@@ -676,11 +676,11 @@ fn build_styles(_indent: &str, _pretty: bool) -> String {
     .note { font-family: sans-serif; font-size: 11px; fill: #555; font-style: italic; }
     .line-process { fill: none; stroke: black; stroke-width: 2; }
     .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
-    .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 4,2; }
-    .line-vent { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 2,3; }
+    .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 9,3,1.5,3; }
+    .line-vent { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 1.5,4; stroke-linecap: round; }
     .line-attach { fill: none; stroke: black; stroke-width: 1; }
     .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; }
-    .signal-pneumatic { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 4,3; }
+    .signal-pneumatic { fill: none; stroke: black; stroke-width: 1.5; }
     .signal-hydraulic { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 10,2,1,2; }
     .signal-digital { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,2,1,2; }
 "#.to_string()
@@ -715,10 +715,65 @@ fn render_polyline(
         "{}{}<polyline points=\"{}\" class=\"{}\"{}/>{}",
         indent, indent, pts_str, css_class, attrs, nl
     );
+    if css_class == "signal-pneumatic" {
+        out.push_str(&render_pneumatic_marks(points, indent, pretty));
+    }
     if arrow {
         out.push_str(&render_arrowhead(points, indent, pretty));
     }
     out
+}
+
+/// ISA-5.1 pneumatic signal marking: pairs of short slashes drawn across
+/// the (solid) line at regular intervals. Drawn as one explicit `<path>`
+/// so it survives viewers without marker/CSS support.
+fn render_pneumatic_marks(points: &[SvgPos], indent: &str, pretty: bool) -> String {
+    let nl = if pretty { "\n" } else { "" };
+    const HALF_LEN: f64 = 6.0; // half-length of one slash
+    const PAIR_GAP: f64 = 5.0; // spacing between the two slashes of a pair
+    const SPACING: f64 = 60.0; // nominal distance between pairs
+
+    let mut d = String::new();
+    for w in points.windows(2) {
+        let (a, b) = (&w[0], &w[1]);
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let len = (dx * dx + dy * dy).sqrt();
+        // Too short for a legible pair (e.g. actuator stubs).
+        if len < 26.0 {
+            continue;
+        }
+        let (ux, uy) = (dx / len, dy / len);
+        // Slash direction: segment direction rotated by ~65 degrees, so a
+        // horizontal run gets "//" leaning forward.
+        let (sin_t, cos_t) = 65f64.to_radians().sin_cos();
+        let (vx, vy) = (ux * cos_t + uy * sin_t, -ux * sin_t + uy * cos_t);
+        let n = ((len / SPACING).floor() as usize).max(1);
+        for i in 0..n {
+            let t = (i as f64 + 0.5) / n as f64 * len;
+            for off in [-PAIR_GAP / 2.0, PAIR_GAP / 2.0] {
+                let px = a.x + ux * (t + off);
+                let py = a.y + uy * (t + off);
+                d.push_str(&format!(
+                    "M {:.1} {:.1} L {:.1} {:.1} ",
+                    px - vx * HALF_LEN,
+                    py - vy * HALF_LEN,
+                    px + vx * HALF_LEN,
+                    py + vy * HALF_LEN
+                ));
+            }
+        }
+    }
+    if d.is_empty() {
+        return String::new();
+    }
+    format!(
+        "{}{}<path d=\"{}\" fill=\"none\" stroke=\"black\" stroke-width=\"1.2\"/>{}",
+        indent,
+        indent,
+        d.trim_end(),
+        nl
+    )
 }
 
 /// Filled arrowhead drawn as an explicit `<path>` at the endpoint of a
@@ -753,11 +808,11 @@ fn line_presentation_attrs(css_class: &str) -> &'static str {
     match css_class {
         "line-process"       => r#" fill="none" stroke="black" stroke-width="2""#,
         "line-utility"       => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4""#,
-        "line-drain"         => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="4,2""#,
-        "line-vent"          => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="2,3""#,
+        "line-drain"         => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="9,3,1.5,3""#,
+        "line-vent"          => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round""#,
         "line-attach"        => r#" fill="none" stroke="black" stroke-width="1""#,
         "signal-electrical"  => r#" fill="none" stroke="black" stroke-width="1.5""#,
-        "signal-pneumatic"   => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="4,3""#,
+        "signal-pneumatic"   => r#" fill="none" stroke="black" stroke-width="1.5""#,
         "signal-hydraulic"   => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="10,2,1,2""#,
         "signal-digital"     => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,2,1,2""#,
         _                    => r#" fill="none" stroke="black" stroke-width="1.5""#,
