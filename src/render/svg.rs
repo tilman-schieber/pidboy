@@ -675,11 +675,11 @@ fn build_styles(_indent: &str, _pretty: bool) -> String {
     .line-label { font-family: sans-serif; font-size: 9px; text-anchor: middle; fill: #666; }
     .note { font-family: sans-serif; font-size: 11px; fill: #555; font-style: italic; }
     .line-process { fill: none; stroke: black; stroke-width: 2; }
-    .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
+    .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 14,5; }
     .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 9,3,1.5,3; }
     .line-vent { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 1.5,4; stroke-linecap: round; }
     .line-attach { fill: none; stroke: black; stroke-width: 1; }
-    .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; }
+    .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,3; }
     .signal-pneumatic { fill: none; stroke: black; stroke-width: 1.5; }
     .signal-hydraulic { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 10,2,1,2; }
     .signal-digital { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,2,1,2; }
@@ -807,11 +807,11 @@ fn render_arrowhead(points: &[SvgPos], indent: &str, pretty: bool) -> String {
 fn line_presentation_attrs(css_class: &str) -> &'static str {
     match css_class {
         "line-process"       => r#" fill="none" stroke="black" stroke-width="2""#,
-        "line-utility"       => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4""#,
+        "line-utility"       => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5""#,
         "line-drain"         => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="9,3,1.5,3""#,
         "line-vent"          => r#" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round""#,
         "line-attach"        => r#" fill="none" stroke="black" stroke-width="1""#,
-        "signal-electrical"  => r#" fill="none" stroke="black" stroke-width="1.5""#,
+        "signal-electrical"  => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3""#,
         "signal-pneumatic"   => r#" fill="none" stroke="black" stroke-width="1.5""#,
         "signal-hydraulic"   => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="10,2,1,2""#,
         "signal-digital"     => r#" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,2,1,2""#,

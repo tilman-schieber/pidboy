@@ -10,11 +10,11 @@
     .line-label { font-family: sans-serif; font-size: 9px; text-anchor: middle; fill: #666; }
     .note { font-family: sans-serif; font-size: 11px; fill: #555; font-style: italic; }
     .line-process { fill: none; stroke: black; stroke-width: 2; }
-    .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
+    .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 14,5; }
     .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 9,3,1.5,3; }
     .line-vent { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 1.5,4; stroke-linecap: round; }
     .line-attach { fill: none; stroke: black; stroke-width: 1; }
-    .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; }
+    .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,3; }
     .signal-pneumatic { fill: none; stroke: black; stroke-width: 1.5; }
     .signal-hydraulic { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 10,2,1,2; }
     .signal-digital { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,2,1,2; }
@@ -51,9 +51,9 @@
     </g>
   </defs>
   <g id="lines">
-    <polyline points="120.0,640.0 240.0,640.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4"/>
+    <polyline points="120.0,640.0 240.0,640.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(240.0,640.0) rotate(0.0)"/>
-    <polyline points="284.0,640.0 532.0,640.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4"/>
+    <polyline points="284.0,640.0 532.0,640.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(532.0,640.0) rotate(0.0)"/>
     <polyline points="632.0,640.0 1032.0,640.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1032.0,640.0) rotate(0.0)"/>
@@ -68,12 +68,12 @@
     <polyline points="2284.0,640.0 2232.0,640.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
   </g>
   <g id="signals">
-    <polyline points="1400.0,240.0 1684.0,240.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline points="1400.0,240.0 1684.0,240.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1684.0,240.0) rotate(0.0)"/>
     <polyline points="1702.0,258.0 1702.0,599.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
     <path d="M 1696.6 287.1 L 1707.4 292.1 M 1696.6 292.1 L 1707.4 297.1 M 1696.6 355.3 L 1707.4 360.3 M 1696.6 360.3 L 1707.4 365.3 M 1696.6 423.5 L 1707.4 428.5 M 1696.6 428.5 L 1707.4 433.5 M 1696.6 491.7 L 1707.4 496.7 M 1696.6 496.7 L 1707.4 501.7 M 1696.6 559.9 L 1707.4 564.9 M 1696.6 564.9 L 1707.4 569.9" fill="none" stroke="black" stroke-width="1.2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1702.0,599.0) rotate(90.0)"/>
-    <polyline points="2302.0,622.0 2302.0,160.0 2200.0,160.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline points="2302.0,622.0 2302.0,160.0 2200.0,160.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(2200.0,160.0) rotate(180.0)"/>
     <polyline points="2164.0,160.0 262.0,160.0 262.0,599.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
     <path d="M 2138.4 154.6 L 2133.3 165.4 M 2133.4 154.6 L 2128.3 165.4 M 2077.0 154.6 L 2071.9 165.4 M 2072.0 154.6 L 2066.9 165.4 M 2015.6 154.6 L 2010.6 165.4 M 2010.6 154.6 L 2005.6 165.4 M 1954.3 154.6 L 1949.2 165.4 M 1949.3 154.6 L 1944.2 165.4 M 1892.9 154.6 L 1887.9 165.4 M 1887.9 154.6 L 1882.9 165.4 M 1831.6 154.6 L 1826.5 165.4 M 1826.6 154.6 L 1821.5 165.4 M 1770.2 154.6 L 1765.2 165.4 M 1765.2 154.6 L 1760.2 165.4 M 1708.9 154.6 L 1703.8 165.4 M 1703.9 154.6 L 1698.8 165.4 M 1647.5 154.6 L 1642.4 165.4 M 1642.5 154.6 L 1637.4 165.4 M 1586.2 154.6 L 1581.1 165.4 M 1581.2 154.6 L 1576.1 165.4 M 1524.8 154.6 L 1519.7 165.4 M 1519.8 154.6 L 1514.7 165.4 M 1463.5 154.6 L 1458.4 165.4 M 1458.5 154.6 L 1453.4 165.4 M 1402.1 154.6 L 1397.0 165.4 M 1397.1 154.6 L 1392.0 165.4 M 1340.7 154.6 L 1335.7 165.4 M 1335.7 154.6 L 1330.7 165.4 M 1279.4 154.6 L 1274.3 165.4 M 1274.4 154.6 L 1269.3 165.4 M 1218.0 154.6 L 1213.0 165.4 M 1213.0 154.6 L 1208.0 165.4 M 1156.7 154.6 L 1151.6 165.4 M 1151.7 154.6 L 1146.6 165.4 M 1095.3 154.6 L 1090.3 165.4 M 1090.3 154.6 L 1085.3 165.4 M 1034.0 154.6 L 1028.9 165.4 M 1029.0 154.6 L 1023.9 165.4 M 972.6 154.6 L 967.5 165.4 M 967.6 154.6 L 962.5 165.4 M 911.3 154.6 L 906.2 165.4 M 906.3 154.6 L 901.2 165.4 M 849.9 154.6 L 844.8 165.4 M 844.9 154.6 L 839.8 165.4 M 788.6 154.6 L 783.5 165.4 M 783.6 154.6 L 778.5 165.4 M 727.2 154.6 L 722.1 165.4 M 722.2 154.6 L 717.1 165.4 M 665.8 154.6 L 660.8 165.4 M 660.8 154.6 L 655.8 165.4 M 604.5 154.6 L 599.4 165.4 M 599.5 154.6 L 594.4 165.4 M 543.1 154.6 L 538.1 165.4 M 538.1 154.6 L 533.1 165.4 M 481.8 154.6 L 476.7 165.4 M 476.8 154.6 L 471.7 165.4 M 420.4 154.6 L 415.4 165.4 M 415.4 154.6 L 410.4 165.4 M 359.1 154.6 L 354.0 165.4 M 354.1 154.6 L 349.0 165.4 M 297.7 154.6 L 292.6 165.4 M 292.7 154.6 L 287.6 165.4 M 256.6 186.3 L 267.4 191.4 M 256.6 191.3 L 267.4 196.4 M 256.6 249.0 L 267.4 254.1 M 256.6 254.0 L 267.4 259.1 M 256.6 311.8 L 267.4 316.8 M 256.6 316.8 L 267.4 321.8 M 256.6 374.5 L 267.4 379.5 M 256.6 379.5 L 267.4 384.5 M 256.6 437.2 L 267.4 442.2 M 256.6 442.2 L 267.4 447.2 M 256.6 499.9 L 267.4 505.0 M 256.6 504.9 L 267.4 510.0 M 256.6 562.6 L 267.4 567.7 M 256.6 567.6 L 267.4 572.7" fill="none" stroke="black" stroke-width="1.2"/>
@@ -136,13 +136,13 @@
     <text x="416.0" y="859.0" class="label" style="text-anchor:start">Panel instrument</text>
     <use href="#sym-instr_control_room" xlink:href="#sym-instr_control_room" transform="translate(366.0,905.0) scale(0.750)"/>
     <text x="416.0" y="909.0" class="label" style="text-anchor:start">Control-room instrument</text>
-    <polyline points="330.0,955.0 402.0,955.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="8,4"/>
+    <polyline points="330.0,955.0 402.0,955.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(402.0,955.0) rotate(0.0)"/>
     <text x="416.0" y="959.0" class="label" style="text-anchor:start">Utility line</text>
     <polyline points="330.0,1005.0 402.0,1005.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(402.0,1005.0) rotate(0.0)"/>
     <text x="416.0" y="1009.0" class="label" style="text-anchor:start">Process line</text>
-    <polyline points="580.0,805.0 652.0,805.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline points="580.0,805.0 652.0,805.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,805.0) rotate(0.0)"/>
     <text x="666.0" y="809.0" class="label" style="text-anchor:start">Electrical signal</text>
     <polyline points="580.0,855.0 652.0,855.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>

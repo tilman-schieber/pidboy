@@ -305,7 +305,7 @@ conventions; see README "Drawing conventions"):
 
 Typical signal types:
 
-- `electrical` — thin solid
+- `electrical` — dashed (ISA-5.1)
 - `pneumatic` — solid with double-slash marks (ISA-5.1)
 - `hydraulic`
 - `digital`

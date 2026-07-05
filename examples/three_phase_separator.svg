@@ -10,11 +10,11 @@
     .line-label { font-family: sans-serif; font-size: 9px; text-anchor: middle; fill: #666; }
     .note { font-family: sans-serif; font-size: 11px; fill: #555; font-style: italic; }
     .line-process { fill: none; stroke: black; stroke-width: 2; }
-    .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 8,4; }
+    .line-utility { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 14,5; }
     .line-drain { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 9,3,1.5,3; }
     .line-vent { fill: none; stroke: black; stroke-width: 1; stroke-dasharray: 1.5,4; stroke-linecap: round; }
     .line-attach { fill: none; stroke: black; stroke-width: 1; }
-    .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; }
+    .signal-electrical { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,3; }
     .signal-pneumatic { fill: none; stroke: black; stroke-width: 1.5; }
     .signal-hydraulic { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 10,2,1,2; }
     .signal-digital { fill: none; stroke: black; stroke-width: 1.5; stroke-dasharray: 6,2,1,2; }
@@ -134,17 +134,17 @@
     <polyline points="1330.0,655.0 1278.0,655.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
   </g>
   <g id="signals">
-    <polyline points="1038.0,492.0 1038.0,78.0 1306.0,78.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline points="1038.0,492.0 1038.0,78.0 1306.0,78.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1306.0,78.0) rotate(0.0)"/>
     <polyline points="1324.0,96.0 1324.0,208.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
     <path d="M 1318.6 147.0 L 1329.4 152.0 M 1318.6 152.0 L 1329.4 157.0" fill="none" stroke="black" stroke-width="1.2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1324.0,208.0) rotate(90.0)"/>
-    <polyline points="710.0,655.0 556.0,655.0 556.0,818.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline points="710.0,655.0 556.0,655.0 556.0,818.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(556.0,818.0) rotate(90.0)"/>
     <polyline points="556.0,854.0 556.0,966.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
     <path d="M 550.6 905.0 L 561.4 910.0 M 550.6 910.0 L 561.4 915.0" fill="none" stroke="black" stroke-width="1.2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(556.0,966.0) rotate(90.0)"/>
-    <polyline points="1366.0,655.0 1520.0,655.0 1520.0,818.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline points="1366.0,655.0 1520.0,655.0 1520.0,818.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1520.0,818.0) rotate(90.0)"/>
     <polyline points="1520.0,854.0 1520.0,966.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
     <path d="M 1514.6 905.0 L 1525.4 910.0 M 1514.6 910.0 L 1525.4 915.0" fill="none" stroke="black" stroke-width="1.2"/>
@@ -264,7 +264,7 @@
     <polyline points="580.0,1388.0 652.0,1388.0" class="line-drain" fill="none" stroke="black" stroke-width="1" stroke-dasharray="9,3,1.5,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1388.0) rotate(0.0)"/>
     <text x="666.0" y="1392.0" class="label" style="text-anchor:start">Drain line</text>
-    <polyline points="580.0,1438.0 652.0,1438.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline points="580.0,1438.0 652.0,1438.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(652.0,1438.0) rotate(0.0)"/>
     <text x="666.0" y="1442.0" class="label" style="text-anchor:start">Electrical signal</text>
     <polyline points="580.0,1488.0 652.0,1488.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>

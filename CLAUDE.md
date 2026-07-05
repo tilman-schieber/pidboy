@@ -15,11 +15,12 @@ signal lines):
   drawn as explicit paths (`render_pneumatic_marks` in
   `src/render/svg.rs`). Never a dash pattern — that was tried and is
   indistinguishable from drain/vent dashes.
-- Electrical signals: thin solid (deliberate deviation from classic ISA
-  dashed-electric, which would collide with the utility dash; document
-  any change in README "Drawing conventions").
-- Piping dash cadences must stay mutually distinct: process solid/2,
-  utility dash `8,4`, drain dash-dot `9,3,1.5,3`, vent dots `1.5,4`.
+- Electrical signals: dashed `6,3` per ISA. Process piping is the ONLY
+  solid line style — a solid thin electric was tried and users could
+  not tell signal wires from pipes.
+- Line cadences must stay mutually distinct: process solid/2, utility
+  long dash `14,5`, electric dash `6,3`/1.5, drain dash-dot
+  `9,3,1.5,3`, vent dots `1.5,4`, pneumatic solid+slashes.
 - Instrument bubble style is keyed to `location` (field / panel /
   control_room / shared), not instrument type, per ISA-5.1.
 - Relief valves render as the angle pattern (inlet below, outlet to the

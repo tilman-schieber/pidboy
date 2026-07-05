@@ -157,14 +157,12 @@ These are deliberate decisions; keep them stable.
   field / panel / control_room / shared display).
 - **Signal lines** follow **ISA-5.1**:
   - *pneumatic* — solid line crossed by pairs of slash marks (`—//—`)
-  - *electrical* — thin solid (deliberate deviation: classic ISA draws
-    electric dashed, but that would collide visually with the utility
-    dash; pneumatic no longer competes for "solid", so solid-thin stays
-    unambiguous)
-- **Piping line styles** (each dashed family has a distinct cadence so
-  they can't be confused at print scale):
+  - *electrical* — dashed `6,3`, weight 1.5 (ISA dashed-electric; keeps
+    signals visually distinct from solid process piping)
+- **Piping line styles** (each family has a distinct cadence so they
+  can't be confused at print scale — only *process* is a solid line):
   - *process* — solid, weight 2
-  - *utility* — dashed `8,4`, weight 1
+  - *utility* — long dash `14,5`, weight 1
   - *drain* — dash-dot `9,3,1.5,3`, weight 1
   - *vent* — round dots `1.5,4`, weight 1
 - **Flow arrows** are drawn at the destination of every piping run and
