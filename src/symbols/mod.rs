@@ -329,6 +329,28 @@ fn connector_symbol() -> SymbolDef {
     ])
 }
 
+/// Simplified stand-ins for the legend: composite symbols whose internals
+/// (weir, demister, annotations) would be illegible at thumbnail scale show
+/// just their outline; the internals get their own legend glyphs.
+pub fn legend_symbol(key: &str) -> Option<SymbolDef> {
+    match key {
+        "separator_3phase" => Some(sym(480.0, 150.0, vec![SymbolElement::Path {
+            d: "M -165 -75 A 75 75 0 0 0 -165 75 L 165 75 A 75 75 0 0 0 165 -75 Z".into(),
+        }])),
+        _ => None,
+    }
+}
+
+/// Legend glyph for the demister pad internal (crosshatched strip).
+pub fn demister_glyph() -> SymbolDef {
+    sym(50.0, 12.0, vec![
+        SymbolElement::Rect { x: -25.0, y: -6.0, w: 50.0, h: 12.0, rx: 0.0 },
+        SymbolElement::Line { x1: -12.5, y1: -6.0, x2: -12.5, y2: 6.0 },
+        SymbolElement::Line { x1: 0.0, y1: -6.0, x2: 0.0, y2: 6.0 },
+        SymbolElement::Line { x1: 12.5, y1: -6.0, x2: 12.5, y2: 6.0 },
+    ])
+}
+
 /// Fallback for unrecognised equipment types.
 fn default_equipment_symbol() -> SymbolDef {
     sym(60.0, 60.0, vec![

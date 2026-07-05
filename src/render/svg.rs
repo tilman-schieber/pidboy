@@ -400,6 +400,8 @@ fn compute_canvas(diagram: &Diagram, layout: &LayoutInfo, opts: &SvgOptions) -> 
 enum LegendSample {
     /// A `<use>` of an already-emitted symbol def, scaled to fit the cell.
     Symbol { key: String, w: f64, h: f64 },
+    /// A legend-only symbol drawn inline (simplified outlines, internals).
+    Inline(symbols::SymbolDef),
     /// A short sample line with the class's stroke/dash and a flow arrow.
     Stroke { class: String, arrow: bool },
     /// Junction/tee dot.
@@ -495,15 +497,29 @@ fn build_legend_entries(diagram: &Diagram) -> Vec<LegendEntry> {
     for eq in diagram.equipment.values() {
         let key = symbols::equipment_symbol_key(&eq.equip_type);
         if seen.insert(format!("e:{}", key)) {
-            let s = symbols::equipment_symbol(&eq.equip_type);
+            // Composite symbols use a simplified outline in the legend;
+            // their internals get standalone entries below.
+            let sample = match symbols::legend_symbol(key) {
+                Some(def) => LegendSample::Inline(def),
+                None => {
+                    let s = symbols::equipment_symbol(&eq.equip_type);
+                    LegendSample::Symbol {
+                        key: key.to_string(),
+                        w: s.width,
+                        h: s.height,
+                    }
+                }
+            };
             entries.push(LegendEntry {
-                sample: LegendSample::Symbol {
-                    key: key.to_string(),
-                    w: s.width,
-                    h: s.height,
-                },
+                sample,
                 label: equipment_key_label(key),
             });
+            if key == "separator_3phase" {
+                entries.push(LegendEntry {
+                    sample: LegendSample::Inline(symbols::demister_glyph()),
+                    label: "Demister pad",
+                });
+            }
         }
     }
     for v in diagram.valves.values() {
@@ -606,6 +622,17 @@ fn render_legend(
                     "{}{}<use href=\"#sym-{}\" xlink:href=\"#sym-{}\" transform=\"translate({:.1},{:.1}) scale({:.3})\"/>{}",
                     indent, indent, key, key, cx, cy, scale, nl
                 ));
+            }
+            LegendSample::Inline(def) => {
+                let scale = (72.0 / def.width).min(34.0 / def.height).min(0.75);
+                out.push_str(&format!(
+                    "{}{}<g transform=\"translate({:.1},{:.1}) scale({:.3})\">{}",
+                    indent, indent, cx, cy, scale, nl
+                ));
+                for elem in &def.elements {
+                    out.push_str(&render_element(elem, indent, nl));
+                }
+                out.push_str(&format!("{}{}</g>{}", indent, indent, nl));
             }
             LegendSample::Stroke { class, arrow } => {
                 let pts = [
