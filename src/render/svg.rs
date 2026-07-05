@@ -176,8 +176,9 @@ pub fn render(
                             // Offset past the valve label (its rect plus the
                             // 2px label-collision margin), so "below" stays
                             // available directly beneath the tag number.
-                            let (tx, ty, tanchor, trect) = place_label(
-                                &tag, pos, half_w, half_h + 16.0, routes, layout, id, &label_rects,
+                            let (tx, ty, tanchor, trect) = place_label_ordered(
+                                &tag, pos, half_w, half_h + 16.0, routes, layout, id,
+                                &label_rects, true,
                             );
                             label_rects.push(trect);
                             out.push_str(&format!(
@@ -266,6 +267,25 @@ fn place_label(
     own_id: &str,
     placed_labels: &[crate::layout::SvgRect],
 ) -> (f64, f64, &'static str, crate::layout::SvgRect) {
+    place_label_ordered(
+        label, pos, half_w, half_h, routes, layout, own_id, placed_labels, false,
+    )
+}
+
+/// `prefer_low`: keep the text at or below the symbol if at all possible
+/// (valve state tags read wrong when they float above, near other rows).
+#[allow(clippy::too_many_arguments)]
+fn place_label_ordered(
+    label: &str,
+    pos: &SvgPos,
+    half_w: f64,
+    half_h: f64,
+    routes: &[RouteSegment],
+    layout: &LayoutInfo,
+    own_id: &str,
+    placed_labels: &[crate::layout::SvgRect],
+    prefer_low: bool,
+) -> (f64, f64, &'static str, crate::layout::SvgRect) {
     let text_w = label.chars().count() as f64 * 6.6;
     let text_h = 12.0;
     let start = r#" style="text-anchor:start""#;
@@ -291,7 +311,12 @@ fn place_label(
         h: text_h,
     };
 
-    for (x, y, anchor) in [below, above, right, left, below_right, above_right] {
+    let candidates = if prefer_low {
+        [below, below_right, right, left, above, above_right]
+    } else {
+        [below, above, right, left, below_right, above_right]
+    };
+    for (x, y, anchor) in candidates {
         let rect = rect_for(x, y, anchor);
         let hits_route = routes.iter().any(|seg| {
             seg.points

@@ -66,10 +66,21 @@ impl SvgRect {
     }
 }
 
+/// Outline family of a symbol, for placing ports on the drawn surface.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SymbolShape {
+    /// Ports sit on the bounding box (default).
+    Rect,
+    /// Stadium/capsule outline with head radius h/2: side ports follow the
+    /// head arc, top/bottom ports near the ends drop onto the shoulder.
+    Capsule,
+}
+
 #[derive(Debug)]
 pub struct LayoutInfo {
     pub positions: HashMap<String, SvgPos>,
     pub bounds: HashMap<String, SvgRect>,
+    pub shapes: HashMap<String, SymbolShape>,
 }
 
 impl LayoutInfo {
@@ -77,6 +88,7 @@ impl LayoutInfo {
         Self {
             positions: HashMap::new(),
             bounds: HashMap::new(),
+            shapes: HashMap::new(),
         }
     }
 
@@ -94,7 +106,8 @@ impl LayoutInfo {
     pub fn port_pos(&self, id: &str, port_name: &str, ports: &[Port]) -> Option<SvgPos> {
         let center = self.positions.get(id)?;
         let bounds = self.bounds.get(id)?;
-        match port_offset(ports, port_name, bounds.w, bounds.h) {
+        let shape = self.shapes.get(id).copied().unwrap_or(SymbolShape::Rect);
+        match port_offset(ports, port_name, bounds.w, bounds.h, shape) {
             Some((dx, dy)) => Some(SvgPos { x: center.x + dx, y: center.y + dy }),
             None => Some(SvgPos { x: center.x, y: center.y }),
         }
@@ -105,7 +118,13 @@ impl LayoutInfo {
 /// dimensions. Ports sharing a side are distributed evenly along it in
 /// declaration order (1/(n+1), 2/(n+1), …), so e.g. a vessel can have both a
 /// gas outlet and a relief nozzle on top without them coinciding.
-pub fn port_offset(ports: &[Port], port_name: &str, w: f64, h: f64) -> Option<(f64, f64)> {
+pub fn port_offset(
+    ports: &[Port],
+    port_name: &str,
+    w: f64,
+    h: f64,
+    shape: SymbolShape,
+) -> Option<(f64, f64)> {
     let resolved = |p: &Port| p.side.or_else(|| infer_port_side(&p.name));
 
     let side = ports
@@ -124,12 +143,54 @@ pub fn port_offset(ports: &[Port], port_name: &str, w: f64, h: f64) -> Option<(f
         _ => 0.5,
     };
 
-    Some(match side {
+    let rect = match side {
         Side::West => (-w / 2.0, (frac - 0.5) * h),
         Side::East => (w / 2.0, (frac - 0.5) * h),
         Side::North => ((frac - 0.5) * w, -h / 2.0),
         Side::South => ((frac - 0.5) * w, h / 2.0),
+    };
+
+    Some(match shape {
+        SymbolShape::Rect => rect,
+        SymbolShape::Capsule => capsule_surface(side, rect, w, h),
     })
+}
+
+/// Pull a bounding-box port position onto a capsule outline (stadium with
+/// head radius h/2, straight section between ±(w/2 − r)), so lines meet the
+/// drawn shell instead of stopping at the bounding box.
+fn capsule_surface(side: Side, (dx, dy): (f64, f64), w: f64, h: f64) -> (f64, f64) {
+    let r = h / 2.0;
+    let c = (w / 2.0 - r).max(0.0);
+    match side {
+        Side::East | Side::West => {
+            let x = c + (r * r - dy * dy).max(0.0).sqrt();
+            (x * dx.signum(), dy)
+        }
+        Side::North | Side::South => {
+            if dx.abs() <= c {
+                (dx, dy)
+            } else {
+                let e = dx.abs() - c;
+                let y = (r * r - e * e).max(0.0).sqrt();
+                (dx, y * dy.signum())
+            }
+        }
+    }
+}
+
+/// Shape family of an object's drawn outline.
+pub fn symbol_shape(diagram: &Diagram, id: &str) -> SymbolShape {
+    if let Some(e) = diagram.equipment.get(id) {
+        let key = symbols::equipment_symbol_key(&e.equip_type);
+        // The parametric sized vessel and the big separator drum draw exact
+        // capsules; the small fixed symbols overdraw their bounding box, so
+        // rectangle ports already land under the fill.
+        if (key == "vessel" && e.size.is_some()) || key == "separator_3phase" {
+            return SymbolShape::Capsule;
+        }
+    }
+    SymbolShape::Rect
 }
 
 /// True when every sided port of the valve lies on north/south — it sits in
@@ -170,6 +231,9 @@ pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
         .iter()
         .map(|(kind, id)| (id.clone(), symbol_dims(diagram, kind, id)))
         .collect();
+    for (_, id) in &diagram.order {
+        layout.shapes.insert(id.clone(), symbol_shape(diagram, id));
+    }
 
     // Pass 1: explicit grid positions.
     for (kind, id) in &diagram.order {
@@ -471,9 +535,10 @@ fn place_line_endpoints(
                 (Some(pt), _) => {
                     let port_local = new.port.as_ref().and_then(|pn| {
                         let (w, h) = dim_of(dims, &new.id);
+                        let shape = symbol_shape(diagram, &new.id);
                         diagram
                             .get_ports(&new.id)
-                            .and_then(|ports| port_offset(ports, pn, w, h))
+                            .and_then(|ports| port_offset(ports, pn, w, h, shape))
                     });
                     place_from_point(layout, dims, pt, &new.id, side, 100, true, &[], port_local);
                 }
