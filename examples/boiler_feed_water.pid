@@ -1,5 +1,5 @@
 # Boiler feed water system
-# Makeup water → Deaerator → BFW Pump → Check Valve → Flow Control Valve → Steam Drum
+# Makeup water → MCV → Deaerator → BFW Pump → Check Valve → Flow Control Valve → Steam Drum → Steam
 # Flow control loop:  FT101 → FIC101 (panel) → FCV101 (pneumatic)
 # Level control loop: LT101 → LIC101 (control room) → MCV101 (pneumatic)
 
@@ -38,8 +38,21 @@ equipment SD101:
   at: (26,8)
   ports:
     in: west
-    top: north
+    steam: north
+    lt: east
   label: "SD-101"
+
+equipment STEAM:
+  type: connector
+  ports:
+    in: south
+  label: "Steam"
+
+equipment MAKEUP:
+  type: connector
+  ports:
+    out: east
+  label: "Makeup Water"
 
 valve MCV101:
   type: control_valve
@@ -48,6 +61,11 @@ valve MCV101:
   at: (2,8)
   ports: in, out
   label: "MCV-101"
+
+line L100:
+  class: utility
+  from: MAKEUP.out
+  to: MCV101.in
 
 line L101:
   class: utility
@@ -77,6 +95,12 @@ line L105:
   to: SD101.in
   label: "4in-BFW-0105"
 
+line L106:
+  class: process
+  from: SD101.steam
+  to: STEAM.in
+  label: "Saturated steam"
+
 instrument FT101:
   type: flow_transmitter
   at: (16,3)
@@ -91,7 +115,7 @@ instrument FIC101:
 
 instrument LT101:
   type: level_transmitter
-  attach: SD101.top
+  attach: SD101.lt
   location: field
   label: "LT-101"
 
