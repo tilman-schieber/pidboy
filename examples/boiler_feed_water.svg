@@ -98,12 +98,12 @@
     <text x="1062.0" y="684.0" class="label">P-101</text>
     <text x="1382.0" y="672.0" class="label">NRV-101</text>
     <text x="1702.0" y="684.0" class="label">FCV-101</text>
-    <text x="1730.0" y="697.0" class="line-label" style="text-anchor:start">FC</text>
+    <text x="1702.0" y="700.0" class="line-label">FC</text>
     <text x="2182.0" y="644.0" class="label">SD-101</text>
     <text x="2182.0" y="467.0" class="label">Steam</text>
     <text x="90.0" y="669.0" class="label">Makeup Water</text>
     <text x="262.0" y="684.0" class="label">MCV-101</text>
-    <text x="290.0" y="697.0" class="line-label" style="text-anchor:start">FC</text>
+    <text x="262.0" y="700.0" class="line-label">FC</text>
     <text x="1382.0" y="272.0" class="label">FT-101</text>
     <text x="1702.0" y="214.0" class="label">FIC-101</text>
     <text x="2302.0" y="672.0" class="label">LT-101</text>

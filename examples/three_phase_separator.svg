@@ -197,19 +197,19 @@
     <text x="1366.0" y="477.0" class="label">To flare</text>
     <text x="1208.0" y="372.0" class="label" style="text-anchor:start">GV-201</text>
     <text x="1324.0" y="280.0" class="label">PV-201</text>
-    <text x="1352.0" y="293.0" class="line-label" style="text-anchor:start">FC</text>
+    <text x="1324.0" y="296.0" class="line-label">FC</text>
     <text x="1488.0" y="268.0" class="label">GV-202</text>
     <text x="1660.0" y="265.0" class="label">Vapor Outlet</text>
     <text x="984.0" y="866.0" class="label" style="text-anchor:start">WV-101</text>
     <text x="556.0" y="1038.0" class="label">LV-101</text>
-    <text x="584.0" y="1051.0" class="line-label" style="text-anchor:start">FC</text>
+    <text x="556.0" y="1054.0" class="line-label">FC</text>
     <text x="262.0" y="1026.0" class="label">WV-102</text>
     <text x="859.0" y="1135.0" class="label" style="text-anchor:start">DV-101</text>
     <text x="703.0" y="1159.0" class="label">WBP-101</text>
     <text x="90.0" y="1023.0" class="label">Water Outlet</text>
     <text x="1144.0" y="866.0" class="label" style="text-anchor:start">OV-201</text>
     <text x="1520.0" y="1038.0" class="label">LV-201</text>
-    <text x="1548.0" y="1051.0" class="line-label" style="text-anchor:start">FC</text>
+    <text x="1520.0" y="1054.0" class="line-label">FC</text>
     <text x="1814.0" y="1026.0" class="label">OV-202</text>
     <text x="1269.0" y="1135.0" class="label" style="text-anchor:start">DV-201</text>
     <text x="1373.0" y="1159.0" class="label">OBP-201</text>

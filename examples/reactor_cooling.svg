@@ -141,14 +141,14 @@
     <text x="478.0" y="308.0" class="label">NRV-101</text>
     <text x="676.0" y="320.0" class="label">E-101</text>
     <text x="878.0" y="320.0" class="label">FCV-101</text>
-    <text x="906.0" y="333.0" class="line-label" style="text-anchor:start">FC</text>
+    <text x="878.0" y="336.0" class="line-label">FC</text>
     <text x="1086.0" y="330.0" class="label" style="text-anchor:start">R-101</text>
     <text x="1192.0" y="470.0" class="label">LCV-101</text>
-    <text x="1220.0" y="483.0" class="line-label" style="text-anchor:start">FC</text>
+    <text x="1192.0" y="486.0" class="line-label">FC</text>
     <text x="1374.0" y="470.0" class="label">V-101</text>
     <text x="1584.0" y="430.0" class="label">TK-102</text>
     <text x="1222.0" y="320.0" class="label">TCV-101</text>
-    <text x="1250.0" y="333.0" class="line-label" style="text-anchor:start">FO</text>
+    <text x="1222.0" y="336.0" class="line-label">FO</text>
     <text x="1474.0" y="305.0" class="label">CWS</text>
     <text x="1050.0" y="88.0" class="label">CWR</text>
     <text x="1374.0" y="248.0" class="label">To flare</text>

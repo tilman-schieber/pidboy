@@ -173,8 +173,11 @@ pub fn render(
                             },
                         };
                         if let Some(tag) = tag {
+                            // Offset past the valve label (its rect plus the
+                            // 2px label-collision margin), so "below" stays
+                            // available directly beneath the tag number.
                             let (tx, ty, tanchor, trect) = place_label(
-                                &tag, pos, half_w, half_h + 13.0, routes, layout, id, &label_rects,
+                                &tag, pos, half_w, half_h + 16.0, routes, layout, id, &label_rects,
                             );
                             label_rects.push(trect);
                             out.push_str(&format!(
