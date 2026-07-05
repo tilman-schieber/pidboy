@@ -104,10 +104,14 @@
     <text x="90.0" y="669.0" class="label">Makeup Water</text>
     <text x="262.0" y="684.0" class="label">MCV-101</text>
     <text x="262.0" y="700.0" class="line-label">FC</text>
-    <text x="1382.0" y="272.0" class="label">FT-101</text>
-    <text x="1702.0" y="214.0" class="label">FIC-101</text>
-    <text x="2302.0" y="672.0" class="label">LT-101</text>
-    <text x="2182.0" y="192.0" class="label">LIC-101</text>
+    <text x="1382.0" y="238.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">FT</text>
+    <text x="1382.0" y="247.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">101</text>
+    <text x="1702.0" y="238.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">FIC</text>
+    <text x="1702.0" y="247.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">101</text>
+    <text x="2302.0" y="638.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">LT</text>
+    <text x="2302.0" y="647.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">101</text>
+    <text x="2182.0" y="158.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">LIC</text>
+    <text x="2182.0" y="167.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">101</text>
     <text x="408.0" y="632.0" class="line-label">4in-BFW-0101</text>
     <text x="1540.0" y="632.0" class="line-label">4in-BFW-0104</text>
     <text x="1928.0" y="632.0" class="line-label">4in-BFW-0105</text>

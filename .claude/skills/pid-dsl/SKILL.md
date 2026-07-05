@@ -52,7 +52,17 @@ equipment P101:
 ### IDs
 
 - Must be unique across the entire document
-- Use realistic engineering IDs: `P101`, `CV101`, `E101`, `TI-101` etc.
+- Use realistic engineering IDs: `P101`, `CV101`, `E101` etc.
+- Dots are NOT allowed in IDs (they mean port references). For module tag
+  schemes like `GD1.VV53`, use `GD1_VV53` as the ID and put the dotted
+  form in the label.
+
+### Labels
+
+- `"\n"` inside a quoted label makes a line break (multi-line labels).
+- Instrument labels render INSIDE the bubble when they fit as two short
+  lines: write `label: "TT\nR1.T1"` (function letters over tag), or
+  `"TT-101"` which splits at the dash.
 
 ---
 
@@ -84,7 +94,9 @@ equipment E101:
   label: "E-101"
 ```
 
-**equipment.type values:** `pump`, `pump_centrifugal`, `pump_positive_displacement`, `heat_exchanger`, `heat_exchanger_shell_tube`, `tank`, `vessel`, `separator`, `separator_3phase`, `reactor_cstr`, `reactor_batch`, `reactor_pfr`, `compressor`, `blower`, `mixer`, `distillation_column`, `connector`, `heat_pad`
+**equipment.type values:** `pump`, `pump_centrifugal`, `pump_positive_displacement`, `heat_exchanger`, `heat_exchanger_shell_tube`, `tank`, `vessel`, `separator`, `separator_3phase`, `reactor_cstr`, `reactor_batch`, `reactor_pfr`, `compressor`, `blower`, `mixer`, `distillation_column`, `connector`, `heat_pad`, `vacuum_pump`, `canister`, `motor`, `thermostat`
+
+`canister` is a feed/product bottle; `motor` is a stirrer drive (mount with `attach: R1.m` on a dedicated north port); `thermostat` is a packaged-unit box that carries its label inside.
 
 **Equipment-on-equipment attachment:** equipment can carry `attach:` to mount flush against a host — heat pads, jackets. Declare a dedicated port on the host for it so pipe nozzles stay clear, and target signals at the attached item:
 
@@ -125,7 +137,9 @@ valve CV101:
   label: "CV-101"
 ```
 
-**valve.type values:** `gate`, `globe`, `ball`, `butterfly`, `plug`, `control_valve`, `check_valve`, `relief_valve`, `safety_valve`
+**valve.type values:** `gate`, `globe`, `ball`, `butterfly`, `plug`, `needle`, `three_way`, `control_valve`, `check_valve`, `relief_valve`, `safety_valve`, `pressure_reducer`, `bursting_disc`
+
+`three_way` takes three ports (`in: east, out: west, branch: south/north`). `pressure_reducer` (PCV) and `bursting_disc` are inline elements; give safety devices and PCVs a `setpoint: "5 barg"` — it renders as a small annotation. `actuator: solenoid` draws a boxed S on any valve body.
 
 `globe` renders as a bowtie with a filled plug dot (use it for bypass and throttling valves); `control_valve` with `actuator: diaphragm` renders a dome actuator.
 
@@ -155,6 +169,8 @@ line L100:
 ```
 
 **line.class values:** `process`, `utility`, `drain`, `vent`
+
+Lines also take `flexible: true` (hose squiggle drawn mid-run) and `insulated: true` (hatched insulation band) — combinable.
 
 **Open-ended stubs:** a line with no `to` draws a short open run outward from `from` — use for drains, vents and sample points. Direction follows the `from` port side (else vents point up, drains down). Typical drain off a pipe run:
 

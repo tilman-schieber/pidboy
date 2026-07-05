@@ -75,12 +75,19 @@ pub fn equipment_symbol_key(equip_type: &str) -> &'static str {
         "distillation_column" => "column",
         "connector" => "connector",
         "heat_pad" => "heat_pad",
+        "vacuum_pump" => "vacuum_pump",
+        "canister" => "canister",
+        "motor" => "motor",
+        "thermostat" => "thermostat",
         _ => "equipment_default",
     }
 }
 
 /// Returns the canonical symbol key for a valve type + actuator style.
 pub fn valve_symbol_key(valve_type: &str, actuator: Option<&str>) -> &'static str {
+    if actuator == Some("solenoid") {
+        return "valve_solenoid";
+    }
     match valve_type {
         "control_valve" => {
             if actuator == Some("diaphragm") {
@@ -92,6 +99,10 @@ pub fn valve_symbol_key(valve_type: &str, actuator: Option<&str>) -> &'static st
         "check_valve" => "check_valve",
         "relief_valve" | "safety_valve" => "relief_valve",
         "globe" => "valve_globe",
+        "needle" => "valve_needle",
+        "three_way" => "valve_three_way",
+        "pressure_reducer" => "valve_pcv",
+        "bursting_disc" => "bursting_disc",
         _ => "valve_manual",
     }
 }
@@ -126,6 +137,10 @@ pub fn equipment_symbol(equip_type: &str) -> SymbolDef {
         "distillation_column" => column_symbol(),
         "connector" => connector_symbol(),
         "heat_pad" => heat_pad_symbol(),
+        "vacuum_pump" => vacuum_pump_symbol(),
+        "canister" => canister_symbol(),
+        "motor" => motor_symbol(),
+        "thermostat" => thermostat_symbol(),
         _ => default_equipment_symbol(),
     }
 }
@@ -138,6 +153,11 @@ pub fn valve_symbol(valve_type: &str, actuator: Option<&str>) -> SymbolDef {
         "check_valve" => check_valve_symbol(),
         "relief_valve" => relief_valve_symbol(),
         "valve_globe" => globe_valve_symbol(),
+        "valve_needle" => needle_valve_symbol(),
+        "valve_three_way" => three_way_valve_symbol(),
+        "valve_pcv" => pcv_valve_symbol(),
+        "valve_solenoid" => solenoid_valve_symbol(),
+        "bursting_disc" => bursting_disc_symbol(),
         _ => manual_valve_symbol(),
     }
 }
@@ -259,7 +279,7 @@ fn separator_3phase_symbol() -> SymbolDef {
 
 /// CSTR reactor: vessel with shaft and two-level Rushton impeller blades.
 fn reactor_cstr_symbol() -> SymbolDef {
-    sym(60.0, 80.0, vec![
+    sym(50.0, 70.0, vec![
         SymbolElement::Rect { x: -25.0, y: -35.0, w: 50.0, h: 70.0, rx: 5.0 },
         // Agitator shaft
         SymbolElement::Line { x1: 0.0, y1: -35.0, x2: 0.0, y2: 15.0 },
@@ -410,6 +430,39 @@ fn heat_pad_symbol() -> SymbolDef {
     sym(360.0, 28.0, elements)
 }
 
+/// Vacuum pump: circle with two curved vanes.
+fn vacuum_pump_symbol() -> SymbolDef {
+    sym(60.0, 60.0, vec![
+        SymbolElement::Circle { cx: 0.0, cy: 0.0, r: 25.0 },
+        SymbolElement::Path { d: "M -14 -10 Q 2 0 -14 10".into() },
+        SymbolElement::Path { d: "M 14 -10 Q -2 0 14 10".into() },
+    ])
+}
+
+/// Feed canister / bottle.
+fn canister_symbol() -> SymbolDef {
+    sym(40.0, 56.0, vec![
+        SymbolElement::Rect { x: -18.0, y: -18.0, w: 36.0, h: 46.0, rx: 4.0 },
+        SymbolElement::Rect { x: -7.0, y: -28.0, w: 14.0, h: 10.0, rx: 2.0 },
+    ])
+}
+
+/// Motor / stirrer drive: circle with an M. Mount on a reactor with
+/// `attach:`.
+fn motor_symbol() -> SymbolDef {
+    sym(28.0, 28.0, vec![
+        SymbolElement::Circle { cx: 0.0, cy: 0.0, r: 14.0 },
+        SymbolElement::Text { x: 0.0, y: 4.0, text: "M".into(), size: 11.0 },
+    ])
+}
+
+/// Thermostat / packaged unit: plain box (label goes inside when it fits).
+fn thermostat_symbol() -> SymbolDef {
+    sym(150.0, 60.0, vec![
+        SymbolElement::Rect { x: -75.0, y: -30.0, w: 150.0, h: 60.0, rx: 2.0 },
+    ])
+}
+
 /// Fallback for unrecognised equipment types.
 fn default_equipment_symbol() -> SymbolDef {
     sym(60.0, 60.0, vec![
@@ -459,6 +512,59 @@ fn globe_valve_symbol() -> SymbolDef {
         SymbolElement::SolidPath {
             d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
         },
+    ])
+}
+
+/// Needle valve: bowtie with a long thin needle stem and cap.
+fn needle_valve_symbol() -> SymbolDef {
+    sym(44.0, 36.0, vec![
+        SymbolElement::Path {
+            d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
+        },
+        SymbolElement::Line { x1: 0.0, y1: -2.0, x2: 0.0, y2: -16.0 },
+        SymbolElement::Line { x1: -6.0, y1: -16.0, x2: 6.0, y2: -16.0 },
+    ])
+}
+
+/// Three-way valve: three open triangles meeting at the seat. Declare
+/// ports on the three sides in play, e.g. `in: east, out: west,
+/// branch: south`.
+fn three_way_valve_symbol() -> SymbolDef {
+    sym(44.0, 40.0, vec![
+        SymbolElement::Path {
+            d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z M -12 20 L 0 0 L 12 20 Z".into(),
+        },
+    ])
+}
+
+/// Self-actuated pressure reducer (PCV): bowtie with the downstream
+/// triangle filled.
+fn pcv_valve_symbol() -> SymbolDef {
+    sym(44.0, 36.0, vec![
+        SymbolElement::Path { d: "M -22 -18 L 0 0 L -22 18 Z".into() },
+        SymbolElement::SolidPath { d: "M 22 -18 L 0 0 L 22 18 Z".into() },
+    ])
+}
+
+/// Solenoid valve: bowtie with a boxed S on the stem.
+fn solenoid_valve_symbol() -> SymbolDef {
+    sym(44.0, 60.0, vec![
+        SymbolElement::Path {
+            d: "M -22 -18 L 0 0 L -22 18 Z M 22 -18 L 0 0 L 22 18 Z".into(),
+        },
+        SymbolElement::Line { x1: 0.0, y1: 0.0, x2: 0.0, y2: -14.0 },
+        SymbolElement::Rect { x: -8.0, y: -30.0, w: 16.0, h: 16.0, rx: 0.0 },
+        SymbolElement::Text { x: 0.0, y: -18.5, text: "S".into(), size: 10.0 },
+    ])
+}
+
+/// Bursting (rupture) disc in its holder: two flange bars with the disc
+/// bulging toward the upstream side.
+fn bursting_disc_symbol() -> SymbolDef {
+    sym(20.0, 28.0, vec![
+        SymbolElement::Line { x1: -10.0, y1: -14.0, x2: -10.0, y2: 14.0 },
+        SymbolElement::Line { x1: 10.0, y1: -14.0, x2: 10.0, y2: 14.0 },
+        SymbolElement::Path { d: "M -10 10 Q 2 0 -10 -10".into() },
     ])
 }
 

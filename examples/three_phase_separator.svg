@@ -214,12 +214,18 @@
     <text x="1269.0" y="1135.0" class="label" style="text-anchor:start">DV-201</text>
     <text x="1373.0" y="1159.0" class="label">OBP-201</text>
     <text x="1986.0" y="1023.0" class="label">Oil Outlet</text>
-    <text x="1038.0" y="542.0" class="label">PT-101</text>
-    <text x="1324.0" y="52.0" class="label">PC-201</text>
-    <text x="728.0" y="687.0" class="label">LT-101</text>
-    <text x="582.0" y="840.0" class="label" style="text-anchor:start">LC-101</text>
-    <text x="1348.0" y="687.0" class="label">LT-201</text>
-    <text x="1546.0" y="840.0" class="label" style="text-anchor:start">LC-201</text>
+    <text x="1038.0" y="508.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">PT</text>
+    <text x="1038.0" y="517.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">101</text>
+    <text x="1324.0" y="76.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">PC</text>
+    <text x="1324.0" y="85.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">201</text>
+    <text x="728.0" y="653.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">LT</text>
+    <text x="728.0" y="662.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">101</text>
+    <text x="556.0" y="834.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">LC</text>
+    <text x="556.0" y="843.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">101</text>
+    <text x="1348.0" y="653.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">LT</text>
+    <text x="1348.0" y="662.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">201</text>
+    <text x="1520.0" y="834.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">LC</text>
+    <text x="1520.0" y="843.0" font-family="sans-serif" font-size="8" text-anchor="middle" fill="black" stroke="none">201</text>
     <text x="1570.0" y="228.0" class="line-label">Vapor</text>
     <text x="827.0" y="1173.0" class="line-label" transform="rotate(-90,827.0,1173.0)">OD</text>
     <text x="180.0" y="986.0" class="line-label">Water</text>

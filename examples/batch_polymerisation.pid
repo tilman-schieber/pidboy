@@ -1,0 +1,437 @@
+# Polymerisation in batch reactor (evolving replica of the reference P&ID)
+#
+# R1 batch reactor with stirrer drive R1.M1, fed from canister A2
+# (vinyl acetate + anisole) and dosed with dilauroyl peroxide. Product
+# leaves via canister A3. Overpressure ruptures disc R1.X01 into
+# blowdown tank A1, which relieves through safety valve A1.X02 to vent
+# and drains at the bottom. Nitrogen arrives from the facility supply
+# through a pressure reducer (5 barg) and a 3-way valve that also
+# serves the vacuum pump leg. Thermostat T1 (Huber Unistat) circulates
+# through the reactor jacket via pump UD1.P1 with flexible, insulated
+# hoses; cooling water reaches T1 through a solenoid valve.
+#
+# Not yet represented (future iterations): module frames (A/GD/UD/T),
+# spare nozzle markers N1..N6, equipment data tables, title block.
+
+# --- Feeds and product ---
+
+equipment VAA:
+  type: connector
+  ports:
+    out: east
+  label: "Vinyl acetate +\nAnisole"
+
+equipment A2:
+  type: canister
+  ports:
+    in: west
+    out: east
+  label: "A2"
+
+equipment DLP:
+  type: connector
+  ports:
+    out: east
+  label: "Dilauroyl\nperoxide"
+
+equipment A3:
+  type: canister
+  ports:
+    in: west
+    out: east
+  label: "A3"
+
+equipment PVA:
+  type: connector
+  ports:
+    in: west
+  label: "Polyvinyl\nacetate raw"
+
+# --- Reactor ---
+
+equipment R1:
+  type: reactor_cstr
+  size: (3,3)
+  ports:
+    feed: west
+    dose: west
+    n2: north
+    m: north
+    bd: north
+    out: east
+    jin: south
+    jout: south
+  label: "R1 EXR"
+
+equipment R1_M1:
+  type: motor
+  attach: R1.m
+  label: "R1.M1"
+
+valve R1_VV01:
+  type: needle
+  ports:
+    in: north
+    out: south
+  label: "R1.VV01"
+
+valve R1_X01:
+  type: bursting_disc
+  setpoint: "300 barg"
+  ports:
+    in: south
+    out: north
+  label: "R1.X01"
+
+# --- Blowdown tank ---
+
+equipment A1:
+  type: vessel
+  size: (2,1)
+  ports:
+    in: east
+    dr: south
+    vent: north
+  label: "A1\nBlow down Tank"
+
+valve A1_X02:
+  type: safety_valve
+  setpoint: "0.75 barg"
+  ports:
+    in: south
+    out: east
+  label: "A1.X02"
+
+valve A1_VV11:
+  type: needle
+  ports:
+    in: north
+    out: south
+  label: "A1.VV11"
+
+equipment VENT:
+  type: connector
+  ports:
+    in: west
+  label: "Vent"
+
+# --- Gas distribution (nitrogen flows right to left) ---
+
+equipment N2S:
+  type: connector
+  ports:
+    out: west
+  label: "N2\nFacility supply"
+
+valve GD1_VV55:
+  type: gate
+  ports:
+    in: east
+    out: west
+  label: "GD1.VV55"
+
+valve GD1_VX56:
+  type: pressure_reducer
+  setpoint: "5 barg"
+  ports:
+    in: east
+    out: west
+  label: "GD1.VX56"
+
+valve GD1_VV52:
+  type: check_valve
+  ports:
+    in: east
+    out: west
+  label: "GD1.VV52"
+
+valve GD1_VV51:
+  type: three_way
+  ports:
+    in: east
+    out: west
+    branch: north
+  label: "GD1.VV51"
+
+valve GD1_VV54:
+  type: gate
+  ports:
+    in: east
+    out: west
+  label: "GD1.VV54"
+
+equipment GD1_VU1:
+  type: vacuum_pump
+  ports:
+    in: east
+    out: west
+  label: "GD1.VU1"
+
+equipment VENT2:
+  type: connector
+  ports:
+    in: east
+  label: "Vent"
+
+# --- Thermostat and utility distribution ---
+
+equipment T1:
+  type: thermostat
+  ports:
+    sup: north
+    ret: north
+    cws: west
+    cwr: west
+  label: "T1\nHuber Unistat"
+
+equipment UD1_P1:
+  type: pump_centrifugal
+  ports:
+    in: west
+    out: east
+  label: "UD1.P1"
+
+valve T1_VV21:
+  type: gate
+  ports:
+    in: south
+    out: north
+  label: "T1.VV21"
+
+valve T1_VV20:
+  type: gate
+  ports:
+    in: north
+    out: south
+  label: "T1.VV20"
+
+equipment CWS:
+  type: connector
+  ports:
+    out: east
+  label: "Cooling Water 14C\nSupply flow"
+
+valve UD2_VV40:
+  type: gate
+  ports:
+    in: west
+    out: east
+  label: "UD2.VV40"
+
+valve UD2_VC41:
+  type: gate
+  actuator: solenoid
+  ports:
+    in: west
+    out: east
+  label: "UD2.VC41"
+
+equipment CWR:
+  type: connector
+  ports:
+    in: east
+  label: "Cooling Water\nReturn flow"
+
+# --- Process lines ---
+
+line L01:
+  class: process
+  from: VAA.out
+  to: A2.in
+
+line L02:
+  class: process
+  from: A2.out
+  to: R1.feed
+
+line L03:
+  class: process
+  from: DLP.out
+  to: R1.dose
+
+line L04:
+  class: process
+  from: R1.out
+  to: A3.in
+
+line L05:
+  class: process
+  from: A3.out
+  to: PVA.in
+
+# --- Blowdown / relief ---
+
+line L10:
+  class: process
+  from: R1.bd
+  to: R1_X01.in
+
+line L11:
+  class: process
+  from: R1_X01.out
+  to: A1.in
+
+line L12:
+  class: vent
+  from: A1.vent
+  to: A1_X02.in
+
+line L13:
+  class: vent
+  from: A1_X02.out
+  to: VENT.in
+
+line L14:
+  class: drain
+  from: A1.dr
+  to: A1_VV11.in
+
+line L15:
+  class: drain
+  from: A1_VV11.out
+  label: "OD"
+
+# --- Nitrogen / vacuum ---
+
+line L20:
+  class: utility
+  from: R1_VV01.out
+  to: R1.n2
+
+line L21:
+  class: utility
+  from: GD1_VV51.out
+  to: R1_VV01.in
+
+line L22:
+  class: utility
+  from: GD1_VV52.out
+  to: GD1_VV51.in
+
+line L23:
+  class: utility
+  from: GD1_VX56.out
+  to: GD1_VV52.in
+
+line L24:
+  class: utility
+  from: GD1_VV55.out
+  to: GD1_VX56.in
+
+line L25:
+  class: utility
+  from: N2S.out
+  to: GD1_VV55.in
+
+line L26:
+  class: utility
+  from: GD1_VV51.branch
+  to: GD1_VV54.in
+
+line L27:
+  class: utility
+  from: GD1_VV54.out
+  to: GD1_VU1.in
+  flexible: true
+
+line L28:
+  class: vent
+  from: GD1_VU1.out
+  to: VENT2.in
+  flexible: true
+
+# --- Thermostat loop ---
+
+line L30:
+  class: utility
+  from: UD1_P1.out
+  to: R1.jin
+  flexible: true
+  insulated: true
+
+line L31:
+  class: utility
+  from: T1_VV21.out
+  to: UD1_P1.in
+
+line L32:
+  class: utility
+  from: T1.sup
+  to: T1_VV21.in
+
+line L33:
+  class: utility
+  from: R1.jout
+  to: T1_VV20.in
+  flexible: true
+  insulated: true
+
+line L34:
+  class: utility
+  from: T1_VV20.out
+  to: T1.ret
+
+# --- Cooling water ---
+
+line L40:
+  class: utility
+  from: CWS.out
+  to: UD2_VV40.in
+
+line L41:
+  class: utility
+  from: UD2_VV40.out
+  to: UD2_VC41.in
+
+line L42:
+  class: utility
+  from: UD2_VC41.out
+  to: T1.cws
+  flexible: true
+
+line L43:
+  class: utility
+  from: T1.cwr
+  to: CWR.in
+  flexible: true
+
+# --- Instrumentation ---
+
+instrument R1_T1:
+  type: temperature_transmitter
+  attach: R1
+  location: field
+  label: "TT\nR1.T1"
+
+instrument R1_P1:
+  type: pressure_transmitter
+  attach: R1
+  location: field
+  label: "PIT\nR1.P1"
+
+instrument A1_F1:
+  type: pressure_indicator
+  attach: A1
+  location: field
+  label: "PI\nA1.F1"
+
+instrument GD1_F1:
+  type: pressure_indicator
+  attach: GD1_VX56
+  location: field
+  label: "PI\nGD1.F1"
+
+instrument T1_T1:
+  type: temperature_controller
+  location: shared
+  label: "TIC\nT1.T1"
+
+signal S01:
+  type: electrical
+  from: R1_T1
+  to: T1_T1
+
+signal S02:
+  type: electrical
+  from: T1_T1
+  to: T1

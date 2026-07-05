@@ -10,11 +10,13 @@ const EQUIPMENT_TYPES: &[&str] = &[
     "reactor_cstr", "reactor_batch", "reactor_pfr",
     "compressor", "blower", "mixer", "distillation_column",
     "connector", "heat_pad",
+    "vacuum_pump", "canister", "motor", "thermostat",
 ];
 
 const VALVE_TYPES: &[&str] = &[
-    "gate", "globe", "ball", "butterfly", "plug",
+    "gate", "globe", "ball", "butterfly", "plug", "needle", "three_way",
     "control_valve", "check_valve", "relief_valve", "safety_valve",
+    "pressure_reducer", "bursting_disc",
 ];
 
 const INSTRUMENT_TYPES: &[&str] = &[

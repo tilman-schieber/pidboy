@@ -62,6 +62,14 @@ pub fn render(
         // Flow-direction arrow on piping, but not on instrument leaders.
         let arrow = seg.class.is_none();
         out.push_str(&render_polyline(&seg.points, &class, indent, opts.pretty, arrow));
+        if let Some(line) = diagram.lines.get(&seg.connection_id) {
+            if line.flexible {
+                out.push_str(&render_flex_hose(&seg.points, indent, opts.pretty));
+            }
+            if line.insulated {
+                out.push_str(&render_insulation(&seg.points, indent, opts.pretty));
+            }
+        }
     }
     out.push_str(&format!("{}</g>{}", indent, nl));
 
@@ -125,37 +133,103 @@ pub fn render(
                 let bounds = layout.get_bounds(id);
                 let (half_w, half_h) = bounds.map(|b| (b.w / 2.0, b.h / 2.0)).unwrap_or((30.0, 30.0));
 
-                // Large vessels/tanks carry their tag inside the shell, as
-                // on real drawings. Only for symbols with an empty interior
-                // and only when the text actually fits.
-                let inside = matches!(kind, DeclKind::Equipment)
+                // Instruments carry their tag inside the bubble (ISA style)
+                // whenever it fits as two short lines.
+                if matches!(kind, DeclKind::Instrument) {
+                    if let Some((top, bottom)) = bubble_lines(label) {
+                        out.push_str(&format!(
+                            "{}{}<text x=\"{:.1}\" y=\"{:.1}\" font-family=\"sans-serif\" font-size=\"8\" text-anchor=\"middle\" fill=\"black\" stroke=\"none\">{}</text>{}",
+                            indent, indent, pos.x, pos.y - 2.0, escape_xml(&top), nl
+                        ));
+                        out.push_str(&format!(
+                            "{}{}<text x=\"{:.1}\" y=\"{:.1}\" font-family=\"sans-serif\" font-size=\"8\" text-anchor=\"middle\" fill=\"black\" stroke=\"none\">{}</text>{}",
+                            indent, indent, pos.x, pos.y + 7.0, escape_xml(&bottom), nl
+                        ));
+                        continue;
+                    }
+                }
+
+                let lines = label_lines(label);
+                let n_lines = lines.len();
+                let longest = lines
+                    .iter()
+                    .map(|l| l.chars().count())
+                    .max()
+                    .unwrap_or(0) as f64;
+                let block_h = n_lines as f64 * 12.0;
+
+                // Large vessels/tanks (and packaged units) carry their tag
+                // inside the shell when the whole block fits.
+                let inside_key = matches!(kind, DeclKind::Equipment)
                     && diagram
                         .equipment
                         .get(id)
-                        .map(|e| symbols::equipment_symbol_key(&e.equip_type) == "vessel")
-                        .unwrap_or(false)
-                    && label.chars().count() as f64 * 6.6 + 40.0 < half_w * 2.0
-                    && half_h * 2.0 >= 40.0;
+                        .map(|e| {
+                            matches!(
+                                symbols::equipment_symbol_key(&e.equip_type),
+                                "vessel" | "thermostat"
+                            )
+                        })
+                        .unwrap_or(false);
+                let inside = inside_key
+                    && longest * 6.6 + 30.0 < half_w * 2.0
+                    && block_h + 20.0 <= half_h * 2.0;
 
                 let (x, y, anchor, rect) = if inside {
+                    let y0 = pos.y + 4.0 - (n_lines as f64 - 1.0) * 6.0;
                     let rect = crate::layout::SvgRect {
-                        x: pos.x - label.chars().count() as f64 * 3.3,
-                        y: pos.y - 8.0,
-                        w: label.chars().count() as f64 * 6.6,
-                        h: 12.0,
+                        x: pos.x - longest * 3.3,
+                        y: y0 - 12.0,
+                        w: longest * 6.6,
+                        h: block_h,
                     };
-                    (pos.x, pos.y + 4.0, "", rect)
+                    (pos.x, y0, "", rect)
                 } else {
-                    place_label(label, pos, half_w, half_h, routes, layout, id, &label_rects)
+                    let order = if matches!(kind, DeclKind::Equipment)
+                        && diagram
+                            .equipment
+                            .get(id)
+                            .and_then(|e| e.attach.as_ref())
+                            .map(|a| {
+                                let declared = a.port.as_deref().and_then(|pn| {
+                                    diagram.get_ports(&a.id).and_then(|ports| {
+                                        ports
+                                            .iter()
+                                            .find(|p| p.name == pn)
+                                            .and_then(|p| p.side)
+                                    })
+                                });
+                                declared
+                                    .or_else(|| {
+                                        a.port
+                                            .as_deref()
+                                            .and_then(crate::layout::infer_port_side)
+                                    })
+                                    .unwrap_or(Side::South)
+                                    == Side::North
+                            })
+                            .unwrap_or(false)
+                    {
+                        LabelOrder::High
+                    } else {
+                        LabelOrder::Default
+                    };
+                    let (x, y, anchor, mut r) = place_label_ordered(
+                        lines[0], pos, half_w, half_h, routes, layout, id, &label_rects, order,
+                    );
+                    r.h = block_h;
+                    (x, y, anchor, r)
                 };
                 label_rects.push(rect);
-                out.push_str(&format!(
-                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"label\"{}>{}</text>{}",
-                    indent, indent,
-                    x, y, anchor,
-                    escape_xml(label),
-                    nl
-                ));
+                for (i, line) in lines.iter().enumerate() {
+                    out.push_str(&format!(
+                        "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"label\"{}>{}</text>{}",
+                        indent, indent,
+                        x, y + i as f64 * 12.0, anchor,
+                        escape_xml(line),
+                        nl
+                    ));
+                }
 
                 // Valve state / fail-action tag ("N.C.", "FC", ...) under
                 // the valve, one line below where its label defaults to.
@@ -172,18 +246,18 @@ pub fn render(
                                 _ => None,
                             },
                         };
-                        if let Some(tag) = tag {
+                        for extra in [tag, v.setpoint.clone()].into_iter().flatten() {
                             // Offset past the valve label (its rect plus the
                             // 2px label-collision margin), so "below" stays
                             // available directly beneath the tag number.
                             let (tx, ty, tanchor, trect) = place_label_ordered(
-                                &tag, pos, half_w, half_h + 16.0, routes, layout, id,
-                                &label_rects, true,
+                                &extra, pos, half_w, half_h + 16.0, routes, layout, id,
+                                &label_rects, LabelOrder::Low,
                             );
                             label_rects.push(trect);
                             out.push_str(&format!(
                                 "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"line-label\"{}>{}</text>{}",
-                                indent, indent, tx, ty, tanchor, escape_xml(&tag), nl
+                                indent, indent, tx, ty, tanchor, escape_xml(&extra), nl
                             ));
                         }
                     }
@@ -268,12 +342,20 @@ fn place_label(
     placed_labels: &[crate::layout::SvgRect],
 ) -> (f64, f64, &'static str, crate::layout::SvgRect) {
     place_label_ordered(
-        label, pos, half_w, half_h, routes, layout, own_id, placed_labels, false,
+        label, pos, half_w, half_h, routes, layout, own_id, placed_labels, LabelOrder::Default,
     )
 }
 
-/// `prefer_low`: keep the text at or below the symbol if at all possible
-/// (valve state tags read wrong when they float above, near other rows).
+#[derive(Clone, Copy, PartialEq)]
+enum LabelOrder {
+    Default,
+    /// Keep the text at or below the symbol if at all possible (valve state
+    /// tags read wrong when they float above, near other rows).
+    Low,
+    /// Prefer above (equipment mounted on top of something, e.g. motors).
+    High,
+}
+
 #[allow(clippy::too_many_arguments)]
 fn place_label_ordered(
     label: &str,
@@ -284,7 +366,7 @@ fn place_label_ordered(
     layout: &LayoutInfo,
     own_id: &str,
     placed_labels: &[crate::layout::SvgRect],
-    prefer_low: bool,
+    order: LabelOrder,
 ) -> (f64, f64, &'static str, crate::layout::SvgRect) {
     let text_w = label.chars().count() as f64 * 6.6;
     let text_h = 12.0;
@@ -311,10 +393,10 @@ fn place_label_ordered(
         h: text_h,
     };
 
-    let candidates = if prefer_low {
-        [below, below_right, right, left, above, above_right]
-    } else {
-        [below, above, right, left, below_right, above_right]
+    let candidates = match order {
+        LabelOrder::Low => [below, below_right, right, left, above, above_right],
+        LabelOrder::High => [above, above_right, right, left, below, below_right],
+        LabelOrder::Default => [below, above, right, left, below_right, above_right],
     };
     for (x, y, anchor) in candidates {
         let rect = rect_for(x, y, anchor);
@@ -473,6 +555,107 @@ fn compute_canvas(diagram: &Diagram, layout: &LayoutInfo, opts: &SvgOptions) -> 
     (max_x.ceil() as u32, max_y.ceil() as u32)
 }
 
+/// Longest segment of a polyline with its unit vector, if any.
+fn longest_segment(points: &[SvgPos]) -> Option<(SvgPos, SvgPos, f64, f64, f64)> {
+    let mut best: Option<(SvgPos, SvgPos, f64)> = None;
+    for w in points.windows(2) {
+        let dx = w[1].x - w[0].x;
+        let dy = w[1].y - w[0].y;
+        let len = (dx * dx + dy * dy).sqrt();
+        if best.as_ref().map_or(true, |(_, _, l)| len > *l) {
+            best = Some((w[0], w[1], len));
+        }
+    }
+    best.map(|(a, b, len)| {
+        let ux = (b.x - a.x) / len;
+        let uy = (b.y - a.y) / len;
+        (a, b, len, ux, uy)
+    })
+}
+
+/// Flexible-hose squiggle: whites out a window at the middle of the run's
+/// longest segment and draws a sine wave across it.
+fn render_flex_hose(points: &[SvgPos], indent: &str, pretty: bool) -> String {
+    let nl = if pretty { "\n" } else { "" };
+    let Some((a, _b, len, ux, uy)) = longest_segment(points) else {
+        return String::new();
+    };
+    let window = 56.0f64.min(len - 8.0);
+    if window < 24.0 {
+        return String::new();
+    }
+    let start = (len - window) / 2.0;
+    let (px, py) = (-uy, ux); // perpendicular
+    // White-out the straight line under the squiggle (explicit shape, no
+    // masks, for strict SVG importers).
+    let wx = a.x + ux * start;
+    let wy = a.y + uy * start;
+    let mut out = format!(
+        "{}{}<path d=\"M {:.1} {:.1} L {:.1} {:.1}\" fill=\"none\" stroke=\"white\" stroke-width=\"6\"/>{}",
+        indent, indent, wx, wy, wx + ux * window, wy + uy * window, nl
+    );
+    // Sine squiggle: 4 full waves, amplitude 5.
+    let mut d = format!("M {:.1} {:.1} ", wx, wy);
+    let waves = 4;
+    let half = window / (waves as f64 * 2.0);
+    for i in 0..(waves * 2) {
+        let s0 = start + i as f64 * half;
+        let amp = if i % 2 == 0 { 5.0 } else { -5.0 };
+        let cx = a.x + ux * (s0 + half / 2.0) + px * amp * 2.0;
+        let cy = a.y + uy * (s0 + half / 2.0) + py * amp * 2.0;
+        let ex = a.x + ux * (s0 + half);
+        let ey = a.y + uy * (s0 + half);
+        d.push_str(&format!("Q {:.1} {:.1} {:.1} {:.1} ", cx, cy, ex, ey));
+    }
+    out.push_str(&format!(
+        "{}{}<path d=\"{}\" fill=\"none\" stroke=\"black\" stroke-width=\"1.2\"/>{}",
+        indent, indent, d.trim_end(), nl
+    ));
+    out
+}
+
+/// Insulation: hatched band over the middle of the run's longest segment.
+fn render_insulation(points: &[SvgPos], indent: &str, pretty: bool) -> String {
+    let nl = if pretty { "\n" } else { "" };
+    let Some((a, _b, len, ux, uy)) = longest_segment(points) else {
+        return String::new();
+    };
+    let window = 44.0f64.min(len - 8.0);
+    if window < 20.0 {
+        return String::new();
+    }
+    let start = (len - window) / 2.0;
+    let (px, py) = (-uy, ux);
+    let hw = 7.0; // band half-width
+    let corner = |s: f64, side: f64| -> (f64, f64) {
+        (a.x + ux * s + px * hw * side, a.y + uy * s + py * hw * side)
+    };
+    let (x0, y0) = corner(start, 1.0);
+    let (x1, y1) = corner(start + window, 1.0);
+    let (x2, y2) = corner(start + window, -1.0);
+    let (x3, y3) = corner(start, -1.0);
+    let mut out = format!(
+        "{}{}<path d=\"M {:.1} {:.1} L {:.1} {:.1} L {:.1} {:.1} L {:.1} {:.1} Z\" fill=\"white\" stroke=\"black\" stroke-width=\"1\"/>{}",
+        indent, indent, x0, y0, x1, y1, x2, y2, x3, y3, nl
+    );
+    // Diagonal hatch lines
+    let mut d = String::new();
+    let n = (window / 8.0) as usize;
+    for i in 1..n {
+        let s0 = start + i as f64 * 8.0;
+        let (hx0, hy0) = corner(s0 - 5.0, -1.0);
+        let (hx1, hy1) = corner(s0, 1.0);
+        d.push_str(&format!("M {:.1} {:.1} L {:.1} {:.1} ", hx0, hy0, hx1, hy1));
+    }
+    if !d.is_empty() {
+        out.push_str(&format!(
+            "{}{}<path d=\"{}\" fill=\"none\" stroke=\"black\" stroke-width=\"0.8\"/>{}",
+            indent, indent, d.trim_end(), nl
+        ));
+    }
+    out
+}
+
 // ---- Legend ----
 
 enum LegendSample {
@@ -522,6 +705,10 @@ fn equipment_key_label(key: &str) -> &'static str {
         "column" => "Distillation column",
         "connector" => "Off-page connector",
         "heat_pad" => "Heat pad (electric)",
+        "vacuum_pump" => "Vacuum pump",
+        "canister" => "Feed canister",
+        "motor" => "Motor / stirrer drive",
+        "thermostat" => "Thermostat / packaged unit",
         _ => "Equipment",
     }
 }
@@ -533,6 +720,11 @@ fn valve_key_label(key: &str) -> &'static str {
         "check_valve" => "Check valve",
         "relief_valve" => "Relief valve (PSV)",
         "valve_globe" => "Globe valve",
+        "valve_needle" => "Needle valve",
+        "valve_three_way" => "3-way valve",
+        "valve_pcv" => "Pressure reducer (PCV)",
+        "valve_solenoid" => "Solenoid valve",
+        "bursting_disc" => "Bursting disc",
         _ => "Manual valve",
     }
 }
@@ -978,6 +1170,32 @@ fn signal_class_for_id(id: &str, diagram: &Diagram) -> String {
         format!("signal-{}", sig.sig_type)
     } else {
         "signal-electrical".to_string()
+    }
+}
+
+/// Split a label into display lines (the lexer turns "\\n" escapes in
+/// quoted strings into real newlines).
+fn label_lines(label: &str) -> Vec<&str> {
+    label.split('\n').collect()
+}
+
+/// Two short lines to draw inside an instrument bubble: explicit "\\n"
+/// split, else split a "TT-101"-style tag at the dash. None when the text
+/// wouldn't fit legibly in a 36px bubble.
+fn bubble_lines(label: &str) -> Option<(String, String)> {
+    let parts = label_lines(label);
+    let (top, bottom) = match parts.as_slice() {
+        [one] => match one.split_once('-') {
+            Some((a, b)) => (a.to_string(), b.to_string()),
+            None => return None,
+        },
+        [a, b] => (a.to_string(), b.to_string()),
+        _ => return None,
+    };
+    if top.chars().count() <= 6 && bottom.chars().count() <= 6 {
+        Some((top, bottom))
+    } else {
+        None
     }
 }
 

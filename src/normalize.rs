@@ -81,8 +81,8 @@ pub fn normalize(doc: &Document, diags: &mut DiagEngine) -> Diagram {
 fn known_props_for_kind(kind: DeclKind) -> &'static [&'static str] {
     match kind {
         DeclKind::Equipment => &["type", "at", "size", "attach", "ports", "label", "orient", "zone"],
-        DeclKind::Valve => &["type", "at", "actuator", "fail", "state", "ports", "label"],
-        DeclKind::Line => &["class", "from", "to", "label", "size", "spec", "route", "dir"],
+        DeclKind::Valve => &["type", "at", "actuator", "fail", "state", "setpoint", "ports", "label"],
+        DeclKind::Line => &["class", "from", "to", "label", "size", "spec", "route", "dir", "flexible", "insulated"],
         DeclKind::Instrument => &["type", "at", "attach", "location", "label", "loop"],
         DeclKind::Signal => &["type", "from", "to", "label"],
         DeclKind::Group => &["members", "label"],
@@ -256,6 +256,7 @@ fn normalize_valve(decl: &Decl, diags: &mut DiagEngine) -> Option<Valve> {
     let actuator = find_prop(props, "actuator").and_then(|p| prop_as_str(p)).map(String::from);
     let fail = find_prop(props, "fail").and_then(|p| prop_as_str(p)).map(String::from);
     let state = find_prop(props, "state").and_then(|p| prop_as_str(p)).map(String::from);
+    let setpoint = find_prop(props, "setpoint").and_then(|p| prop_as_str(p)).map(String::from);
     let ports = if let Some(p) = find_prop(props, "ports") {
         prop_as_ports(p, decl.span, diags)
     } else {
@@ -271,6 +272,7 @@ fn normalize_valve(decl: &Decl, diags: &mut DiagEngine) -> Option<Valve> {
         actuator,
         fail,
         state,
+        setpoint,
     })
 }
 
@@ -311,6 +313,14 @@ fn normalize_line(decl: &Decl, diags: &mut DiagEngine) -> Option<Line> {
     let to = find_prop(props, "to").and_then(|p| prop_as_ref(p));
 
     let label = find_prop(props, "label").and_then(|p| prop_as_str(p)).map(String::from);
+    let flag = |key: &str| {
+        find_prop(props, key)
+            .and_then(|p| prop_as_str(p))
+            .map(|v| v == "true" || v == "yes")
+            .unwrap_or(false)
+    };
+    let flexible = flag("flexible");
+    let insulated = flag("insulated");
 
     Some(Line {
         id: decl.id.clone(),
@@ -318,6 +328,8 @@ fn normalize_line(decl: &Decl, diags: &mut DiagEngine) -> Option<Line> {
         from,
         to,
         label,
+        flexible,
+        insulated,
     })
 }
 

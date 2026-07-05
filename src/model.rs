@@ -140,6 +140,8 @@ pub struct Valve {
     pub fail: Option<String>,
     /// Normal operating state: `nc` (normally closed) / `no` (normally open).
     pub state: Option<String>,
+    /// Set pressure / setpoint annotation, e.g. "5 barg".
+    pub setpoint: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -151,6 +153,10 @@ pub struct Line {
     /// `from` (drains, vents, sample points).
     pub to: Option<ObjRef>,
     pub label: Option<String>,
+    /// Draw a flexible-hose squiggle on the run.
+    pub flexible: bool,
+    /// Draw an insulation hatch band on the run.
+    pub insulated: bool,
 }
 
 #[derive(Debug, Clone)]
