@@ -83,6 +83,36 @@ pub fn compile(source: &str) -> String {
     if let (Some(diagram), Some(layout)) = (&res.diagram, &res.layout) {
         let framed = framed_group_of(diagram);
         let (shift_x, shift_y) = layout.origin_shift;
+
+        // Framed modules are draggable as a whole: their node maps to the
+        // frame rect in the SVG (same id) and `at:` pins the extent center.
+        for group in diagram.groups.values().filter(|g| g.frame) {
+            let mut ext: Option<(f64, f64, f64, f64)> = None;
+            for m in &group.members {
+                if let Some(b) = layout.bounds.get(m) {
+                    ext = Some(match ext {
+                        None => (b.x, b.y, b.x + b.w, b.y + b.h),
+                        Some((x1, y1, x2, y2)) => {
+                            (x1.min(b.x), y1.min(b.y), x2.max(b.x + b.w), y2.max(b.y + b.h))
+                        }
+                    });
+                }
+            }
+            let Some((x1, y1, x2, y2)) = ext else { continue };
+            let (cx, cy) = ((x1 + x2) / 2.0, (y1 + y2) / 2.0);
+            nodes.push(NodeOut {
+                id: group.id.clone(),
+                kind: "group".to_string(),
+                x: cx,
+                y: cy,
+                w: x2 - x1,
+                h: y2 - y1,
+                grid_x: (cx - shift_x) / GRID_SCALE,
+                grid_y: (cy - shift_y) / GRID_SCALE,
+                pinned: group.pos.is_some(),
+                draggable: true,
+            });
+        }
         for (kind, id) in &diagram.order {
             let positionable = matches!(
                 kind,

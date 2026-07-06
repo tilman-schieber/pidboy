@@ -52,25 +52,25 @@
     </g>
   </defs>
   <g id="lines">
-    <polyline points="156.0,200.0 172.0,200.0 172.0,294.0 276.0,294.0 276.0,310.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <polyline id="L100" points="156.0,200.0 172.0,200.0 172.0,294.0 276.0,294.0 276.0,310.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(276.0,310.0) rotate(90.0)"/>
-    <polyline points="276.0,354.0 276.0,464.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <polyline id="L101" points="276.0,354.0 276.0,464.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(276.0,464.0) rotate(90.0)"/>
-    <polyline points="284.0,200.0 404.0,200.0 404.0,310.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
+    <polyline id="L102" points="284.0,200.0 404.0,200.0 404.0,310.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(404.0,310.0) rotate(90.0)"/>
-    <polyline points="404.0,354.0 404.0,464.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
+    <polyline id="L103" points="404.0,354.0 404.0,464.0" class="line-utility" fill="none" stroke="black" stroke-width="1" stroke-dasharray="14,5"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(404.0,464.0) rotate(90.0)"/>
-    <polyline points="532.0,464.0 532.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <polyline id="L104" points="532.0,464.0 532.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(532.0,354.0) rotate(-90.0)"/>
-    <polyline points="554.0,332.0 594.0,332.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <polyline id="L104B" points="554.0,332.0 594.0,332.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(594.0,332.0) rotate(0.0)"/>
-    <polyline points="660.0,464.0 660.0,354.0 780.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <polyline id="L105" points="660.0,464.0 660.0,354.0 780.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(780.0,354.0) rotate(0.0)"/>
-    <polyline points="824.0,354.0 944.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
+    <polyline id="L106" points="824.0,354.0 944.0,354.0" class="line-vent" fill="none" stroke="black" stroke-width="1" stroke-dasharray="1.5,4" stroke-linecap="round"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(944.0,354.0) rotate(0.0)"/>
-    <polyline points="771.9,644.0 891.9,644.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <polyline id="L107" points="771.9,644.0 891.9,644.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(891.9,644.0) rotate(0.0)"/>
-    <polyline points="935.9,644.0 1055.9,644.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
+    <polyline id="L108" points="935.9,644.0 1055.9,644.0" class="line-process" fill="none" stroke="black" stroke-width="2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1055.9,644.0) rotate(0.0)"/>
     <polyline points="96.0,584.0 148.0,584.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
     <polyline points="823.9,524.0 771.9,524.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
@@ -78,22 +78,22 @@
     <polyline points="468.0,412.0 468.0,464.0" class="line-attach" fill="none" stroke="black" stroke-width="1"/>
   </g>
   <g id="signals">
-    <polyline points="78.0,602.0 78.0,778.0 994.0,778.0 994.0,602.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <polyline id="S100" points="78.0,602.0 78.0,778.0 994.0,778.0 994.0,602.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(994.0,602.0) rotate(-90.0)"/>
-    <polyline points="994.0,602.0 994.0,724.0 648.0,724.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <polyline id="S101" points="994.0,602.0 994.0,724.0 648.0,724.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(648.0,724.0) rotate(180.0)"/>
-    <polyline points="858.0,602.0 858.0,684.0 1174.0,684.0 1174.0,602.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <polyline id="S102" points="858.0,602.0 858.0,684.0 1174.0,684.0 1174.0,602.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(1174.0,602.0) rotate(-90.0)"/>
-    <polyline points="486.0,394.0 606.0,394.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <polyline id="S103" points="486.0,394.0 606.0,394.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(606.0,394.0) rotate(0.0)"/>
-    <polyline points="624.0,376.0 624.0,102.0 422.0,102.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <polyline id="S104" points="624.0,376.0 624.0,102.0 422.0,102.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(422.0,102.0) rotate(180.0)"/>
-    <polyline points="642.0,394.0 713.0,394.0 713.0,196.0 784.0,196.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <polyline id="S105" points="642.0,394.0 713.0,394.0 713.0,196.0 784.0,196.0" class="signal-electrical" fill="none" stroke="black" stroke-width="1.5" stroke-dasharray="6,3"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(784.0,196.0) rotate(0.0)"/>
-    <polyline points="404.0,120.0 404.0,304.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline id="S106" points="404.0,120.0 404.0,304.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
     <path d="M 398.6 145.6 L 409.4 150.7 M 398.6 150.6 L 409.4 155.7 M 398.6 207.0 L 409.4 212.0 M 398.6 212.0 L 409.4 217.0 M 398.6 268.3 L 409.4 273.4 M 398.6 273.3 L 409.4 278.4" fill="none" stroke="black" stroke-width="1.2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(404.0,304.0) rotate(90.0)"/>
-    <polyline points="802.0,214.0 802.0,326.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
+    <polyline id="S107" points="802.0,214.0 802.0,326.0" class="signal-pneumatic" fill="none" stroke="black" stroke-width="1.5"/>
     <path d="M 796.6 265.0 L 807.4 270.0 M 796.6 270.0 L 807.4 275.0" fill="none" stroke="black" stroke-width="1.2"/>
     <path d="M 0 0 L -9 -3.5 L -9 3.5 Z" fill="black" stroke="none" transform="translate(802.0,326.0) rotate(90.0)"/>
   </g>

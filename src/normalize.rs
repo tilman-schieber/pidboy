@@ -85,7 +85,7 @@ fn known_props_for_kind(kind: DeclKind) -> &'static [&'static str] {
         DeclKind::Line => &["class", "from", "to", "label", "size", "spec", "route", "dir", "flexible", "insulated"],
         DeclKind::Instrument => &["type", "at", "attach", "location", "label", "loop"],
         DeclKind::Signal => &["type", "from", "to", "label"],
-        DeclKind::Group => &["members", "label", "frame"],
+        DeclKind::Group => &["members", "label", "frame", "at"],
         DeclKind::Area => &["label", "bounds"],
         DeclKind::Note => &["at", "text"],
         DeclKind::Junction => &["at"],
@@ -497,11 +497,25 @@ fn normalize_group(decl: &Decl, diags: &mut DiagEngine) -> Option<Group> {
         .map(|v| v == "true" || v == "yes")
         .unwrap_or(false);
 
+    let at_prop = find_prop(props, "at");
+    let pos = at_prop.and_then(|p| prop_as_gridpos(p));
+    if let (Some(p), false) = (at_prop, frame) {
+        diags.emit(
+            Diagnostic::warning(format!(
+                "`at:` on group `{}` is ignored because the group is not framed",
+                decl.id
+            ))
+            .with_span(p.span)
+            .with_help("add `frame: true` to lay the group out as a pinned module"),
+        );
+    }
+
     Some(Group {
         id: decl.id.clone(),
         members,
         label,
         frame,
+        pos: if frame { pos } else { None },
     })
 }
 

@@ -204,6 +204,9 @@ pub struct Group {
     /// Framed module: members cluster together in layout and a dashed
     /// frame with the label is drawn around them.
     pub frame: bool,
+    /// Explicit grid position of the module's extent center. Only honoured
+    /// for framed groups; members keep their module-internal layout.
+    pub pos: Option<GridPos>,
 }
 
 #[derive(Debug, Clone)]

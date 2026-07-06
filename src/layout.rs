@@ -430,6 +430,17 @@ pub fn compute_layout(diagram: &Diagram) -> LayoutInfo {
         }
     }
 
+    // Pass 1b: framed modules pinned by `at:` — the module's extent center
+    // lands on the grid point; members keep their module-internal layout.
+    for (mi, g) in diagram.groups.values().filter(|g| g.frame).enumerate() {
+        if let Some(gp) = &g.pos {
+            let module = &modules[mi];
+            let dx = gp.x as f64 * GRID_SCALE - (module.extent.x + module.extent.w / 2.0);
+            let dy = gp.y as f64 * GRID_SCALE - (module.extent.y + module.extent.h / 2.0);
+            place_module(&mut layout, module, dx, dy);
+        }
+    }
+
     // Pass 2: propagate placement along process lines.
     place_line_endpoints(diagram, &mut layout, &dims, &modules, &cluster);
 

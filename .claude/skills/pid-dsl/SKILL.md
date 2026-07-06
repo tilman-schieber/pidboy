@@ -259,6 +259,12 @@ a dotted frame with the label in its corner is drawn around them —
 matching module-boxed P&IDs (A / GD / UD / T areas). Plain groups remain
 invisible logical groupings.
 
+A framed module can be pinned with `at: (x, y)` — the grid position of
+the module extent's **center**; members keep their module-internal
+layout. `at:` on individual members of a framed module is ignored (the
+module places them), and `at:` on an unframed group warns and is
+ignored.
+
 ---
 
 ### area

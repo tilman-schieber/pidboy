@@ -86,6 +86,42 @@ line L1:
     }
 
     #[test]
+    fn framed_group_at_pins_module_center() {
+        let src = "\
+equipment T1:
+  type: tank
+  ports:
+    out: east
+
+equipment T2:
+  type: tank
+  ports:
+    in: west
+
+line L1:
+  class: process
+  from: T1.out
+  to: T2.in
+
+group M1:
+  members: T1, T2
+  frame: true
+  at: (10, 5)
+";
+        let res = compile_to_parts(src, false, &SvgOptions::default());
+        assert!(!res.diags.has_errors(), "{:?}", res.diags.diagnostics);
+        let layout = res.layout.expect("layout");
+        let (b1, b2) = (&layout.bounds["T1"], &layout.bounds["T2"]);
+        let x1 = b1.x.min(b2.x);
+        let y1 = b1.y.min(b2.y);
+        let x2 = (b1.x + b1.w).max(b2.x + b2.w);
+        let y2 = (b1.y + b1.h).max(b2.y + b2.h);
+        let (sx, sy) = layout.origin_shift;
+        assert!(((x1 + x2) / 2.0 - sx - 800.0).abs() < 1e-6, "center x: {}", (x1 + x2) / 2.0);
+        assert!(((y1 + y2) / 2.0 - sy - 400.0).abs() < 1e-6, "center y: {}", (y1 + y2) / 2.0);
+    }
+
+    #[test]
     fn errors_yield_no_svg() {
         let res = compile_to_parts("line L1:\n  from: A.out\n  to: B.in\n", false, &SvgOptions::default());
         assert!(res.diags.has_errors());

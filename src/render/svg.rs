@@ -129,8 +129,8 @@ pub fn render(
             let (fx, fy) = (min_x - 30.0, min_y - 30.0);
             let (fw, fh) = (max_x - min_x + 60.0, max_y - min_y + 64.0);
             out.push_str(&format!(
-                "{}{}<rect x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" fill=\"none\" stroke=\"black\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/>{}",
-                indent, indent, fx, fy, fw, fh, nl
+                "{}{}<rect id=\"{}\" x=\"{:.1}\" y=\"{:.1}\" width=\"{:.1}\" height=\"{:.1}\" fill=\"none\" stroke=\"black\" stroke-width=\"1\" stroke-dasharray=\"2,3\"/>{}",
+                indent, indent, escape_xml(&g.id), fx, fy, fw, fh, nl
             ));
             if let Some(label) = &g.label {
                 out.push_str(&format!(
@@ -150,8 +150,11 @@ pub fn render(
             .clone()
             .unwrap_or_else(|| line_class_for_id(&seg.connection_id, diagram));
         // Flow-direction arrow on piping, but not on instrument leaders.
+        // Leaders also get no id: their connection_id is the instrument's
+        // id, which the symbol <use> already carries.
         let arrow = seg.class.is_none();
-        out.push_str(&render_polyline(&seg.points, &class, indent, opts.pretty, arrow));
+        let id = if seg.class.is_none() { Some(seg.connection_id.as_str()) } else { None };
+        out.push_str(&render_polyline_id(&seg.points, &class, indent, opts.pretty, arrow, id));
         if let Some(line) = diagram.lines.get(&seg.connection_id) {
             if line.flexible {
                 out.push_str(&render_flex_hose(&seg.points, indent, opts.pretty));
@@ -167,7 +170,10 @@ pub fn render(
     out.push_str(&format!("{}<g id=\"signals\">{}", indent, nl));
     for seg in routes.iter().filter(|s| s.is_signal) {
         let class = signal_class_for_id(&seg.connection_id, diagram);
-        out.push_str(&render_polyline(&seg.points, &class, indent, opts.pretty, true));
+        out.push_str(&render_polyline_id(
+            &seg.points, &class, indent, opts.pretty, true,
+            Some(seg.connection_id.as_str()),
+        ));
     }
     out.push_str(&format!("{}</g>{}", indent, nl));
 
@@ -501,8 +507,9 @@ pub fn render(
         if let Some(pos) = layout.get_pos(&note.id) {
             if let Some(text) = &note.text {
                 out.push_str(&format!(
-                    "{}{}<text x=\"{:.1}\" y=\"{:.1}\" class=\"note\">{}</text>{}",
+                    "{}{}<text id=\"{}\" x=\"{:.1}\" y=\"{:.1}\" class=\"note\">{}</text>{}",
                     indent, indent,
+                    escape_xml(&note.id),
                     pos.x, pos.y,
                     escape_xml(text),
                     nl
@@ -1296,6 +1303,17 @@ fn render_polyline(
     pretty: bool,
     arrow: bool,
 ) -> String {
+    render_polyline_id(points, css_class, indent, pretty, arrow, None)
+}
+
+fn render_polyline_id(
+    points: &[SvgPos],
+    css_class: &str,
+    indent: &str,
+    pretty: bool,
+    arrow: bool,
+    id: Option<&str>,
+) -> String {
     let nl = if pretty { "\n" } else { "" };
     if points.is_empty() {
         return String::new();
@@ -1312,9 +1330,13 @@ fn render_polyline(
     // stylesheets (Illustrator, Affinity, many SVG 1.1 renderers).
     let attrs = line_presentation_attrs(css_class);
 
+    let id_attr = match id {
+        Some(id) => format!(" id=\"{}\"", escape_xml(id)),
+        None => String::new(),
+    };
     let mut out = format!(
-        "{}{}<polyline points=\"{}\" class=\"{}\"{}/>{}",
-        indent, indent, pts_str, css_class, attrs, nl
+        "{}{}<polyline{} points=\"{}\" class=\"{}\"{}/>{}",
+        indent, indent, id_attr, pts_str, css_class, attrs, nl
     );
     if css_class == "signal-pneumatic" {
         out.push_str(&render_pneumatic_marks(points, indent, pretty));

@@ -75,7 +75,19 @@ pub fn set_node_position(source: &str, id: &str, x: i32, y: i32) -> Result<Strin
         .find(|d| d.id == id)
         .ok_or_else(|| EditError::UnknownId(id.to_string()))?;
 
-    if !is_positionable(decl.kind) {
+    let diagram = normalize::normalize(&doc, &mut diags);
+
+    // Framed groups are positionable as whole modules; anything else must
+    // be a kind whose `at:` layout honours.
+    if decl.kind == DeclKind::Group {
+        let framed = diagram.groups.get(id).map(|g| g.frame).unwrap_or(false);
+        if !framed {
+            return Err(EditError::NotPositionable {
+                id: id.to_string(),
+                kind: "group without frame".to_string(),
+            });
+        }
+    } else if !is_positionable(decl.kind) {
         return Err(EditError::NotPositionable {
             id: id.to_string(),
             kind: decl.kind.to_string(),
@@ -84,7 +96,6 @@ pub fn set_node_position(source: &str, id: &str, x: i32, y: i32) -> Result<Strin
 
     // Layout ignores `at:` on framed-group members (the module places them),
     // so refuse the edit instead of writing a dead prop.
-    let diagram = normalize::normalize(&doc, &mut diags);
     for group in diagram.groups.values() {
         if group.frame && group.members.iter().any(|m| m == id) {
             return Err(EditError::FramedGroupMember {
@@ -318,6 +329,29 @@ group M1:
         );
         // Non-members stay editable.
         assert!(set_node_position(src, "T2", 1, 1).is_ok());
+    }
+
+    #[test]
+    fn framed_group_itself_is_movable() {
+        let src = "\
+equipment T1:
+  type: tank
+
+group M1:
+  members: T1
+  frame: true
+";
+        let out = set_node_position(src, "M1", 7, 3).unwrap();
+        let lines: Vec<&str> = out.lines().collect();
+        assert_eq!(lines[3], "group M1:");
+        assert_eq!(lines[4], "  at: (7,3)");
+
+        // Unframed groups are not positionable.
+        let plain = "equipment T1:\n  type: tank\n\ngroup G1:\n  members: T1\n";
+        assert!(matches!(
+            set_node_position(plain, "G1", 1, 1),
+            Err(EditError::NotPositionable { .. })
+        ));
     }
 
     #[test]

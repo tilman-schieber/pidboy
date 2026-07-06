@@ -537,6 +537,11 @@ dotted frame with the label in its corner is drawn around them.
 ### Optional properties
 
 - `label`
+- `frame` — `true`/`yes` turns the group into a framed plant module
+- `at` — grid position `(x, y)` for the **center** of a framed module's
+  extent; members keep their module-internal layout. Ignored (with a
+  warning) on groups without `frame: true`. Note that `at:` on a framed
+  module's *members* is ignored — the module positions them.
 
 ### Example
 
@@ -544,6 +549,8 @@ dotted frame with the label in its corner is drawn around them.
 group cooling_loop:
   members: P101, CV101, E101, TI101, TIC101
   label: "Cooling loop"
+  frame: true
+  at: (14, 6)
 ```
 
 ---

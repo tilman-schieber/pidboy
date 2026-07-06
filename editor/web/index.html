@@ -45,6 +45,12 @@
     cursor: pointer;
   }
   #toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+  #toolbar .hover {
+    color: var(--accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    min-width: 6em;
+  }
   #toolbar .hint { color: var(--muted); margin-left: auto; font-size: 12px; }
   #canvas {
     flex: 1;
@@ -90,7 +96,8 @@
     <span class="name" id="filename">…</span>
     <span class="state" id="save-state"></span>
     <button id="save-btn" type="button">Save</button>
-    <span class="hint">drag a symbol to pin it to the grid · Esc cancels a drag</span>
+    <span class="hover" id="hover-info"></span>
+    <span class="hint">drag symbols, notes, or module frames · ⌘Z undo · ⇧⌘Z redo · ⌘-wheel zoom · Esc cancels</span>
   </div>
   <div id="canvas"></div>
   <div id="diagnostics"></div>
