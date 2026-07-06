@@ -12,7 +12,8 @@
 #
 # Compile with the full annex:
 #   pidc compile examples/batch_polymerisation.pid --pretty --legend --table \
-#     --title "P&ID Polymerisation in batch reactor" --footer "DRAFT for APP_v3"
+#     --title "P&ID Polymerisation in batch reactor" \
+#     --footer "Created: pidboy examples / batch reactor" --footer "DRAFT for APP_v3"
 
 
 # --- Feeds and product ---

@@ -1,18 +1,27 @@
+[workspace]
+members = [".", "wasm"]
+
 [package]
 name = "pidc"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["cli"]
+cli = ["dep:clap", "dep:tiny_http"]
+
 [[bin]]
 name = "pidc"
 path = "src/main.rs"
+required-features = ["cli"]
 
 [lib]
 name = "pidc"
 path = "src/lib.rs"
 
 [dependencies]
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive"], optional = true }
+tiny_http = { version = "0.12", optional = true }
 thiserror = "1"
 indexmap = "2"
 

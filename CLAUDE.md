@@ -58,6 +58,12 @@ shipping; they catch different problems.
   Examples are committed with `--pretty --legend`;
   `batch_polymerisation` additionally uses `--table --title ...
   --footer ...` (see its header comment for the exact command).
+- The browser editor (`pidc serve <file.pid>`) needs its WASM bundle
+  built once via `scripts/build-editor.sh` (requires `wasm-pack` and the
+  `wasm32-unknown-unknown` target), then `cargo build` to embed it.
+  Without the bundle, `cargo build`/`cargo test` still work (build.rs
+  embeds empty placeholders) and `serve` explains what to run.
+  `cargo build --no-default-features` builds the library only (no bin).
 - The three examples are regression fixtures as much as documentation:
   `boiler_feed_water` (explicit coordinates), `reactor_cooling` (fully
   automatic layout), `three_phase_separator` (replica of a reference
@@ -68,7 +74,17 @@ shipping; they catch different problems.
 
 - Pipeline: lexer → parser → normalize → validate → layout → route →
   render. Keep the renderer ignorant of source syntax and the parser
-  ignorant of SVG.
+  ignorant of SVG. Library entry points live in `src/compile.rs`
+  (`compile_to_parts`, `analyze`); the pipeline core must stay pure (no
+  I/O, printing, threads, or time) so it keeps compiling to WASM.
+- Interactive editor: `wasm/` (crate `pidc-wasm`) exposes
+  `compile`/`move_node` as JSON-over-wasm-bindgen; `editor/web/` is a
+  dependency-free ES-module frontend; `src/serve.rs` is a dumb file
+  bridge (all compilation happens client-side). A drag writes
+  `at: (x,y)` into the `.pid` source via spans (`src/edit.rs`) and
+  recompiles — the `.pid` file stays the single source of truth.
+  Framed-module members are not individually draggable (layout ignores
+  their `at:`).
 - `src/symbols/mod.rs` is backend-agnostic geometry; no SVG structural
   constructs there (path `d` strings are the accepted exception).
 - Layout is connectivity-driven: placement anchors on the specific port

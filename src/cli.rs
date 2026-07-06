@@ -78,4 +78,14 @@ pub enum Commands {
         /// Input .pid file
         input: String,
     },
+
+    /// Serve the interactive drag-to-reposition editor for a .pid file
+    Serve {
+        /// Input .pid file (edits are saved back to this file)
+        input: String,
+
+        /// Port to listen on (localhost only)
+        #[arg(long, default_value_t = 8877)]
+        port: u16,
+    },
 }

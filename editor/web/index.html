@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pidboy editor</title>
+<style>
+  :root {
+    --bg: #f4f4f2;
+    --panel: #ffffff;
+    --border: #d8d8d4;
+    --text: #1c1c1a;
+    --muted: #71716c;
+    --accent: #0a66c2;
+    --error: #b3261e;
+    --warning: #8a6d00;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: flex;
+    flex-direction: column;
+    font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  #toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex: none;
+  }
+  #toolbar .name { font-weight: 600; }
+  #toolbar .state { color: var(--muted); min-width: 9em; }
+  #toolbar .state.error { color: var(--error); }
+  #toolbar button {
+    font: inherit;
+    padding: 3px 14px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--panel);
+    cursor: pointer;
+  }
+  #toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+  #toolbar .hint { color: var(--muted); margin-left: auto; font-size: 12px; }
+  #canvas {
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+  }
+  #canvas svg { background: white; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  #canvas [data-draggable] { cursor: grab; }
+  #canvas.dragging, #canvas.dragging [data-draggable] { cursor: grabbing; }
+  #diagnostics {
+    flex: none;
+    max-height: 9em;
+    overflow-y: auto;
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    padding: 4px 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+  }
+  #diagnostics:empty { display: none; }
+  #diagnostics .diag { padding: 2px 0; }
+  #diagnostics .diag.error { color: var(--error); }
+  #diagnostics .diag.warning { color: var(--warning); }
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity .25s;
+    pointer-events: none;
+  }
+  #toast.show { opacity: .95; }
+</style>
+</head>
+<body>
+  <div id="toolbar">
+    <span class="name" id="filename">…</span>
+    <span class="state" id="save-state"></span>
+    <button id="save-btn" type="button">Save</button>
+    <span class="hint">drag a symbol to pin it to the grid · Esc cancels a drag</span>
+  </div>
+  <div id="canvas"></div>
+  <div id="diagnostics"></div>
+  <div id="toast"></div>
+  <script type="module" src="editor.js"></script>
+</body>
+</html>

@@ -133,3 +133,28 @@ fn test_unresolved_references_detected() {
     validate(&diagram, &mut diags);
     assert!(diags.has_errors());
 }
+
+#[test]
+fn test_edit_round_trip_on_example() {
+    let before = include_str!("../examples/boiler_feed_water.pid");
+    let after = pidc::edit::set_node_position(before, "P101", 13, 8).unwrap();
+
+    // Exactly one line differs.
+    let changed: Vec<(usize, &str, &str)> = before
+        .lines()
+        .zip(after.lines())
+        .enumerate()
+        .filter(|(_, (b, a))| b != a)
+        .map(|(i, (b, a))| (i + 1, b, a))
+        .collect();
+    assert_eq!(changed.len(), 1, "exactly one changed line, got {:?}", changed);
+    assert_eq!(changed[0].1.trim(), "at: (12,8)");
+    assert_eq!(changed[0].2.trim(), "at: (13,8)");
+
+    // The edited source still compiles cleanly and the node moved.
+    let res = pidc::compile::compile_to_parts(&after, false, &SvgOptions::default());
+    assert!(!res.diags.has_errors(), "{:?}", res.diags.diagnostics);
+    let diagram = res.diagram.unwrap();
+    let pos = diagram.equipment["P101"].pos.as_ref().unwrap();
+    assert_eq!((pos.x, pos.y), (13, 8));
+}

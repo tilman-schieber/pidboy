@@ -1,18 +1,8 @@
-mod ast;
 mod cli;
-mod diag;
-mod layout;
-mod lexer;
-mod model;
-mod normalize;
-mod parser;
-mod render;
-mod route;
-mod span;
-mod symbols;
-mod validate;
+mod serve;
 
 use clap::Parser;
+use pidc::{compile, render};
 use std::process;
 
 fn main() {
@@ -34,6 +24,7 @@ fn main() {
         } => cmd_compile(&input, output.as_deref(), width, height, no_route, pretty, legend, table, title, footer, cli.strict, cli.quiet, cli.verbose),
         cli::Commands::Check { input } => cmd_check(&input, cli.strict, cli.quiet),
         cli::Commands::DumpAst { input } => cmd_dump_ast(&input, cli.strict),
+        cli::Commands::Serve { input, port } => serve::serve(&input, port),
     };
 
     process::exit(exit_code);
@@ -41,31 +32,6 @@ fn main() {
 
 fn read_source(path: &str) -> Result<String, String> {
     std::fs::read_to_string(path).map_err(|e| format!("cannot read `{}`: {}", path, e))
-}
-
-fn run_pipeline(
-    source: &str,
-    filename: &str,
-    strict: bool,
-) -> (
-    Option<model::Diagram>,
-    diag::DiagEngine,
-) {
-    let mut diags = diag::DiagEngine::new().with_strict(strict);
-
-    let lex_lines = lexer::lex(source, &mut diags);
-    let doc = parser::parse(&lex_lines, &mut diags);
-    let diagram = normalize::normalize(&doc, &mut diags);
-    validate::validate(&diagram, &mut diags);
-
-    // Print diagnostics
-    diags.print_all(source, filename);
-
-    if diags.has_errors() {
-        (None, diags)
-    } else {
-        (Some(diagram), diags)
-    }
 }
 
 fn cmd_compile(
@@ -91,19 +57,6 @@ fn cmd_compile(
         }
     };
 
-    let (diagram, diags) = run_pipeline(&source, input, strict);
-
-    let diagram = match diagram {
-        Some(d) => d,
-        None => {
-            eprintln!("error: compilation failed with {} error(s)", diags.error_count());
-            return 1;
-        }
-    };
-
-    let layout = layout::compute_layout(&diagram);
-    let routes = route::route(&diagram, &layout);
-
     let opts = render::SvgOptions {
         width,
         height,
@@ -115,7 +68,16 @@ fn cmd_compile(
         footers,
     };
 
-    let svg = render::svg::render(&diagram, &layout, &routes.segments, &opts);
+    let result = compile::compile_to_parts(&source, strict, &opts);
+    result.diags.print_all(&source, input);
+
+    let svg = match result.svg {
+        Some(s) => s,
+        None => {
+            eprintln!("error: compilation failed with {} error(s)", result.diags.error_count());
+            return 1;
+        }
+    };
 
     // Determine output path
     let out_path = match output {
@@ -150,9 +112,10 @@ fn cmd_check(input: &str, strict: bool, quiet: bool) -> i32 {
         }
     };
 
-    let (result, diags) = run_pipeline(&source, input, strict);
+    let (_doc, _diagram, diags) = compile::analyze(&source, strict);
+    diags.print_all(&source, input);
 
-    if result.is_some() {
+    if !diags.has_errors() {
         if !quiet {
             let w = diags.warning_count();
             if w > 0 {
@@ -177,11 +140,7 @@ fn cmd_dump_ast(input: &str, strict: bool) -> i32 {
         }
     };
 
-    let mut diags = diag::DiagEngine::new().with_strict(strict);
-    let lex_lines = lexer::lex(&source, &mut diags);
-    let doc = parser::parse(&lex_lines, &mut diags);
-    let diagram = normalize::normalize(&doc, &mut diags);
-    validate::validate(&diagram, &mut diags);
+    let (_doc, diagram, diags) = compile::analyze(&source, strict);
 
     diags.print_all(&source, input);
 

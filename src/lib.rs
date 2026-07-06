@@ -1,5 +1,7 @@
 pub mod ast;
+pub mod compile;
 pub mod diag;
+pub mod edit;
 pub mod layout;
 pub mod lexer;
 pub mod model;

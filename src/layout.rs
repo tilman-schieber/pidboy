@@ -81,6 +81,9 @@ pub struct LayoutInfo {
     pub positions: HashMap<String, SvgPos>,
     pub bounds: HashMap<String, SvgRect>,
     pub shapes: HashMap<String, SymbolShape>,
+    /// Uniform shift applied by `normalize_origin`; lets callers map SVG
+    /// coordinates back to grid coordinates (`(svg - shift) / GRID_SCALE`).
+    pub origin_shift: (f64, f64),
 }
 
 impl LayoutInfo {
@@ -89,6 +92,7 @@ impl LayoutInfo {
             positions: HashMap::new(),
             bounds: HashMap::new(),
             shapes: HashMap::new(),
+            origin_shift: (0.0, 0.0),
         }
     }
 
@@ -1175,6 +1179,7 @@ fn normalize_origin(layout: &mut LayoutInfo) {
     if dx == 0.0 && dy == 0.0 {
         return;
     }
+    layout.origin_shift = (dx, dy);
     for p in layout.positions.values_mut() {
         p.x += dx;
         p.y += dy;
